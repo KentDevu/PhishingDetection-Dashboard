@@ -7,7 +7,6 @@ import {
   Shield,
   Server,
   Plug,
-  Users,
   Bell,
   ChevronRight,
 } from "lucide-react";
@@ -15,15 +14,13 @@ import { UserPreferencesSettings } from "../components/settings/UserPreferencesS
 import { SecuritySettingsPanel } from "../components/settings/SecuritySettingsPanel.tsx";
 import { SystemConfigurationPanel } from "../components/settings/SystemConfigurationPanel";
 import { NotificationSettings } from "../components/notifications/NotificationSettings";
-import { useSystemSettings } from "../hooks/useSystemSettings";
 
 type SettingsTab =
   | "preferences"
   | "notifications"
   | "security"
   | "system"
-  | "integrations"
-  | "users";
+  | "integrations";
 
 interface TabConfig {
   id: SettingsTab;
@@ -35,7 +32,8 @@ interface TabConfig {
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState<SettingsTab>("preferences");
-  const { isAdmin } = useSystemSettings();
+  // Remove auth dependency - all settings are now accessible
+  const isAdmin = true; // Always true since we don't have authentication
 
   const tabs: TabConfig[] = [
     {
@@ -52,36 +50,26 @@ export default function Settings() {
     },
     {
       id: "security",
-      label: "Security Settings",
+      label: "Threat Settings",
       icon: <Shield size={20} />,
-      description: "Authentication and access control",
-      adminOnly: true,
+      description: "Threat detection and security configuration",
     },
     {
       id: "system",
       label: "System Configuration",
       icon: <Server size={20} />,
       description: "Core system and performance settings",
-      adminOnly: true,
     },
     {
       id: "integrations",
       label: "Integrations",
       icon: <Plug size={20} />,
       description: "Third-party services and API connections",
-      adminOnly: true,
-    },
-    {
-      id: "users",
-      label: "User Management",
-      icon: <Users size={20} />,
-      description: "Manage users and permissions",
-      adminOnly: true,
     },
   ];
 
-  // Filter tabs based on admin permissions
-  const availableTabs = tabs.filter((tab) => !tab.adminOnly || isAdmin);
+  // Show all tabs since no authentication is required
+  const availableTabs = tabs;
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -90,13 +78,11 @@ export default function Settings() {
       case "notifications":
         return <NotificationSettings />;
       case "security":
-        return isAdmin ? <SecuritySettingsPanel /> : <AccessDenied />;
+        return <SecuritySettingsPanel />;
       case "system":
-        return isAdmin ? <SystemConfigurationPanel /> : <AccessDenied />;
+        return <SystemConfigurationPanel />;
       case "integrations":
-        return isAdmin ? <IntegrationsPlaceholder /> : <AccessDenied />;
-      case "users":
-        return isAdmin ? <UserManagementPlaceholder /> : <AccessDenied />;
+        return <IntegrationsPlaceholder />;
       default:
         return <UserPreferencesSettings />;
     }
@@ -151,20 +137,6 @@ export default function Settings() {
   );
 }
 
-// Access Denied Component
-function AccessDenied() {
-  return (
-    <div className="access-denied">
-      <Shield size={64} />
-      <h2>Access Denied</h2>
-      <p>
-        You don't have permission to access this section. Please contact your
-        administrator.
-      </p>
-    </div>
-  );
-}
-
 // Placeholder Components (to be implemented later)
 function IntegrationsPlaceholder() {
   return (
@@ -193,42 +165,6 @@ function IntegrationsPlaceholder() {
             <div>
               <h4>Analytics</h4>
               <p>Export data to business intelligence tools</p>
-            </div>
-          </div>
-        </div>
-        <div className="coming-soon">Coming Soon</div>
-      </div>
-    </div>
-  );
-}
-
-function UserManagementPlaceholder() {
-  return (
-    <div className="placeholder-panel">
-      <div className="placeholder-content">
-        <Users size={48} />
-        <h2>User Management</h2>
-        <p>Manage users, roles, and permissions across the system.</p>
-        <div className="placeholder-features">
-          <div className="feature-item">
-            <div className="feature-icon">👥</div>
-            <div>
-              <h4>User Accounts</h4>
-              <p>Create, edit, and deactivate user accounts</p>
-            </div>
-          </div>
-          <div className="feature-item">
-            <div className="feature-icon">🔑</div>
-            <div>
-              <h4>Role Management</h4>
-              <p>Define roles and assign permissions</p>
-            </div>
-          </div>
-          <div className="feature-item">
-            <div className="feature-icon">📋</div>
-            <div>
-              <h4>Audit Logs</h4>
-              <p>Track user activities and system changes</p>
             </div>
           </div>
         </div>

@@ -98,31 +98,25 @@ Advanced Email Security Analysis Platform with Real-time Threat Detection
 
 ---
 
-### **PHASE 4: User Management & Security** (Week 4)
+### **PHASE 4: Settings & Configuration** (Week 4)
 
-#### **Step 4.1: Authentication & Authorization**
-
-- [ ] Auth API (`/api/auth/`)
-  - POST `/login` - User authentication
-  - POST `/logout` - Session termination
-  - GET `/profile` - User profile
-  - PUT `/profile` - Update profile
-
-#### **Step 4.2: Settings & Preferences**
+#### **Step 4.1: Settings & Preferences API**
 
 - [ ] Settings API (`/api/settings/`)
-  - GET `/user` - User preferences
-  - PUT `/user` - Update user settings
+  - GET `/preferences` - Application preferences
+  - PUT `/preferences` - Update preferences
   - GET `/system` - System configuration
-  - PUT `/system` - Update system settings (Admin)
+  - PUT `/system` - Update system settings
+  - GET `/notifications` - Notification settings
+  - PUT `/notifications` - Update notification preferences
 
-#### **Step 4.3: Admin Features**
+#### **Step 4.2: Configuration Management**
 
-- [ ] Admin API (`/api/admin/`)
-  - GET `/users` - User management
-  - POST `/users` - Create user
-  - PUT `/users/:id` - Update user
-  - DELETE `/users/:id` - Delete user
+- [ ] Config API (`/api/config/`)
+  - GET `/threat-thresholds` - Threat detection thresholds
+  - PUT `/threat-thresholds` - Update threat settings
+  - GET `/integrations` - External service configurations
+  - PUT `/integrations` - Update integration settings
 
 ---
 
@@ -249,9 +243,9 @@ interface ApiResponse<T> {
 
 ### **Week 4 Focus: PRODUCTION READINESS**
 
-1. **Authentication** → Secure user management
-2. **Admin Panel** → Administrative features
-3. **Performance** → Optimization and caching
+1. **Settings & Configuration** → Application preferences and system configuration
+2. **Integration APIs** → External service connections and data import/export
+3. **Performance** → Optimization, caching, and monitoring
 4. **Testing** → Unit and integration tests
 
 ---
