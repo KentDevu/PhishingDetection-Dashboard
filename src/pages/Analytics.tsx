@@ -1,0 +1,696 @@
+// Analytics Page - Comprehensive threat intelligence and reporting dashboard
+
+import { useState, useEffect } from "react";
+import {
+  BarChart3,
+  TrendingUp,
+  Globe,
+  Download,
+  Settings,
+  RefreshCw,
+  Filter,
+} from "lucide-react";
+import { ThreatIntelligenceChart } from "../components/analytics/ThreatIntelligenceChart";
+import { ThreatTrendAnalysis } from "../components/analytics/ThreatTrendAnalysis";
+import { DomainIntelligenceTable } from "../components/analytics/DomainIntelligenceTable";
+import { useAnalyticsDashboard } from "../hooks/useAnalyticsDashboard";
+import { useThreatMetrics } from "../hooks/useThreatMetrics";
+import { useThreatTrends } from "../hooks/useThreatTrends";
+import { analyticsService } from "../services/analyticsService";
+import type { DomainIntelligence, AnalyticsFilters } from "../models/analytics";
+
+export function Analytics() {
+  // Analytics data hooks
+  const {
+    loading: dashboardLoading,
+    error: dashboardError,
+    refetch: refetchDashboard,
+  } = useAnalyticsDashboard();
+  const {
+    data: threatMetrics,
+    loading: metricsLoading,
+    refetch: refetchMetrics,
+  } = useThreatMetrics();
+  const {
+    data: threatTrends,
+    loading: trendsLoading,
+    changePeriod,
+  } = useThreatTrends();
+
+  // Domain intelligence data (managed locally)
+  const [domainData, setDomainData] = useState<DomainIntelligence[] | null>(
+    null
+  );
+  const [domainLoading, setDomainLoading] = useState(false);
+  const [domainError, setDomainError] = useState<string | null>(null);
+
+  // Filter states
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState<AnalyticsFilters>({
+    date_range: {
+      start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .split("T")[0],
+      end: new Date().toISOString().split("T")[0],
+    },
+    threat_levels: [],
+    domains: [],
+    countries: [],
+    attack_types: [],
+    confidence_threshold: 0.7,
+  });
+
+  // Load domain intelligence data
+  useEffect(() => {
+    const fetchDomainData = async () => {
+      setDomainLoading(true);
+      try {
+        const domains = await analyticsService.getDomainIntelligence(
+          100,
+          "threat_level"
+        );
+        setDomainData(domains);
+        setDomainError(null);
+      } catch (error) {
+        console.error("Failed to fetch domain intelligence:", error);
+        setDomainError("Failed to load domain intelligence data");
+      } finally {
+        setDomainLoading(false);
+      }
+    };
+
+    fetchDomainData();
+  }, []);
+
+  // Handle data refresh
+  const handleRefreshAll = async () => {
+    await Promise.all([
+      refetchDashboard(),
+      refetchMetrics(),
+      // Refresh domain data
+      (async () => {
+        setDomainLoading(true);
+        try {
+          const domains = await analyticsService.getDomainIntelligence(
+            100,
+            "threat_level"
+          );
+          setDomainData(domains);
+          setDomainError(null);
+        } catch (error) {
+          console.error("Failed to refresh domain intelligence:", error);
+          setDomainError("Failed to refresh domain intelligence data");
+        } finally {
+          setDomainLoading(false);
+        }
+      })(),
+    ]);
+  };
+
+  // Handle filter application
+  const handleApplyFilters = (newFilters: AnalyticsFilters) => {
+    setFilters(newFilters);
+    // Apply filters to data sources
+    // This would typically trigger API calls with new parameters
+  };
+
+  // Handle report generation
+  const handleGenerateReport = async () => {
+    try {
+      const reportConfig = {
+        name: `Security Analytics Report - ${
+          new Date().toISOString().split("T")[0]
+        }`,
+        type: "technical" as const,
+        frequency: "monthly" as const,
+        format: "pdf" as const,
+        filters: {
+          ...filters,
+          users: [], // Add required users field
+        },
+        sections: ["metrics", "trends", "domains", "incidents"],
+      };
+
+      const response = await analyticsService.generateReport(reportConfig);
+
+      // In a real application, this would trigger a download or redirect
+      window.open(response.report_url, "_blank");
+    } catch (error) {
+      console.error("Failed to generate report:", error);
+      alert("Failed to generate report. Please try again.");
+    }
+  };
+
+  const isLoading = dashboardLoading || metricsLoading || trendsLoading;
+  const hasError = dashboardError || domainError;
+
+  return (
+    <div className="analytics-page">
+      {/* Page Header */}
+      <div className="analytics-header">
+        <div className="analytics-header__title">
+          <BarChart3 className="analytics-header__icon" size={28} />
+          <div>
+            <h1>Security Analytics</h1>
+            <p>Comprehensive threat intelligence and security insights</p>
+          </div>
+        </div>
+
+        <div className="analytics-header__actions">
+          <button
+            className="btn btn--secondary"
+            onClick={() => setShowFilters(!showFilters)}
+          >
+            <Filter size={18} />
+            {showFilters ? "Hide Filters" : "Show Filters"}
+          </button>
+          <button
+            className="btn btn--secondary"
+            onClick={handleRefreshAll}
+            disabled={isLoading}
+          >
+            <RefreshCw size={18} className={isLoading ? "spinning" : ""} />
+            Refresh Data
+          </button>
+          <button className="btn btn--secondary">
+            <Settings size={18} />
+            Configure
+          </button>
+          <button className="btn btn--primary" onClick={handleGenerateReport}>
+            <Download size={18} />
+            Generate Report
+          </button>
+        </div>
+      </div>
+
+      {/* Filters Panel */}
+      {showFilters && (
+        <div className="analytics-filters">
+          <div className="filters-content">
+            <h3>Analytics Filters</h3>
+            <div className="filters-grid">
+              <div className="filter-group">
+                <label>Date Range</label>
+                <div className="date-inputs">
+                  <input
+                    type="date"
+                    value={filters.date_range.start}
+                    onChange={(e) =>
+                      setFilters({
+                        ...filters,
+                        date_range: {
+                          ...filters.date_range,
+                          start: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                  <span>to</span>
+                  <input
+                    type="date"
+                    value={filters.date_range.end}
+                    onChange={(e) =>
+                      setFilters({
+                        ...filters,
+                        date_range: {
+                          ...filters.date_range,
+                          end: e.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="filter-group">
+                <label>Confidence Threshold</label>
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.1"
+                  value={filters.confidence_threshold}
+                  onChange={(e) =>
+                    setFilters({
+                      ...filters,
+                      confidence_threshold: parseFloat(e.target.value),
+                    })
+                  }
+                />
+                <span>{(filters.confidence_threshold * 100).toFixed(0)}%</span>
+              </div>
+
+              <div className="filter-actions">
+                <button
+                  className="btn btn--primary"
+                  onClick={() => handleApplyFilters(filters)}
+                >
+                  Apply Filters
+                </button>
+                <button
+                  className="btn btn--secondary"
+                  onClick={() =>
+                    setFilters({
+                      date_range: {
+                        start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+                          .toISOString()
+                          .split("T")[0],
+                        end: new Date().toISOString().split("T")[0],
+                      },
+                      threat_levels: [],
+                      domains: [],
+                      countries: [],
+                      attack_types: [],
+                      confidence_threshold: 0.7,
+                    })
+                  }
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {hasError && (
+        <div className="analytics-error">
+          <TrendingUp size={48} />
+          <h2>Analytics Error</h2>
+          <p>
+            {(typeof dashboardError === "string"
+              ? dashboardError
+              : dashboardError?.error) || domainError}
+          </p>
+          <button onClick={handleRefreshAll}>Retry</button>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <div className="analytics-content">
+        {/* Threat Intelligence Overview */}
+        <section className="analytics-section">
+          <div className="section-header">
+            <h2>Threat Intelligence Overview</h2>
+            <p>Real-time threat detection and analysis metrics</p>
+          </div>
+          <ThreatIntelligenceChart
+            data={threatMetrics}
+            loading={metricsLoading}
+          />
+        </section>
+
+        {/* Threat Trends */}
+        <section className="analytics-section">
+          <div className="section-header">
+            <h2>Threat Trends</h2>
+            <p>Historical analysis and trend patterns</p>
+          </div>
+          <ThreatTrendAnalysis
+            data={threatTrends}
+            loading={trendsLoading}
+            onPeriodChange={changePeriod}
+          />
+        </section>
+
+        {/* Domain Intelligence */}
+        <section className="analytics-section">
+          <div className="section-header">
+            <h2>Domain Intelligence</h2>
+            <p>Reputation analysis and threat classification</p>
+          </div>
+          <DomainIntelligenceTable data={domainData} loading={domainLoading} />
+        </section>
+
+        {/* Additional Analytics Sections - Placeholders */}
+        <div className="analytics-grid">
+          <div className="analytics-card">
+            <Globe size={48} />
+            <h3>Geographic Threats</h3>
+            <p>Global threat distribution and hotspots</p>
+            <button className="card-action">View Details</button>
+          </div>
+
+          <div className="analytics-card">
+            <TrendingUp size={48} />
+            <h3>Attack Patterns</h3>
+            <p>Common attack vectors and techniques</p>
+            <button className="card-action">Analyze Patterns</button>
+          </div>
+
+          <div className="analytics-card">
+            <BarChart3 size={48} />
+            <h3>Compliance Metrics</h3>
+            <p>Security framework compliance tracking</p>
+            <button className="card-action">View Compliance</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Analytics Page Styles
+const styles = `
+.analytics-page {
+  padding: var(--spacing-xl);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Header */
+.analytics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.analytics-header__title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.analytics-header__icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.analytics-header h1 {
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.analytics-header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.analytics-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-in-out);
+  border: 1px solid transparent;
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: var(--bg-primary);
+  border-color: var(--color-primary);
+}
+
+.btn--primary:hover {
+  background: #00CC80;
+  border-color: #00CC80;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(19, 255, 160, 0.2);
+}
+
+.btn--secondary {
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border-color: var(--border-primary);
+}
+
+.btn--secondary:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border-color: var(--color-primary);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+/* Filters Panel */
+.analytics-filters {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--spacing-xl);
+  overflow: hidden;
+}
+
+.filters-content {
+  padding: var(--spacing-lg);
+}
+
+.filters-content h3 {
+  margin: 0 0 var(--spacing-lg);
+  color: var(--text-primary);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.filters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+  align-items: end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.filter-group label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-secondary);
+}
+
+.date-inputs {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.date-inputs input {
+  padding: var(--spacing-sm);
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.date-inputs span {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.filter-group input[type="range"] {
+  width: 100%;
+}
+
+.filter-actions {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+/* Error State */
+.analytics-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.analytics-error svg {
+  color: var(--color-danger);
+  margin-bottom: var(--spacing-lg);
+}
+
+.analytics-error h2 {
+  margin: 0 0 var(--spacing-sm);
+  color: var(--text-primary);
+}
+
+.analytics-error p {
+  margin: 0 0 var(--spacing-lg);
+  color: var(--text-muted);
+}
+
+.analytics-error button {
+  padding: var(--spacing-sm) var(--spacing-xl);
+  background: var(--color-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+/* Content Sections */
+.analytics-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-2xl);
+}
+
+.analytics-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.section-header {
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.section-header h2 {
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.section-header p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* Analytics Grid */
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-xl);
+  margin-top: var(--spacing-xl);
+}
+
+.analytics-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-xl);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  transition: all var(--duration-fast) var(--ease-in-out);
+}
+
+.analytics-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  border-color: var(--color-primary);
+}
+
+.analytics-card svg {
+  color: var(--color-primary);
+}
+
+.analytics-card h3 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.analytics-card p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+}
+
+.card-action {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-in-out);
+}
+
+.card-action:hover {
+  background: #00CC80;
+  transform: translateY(-1px);
+}
+
+/* Animations */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .analytics-page {
+    padding: var(--spacing-lg);
+  }
+
+  .analytics-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--spacing-lg);
+  }
+
+  .analytics-header__actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+
+  .analytics-card {
+    padding: var(--spacing-lg);
+  }
+}
+`;
+
+// Inject styles
+if (typeof document !== "undefined") {
+  const styleElement = document.getElementById("analytics-page-styles");
+  if (!styleElement) {
+    const style = document.createElement("style");
+    style.id = "analytics-page-styles";
+    style.textContent = styles;
+    document.head.appendChild(style);
+  }
+}

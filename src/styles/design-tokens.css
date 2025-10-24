@@ -1,0 +1,239 @@
+/* Design Tokens - Cybersecurity Dashboard Theme */
+
+:root {
+  /* Colors - Threat Level Based */
+  --color-primary: #13ffa0; /* Cyber Green - Safe/Clean */
+  --color-success: #0dbb64; /* Success Green */
+  --color-warning: #b8e96b; /* Medium Risk */
+  --color-danger: #ed3333; /* High Risk/Critical */
+  --color-info: #8b79f1; /* Information Purple */
+  --color-muted: #6b7280; /* Muted Gray */
+
+  /* Background Colors */
+  --bg-primary: #0a0a0a; /* Main Background */
+  --bg-secondary: #1a1a1a; /* Card Background */
+  --bg-tertiary: #2a2a2a; /* Hover States */
+  --bg-accent: rgba(19, 255, 160, 0.1); /* Primary with opacity */
+
+  /* Text Colors */
+  --text-primary: #ffffff; /* Primary Text */
+  --text-secondary: #e5e7eb; /* Secondary Text */
+  --text-muted: #9ca3af; /* Muted Text */
+  --text-inverse: #000000; /* Inverse Text */
+
+  /* Border Colors */
+  --border-primary: #374151; /* Primary Border */
+  --border-secondary: #4b5563; /* Secondary Border */
+  --border-muted: #6b7280; /* Muted Border */
+
+  /* Gradients */
+  --gradient-primary: linear-gradient(135deg, #13ffa0 0%, #0dbb64 100%);
+  --gradient-danger: linear-gradient(135deg, #ed3333 0%, #dc2626 100%);
+  --gradient-warning: linear-gradient(135deg, #b8e96b 0%, #84cc16 100%);
+  --gradient-card: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --shadow-glow: 0 0 20px rgba(19, 255, 160, 0.3);
+
+  /* Spacing Scale */
+  --spacing-xs: 0.25rem; /* 4px */
+  --spacing-sm: 0.5rem; /* 8px */
+  --spacing-md: 1rem; /* 16px */
+  --spacing-lg: 1.5rem; /* 24px */
+  --spacing-xl: 2rem; /* 32px */
+  --spacing-2xl: 3rem; /* 48px */
+  --spacing-3xl: 4rem; /* 64px */
+
+  /* Border Radius */
+  --radius-sm: 0.25rem; /* 4px */
+  --radius-md: 0.375rem; /* 6px */
+  --radius-lg: 0.5rem; /* 8px */
+  --radius-xl: 0.75rem; /* 12px */
+  --radius-2xl: 1rem; /* 16px */
+  --radius-full: 9999px; /* Full rounded */
+
+  /* Typography Scale */
+  --font-size-xs: 0.75rem; /* 12px */
+  --font-size-sm: 0.875rem; /* 14px */
+  --font-size-base: 1rem; /* 16px */
+  --font-size-lg: 1.125rem; /* 18px */
+  --font-size-xl: 1.25rem; /* 20px */
+  --font-size-2xl: 1.5rem; /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  --font-size-4xl: 2.25rem; /* 36px */
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line Heights */
+  --line-height-tight: 1.25;
+  --line-height-snug: 1.375;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.625;
+
+  /* Z-Index Scale */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+
+  /* Animation Durations */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+
+  /* Animation Easing */
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+    sans-serif;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-primary);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-secondary);
+}
+
+/* Focus Styles */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Selection Styles */
+::selection {
+  background-color: rgba(19, 255, 160, 0.3);
+  color: var(--text-primary);
+}
+
+/* Utility Classes */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.text-gradient-primary {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.glow {
+  box-shadow: var(--shadow-glow);
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn var(--duration-normal) var(--ease-out);
+}
+
+.slide-up {
+  animation: slideUp var(--duration-normal) var(--ease-out);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Risk Level Color Classes */
+.risk-clean {
+  color: var(--color-success);
+}
+.risk-low {
+  color: var(--color-primary);
+}
+.risk-medium {
+  color: var(--color-warning);
+}
+.risk-high {
+  color: var(--color-danger);
+}
+.risk-critical {
+  color: var(--color-danger);
+  text-shadow: 0 0 10px rgba(237, 51, 51, 0.5);
+}
+
+.bg-risk-clean {
+  background-color: rgba(13, 187, 100, 0.1);
+}
+.bg-risk-low {
+  background-color: rgba(19, 255, 160, 0.1);
+}
+.bg-risk-medium {
+  background-color: rgba(184, 233, 107, 0.1);
+}
+.bg-risk-high {
+  background-color: rgba(237, 51, 51, 0.1);
+}
+.bg-risk-critical {
+  background-color: rgba(237, 51, 51, 0.2);
+}

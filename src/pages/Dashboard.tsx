@@ -1,0 +1,565 @@
+// Dashboard Page - Main overview page
+
+import { Mail, AlertTriangle, TrendingUp, Shield, Bell } from "lucide-react";
+import {
+  KPICard,
+  RiskDistributionChart,
+  ThreatTrendChart,
+  RecentEmailsTable,
+} from "../components/dashboard";
+import { useEmails } from "../hooks/useEmails";
+import { useNotifications } from "../contexts/NotificationContext";
+
+export function Dashboard() {
+  const { data: emails, loading } = useEmails();
+  const { addNotification } = useNotifications();
+
+  // Calculate KPI values from emails
+  const totalEmails = emails?.length || 0;
+  const highRiskEmails =
+    emails?.filter(
+      (email) =>
+        email.threat_summary.overall_risk === "high" ||
+        email.threat_summary.overall_risk === "critical"
+    ).length || 0;
+
+  const avgPhishingScore =
+    emails && emails.length > 0
+      ? Math.round(
+          (emails.reduce((sum, email) => sum + email.phishing_score_cti, 0) /
+            emails.length) *
+            100
+        )
+      : 0;
+
+  const activeThreats =
+    emails?.filter((email) => email.threat_summary.malicious_found > 0)
+      .length || 0;
+
+  // Demo notification functions
+  const showThreatAlert = () => {
+    addNotification({
+      type: "threat",
+      title: "Critical Threat Detected",
+      message:
+        "Phishing attempt from suspicious-sender@example.com has been detected and quarantined.",
+      persistent: true,
+      metadata: { severity: "critical" },
+      actions: [
+        {
+          id: "investigate",
+          label: "Investigate",
+          action: () => console.log("Investigating threat..."),
+          primary: true,
+        },
+        {
+          id: "quarantine",
+          label: "Quarantine",
+          action: () => console.log("Quarantining email..."),
+          destructive: true,
+        },
+      ],
+    });
+  };
+
+  const showSuccessNotification = () => {
+    addNotification({
+      type: "success",
+      title: "Scan Complete",
+      message:
+        "Email security scan completed successfully. 15 emails processed, no threats found.",
+      duration: 5000,
+    });
+  };
+
+  const showWarningNotification = () => {
+    addNotification({
+      type: "warning",
+      title: "Suspicious Activity",
+      message:
+        "Multiple failed login attempts detected. Consider reviewing security settings.",
+      duration: 8000,
+    });
+  };
+
+  const showSystemUpdate = () => {
+    addNotification({
+      type: "info",
+      title: "System Update",
+      message:
+        "Threat detection models have been updated with the latest security patterns.",
+      duration: 6000,
+    });
+  };
+
+  return (
+    <div className="dashboard">
+      <div className="dashboard__grid">
+        {/* KPI Cards Row */}
+        <div className="dashboard__section">
+          <h2 className="dashboard__section-title">Threat Overview</h2>
+          <div className="dashboard__kpi-grid">
+            <KPICard
+              title="Total Emails"
+              value={totalEmails.toLocaleString()}
+              subtitle="Analyzed this month"
+              icon={<Mail size={20} />}
+              variant="default"
+              loading={loading}
+              trend={{
+                direction: "up",
+                value: "+12%",
+                type: "positive",
+              }}
+            />
+
+            <KPICard
+              title="High Risk"
+              value={highRiskEmails}
+              subtitle="Critical threats detected"
+              icon={<AlertTriangle size={20} />}
+              variant="danger"
+              loading={loading}
+              trend={{
+                direction: "up",
+                value: "+5%",
+                type: "negative",
+              }}
+            />
+
+            <KPICard
+              title="Avg Phishing Score"
+              value={`${avgPhishingScore}%`}
+              subtitle="Detection confidence"
+              icon={<TrendingUp size={20} />}
+              variant="warning"
+              loading={loading}
+              trend={{
+                direction: "down",
+                value: "-3%",
+                type: "positive",
+              }}
+            />
+
+            <KPICard
+              title="Active Threats"
+              value={activeThreats}
+              subtitle="Requiring attention"
+              icon={<Shield size={20} />}
+              variant="info"
+              loading={loading}
+              trend={{
+                direction: "down",
+                value: "-2",
+                type: "positive",
+              }}
+            />
+          </div>
+        </div>
+
+        {/* Charts Row */}
+        <div className="dashboard__section">
+          <div className="dashboard__charts-grid">
+            {/* Risk Distribution Chart */}
+            <div className="chart-card">
+              <h3 className="chart-card__title">Risk Distribution</h3>
+              <div className="chart-card__content">
+                <RiskDistributionChart data={[]} loading={loading} />
+              </div>
+            </div>
+
+            {/* Threat Trend Chart */}
+            <div className="chart-card">
+              <h3 className="chart-card__title">Threat Trends</h3>
+              <div className="chart-card__content">
+                <ThreatTrendChart loading={loading} timeRange="7d" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Activity Table */}
+        <div className="dashboard__section">
+          <h2 className="dashboard__section-title">Recent Email Activity</h2>
+          <div className="table-card">
+            <div className="table-card__header">
+              <h3>Latest Threats</h3>
+              <button className="btn btn--outline btn--sm">View All</button>
+            </div>
+            <div className="table-card__content">
+              <RecentEmailsTable
+                emails={emails || []}
+                loading={loading}
+                limit={10}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Demo Notification Section */}
+        <div className="dashboard__section">
+          <h2 className="dashboard__section-title">
+            <Bell size={24} /> Real-time Notifications Demo
+          </h2>
+          <div className="notification-demo">
+            <p className="notification-demo__description">
+              Test the real-time notification system with these demo buttons:
+            </p>
+            <div className="notification-demo__buttons">
+              <button className="btn btn--danger" onClick={showThreatAlert}>
+                <Shield size={16} />
+                Threat Alert
+              </button>
+              <button
+                className="btn btn--success"
+                onClick={showSuccessNotification}
+              >
+                Success Message
+              </button>
+              <button
+                className="btn btn--warning"
+                onClick={showWarningNotification}
+              >
+                <AlertTriangle size={16} />
+                Warning
+              </button>
+              <button className="btn btn--info" onClick={showSystemUpdate}>
+                System Update
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Dashboard Styles
+const styles = `
+.dashboard {
+  padding: 0;
+}
+
+.dashboard__grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.dashboard__section {
+  width: 100%;
+}
+
+.dashboard__section-title {
+  margin: 0 0 var(--spacing-lg) 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.dashboard__kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.dashboard__charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* KPI Card Styles */
+.kpi-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--spacing-lg);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--duration-fast) var(--ease-in-out);
+}
+
+.kpi-card:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.kpi-card--placeholder {
+  background: var(--gradient-card);
+}
+
+.kpi-card--danger {
+  border-left: 4px solid var(--color-danger);
+}
+
+.kpi-card--warning {
+  border-left: 4px solid var(--color-warning);
+}
+
+.kpi-card--success {
+  border-left: 4px solid var(--color-success);
+}
+
+.kpi-card h3 {
+  margin: 0 0 var(--spacing-sm) 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.kpi-card__value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+  line-height: var(--line-height-tight);
+}
+
+.kpi-card__change {
+  font-size: var(--font-size-sm);
+  color: var(--text-muted);
+}
+
+/* Chart Card Styles */
+.chart-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  transition: all var(--duration-fast) var(--ease-in-out);
+}
+
+.chart-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.chart-card--placeholder {
+  background: var(--gradient-card);
+}
+
+.chart-card__title {
+  margin: 0;
+  padding: var(--spacing-lg) var(--spacing-lg) 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.chart-card__content {
+  padding: var(--spacing-lg);
+  height: 300px;
+}
+
+/* Placeholder Styles */
+.placeholder-chart {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-primary);
+  border: 2px dashed var(--border-primary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.placeholder-chart--donut {
+  border-radius: 50%;
+  max-width: 200px;
+  max-height: 200px;
+  margin: auto;
+}
+
+/* Table Card Styles */
+.table-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
+
+.table-card--placeholder {
+  background: var(--gradient-card);
+}
+
+.table-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--border-primary);
+}
+
+.table-card__header h3 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.table-card__content {
+  padding: var(--spacing-lg);
+  height: 300px;
+}
+
+.placeholder-table {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-primary);
+  border: 2px dashed var(--border-primary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Button Styles */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-in-out);
+  text-decoration: none;
+}
+
+.btn--outline {
+  background: transparent;
+  border-color: var(--border-primary);
+  color: var(--text-secondary);
+}
+
+.btn--outline:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* Notification Demo Styles */
+.notification-demo {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+}
+
+.notification-demo__description {
+  margin: 0 0 var(--spacing-lg);
+  color: var(--text-secondary);
+  font-size: var(--font-size-md);
+}
+
+.notification-demo__buttons {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.btn--success {
+  background: var(--color-success);
+  color: white;
+  border-color: var(--color-success);
+}
+
+.btn--success:hover {
+  background: #00CC80;
+  transform: translateY(-1px);
+}
+
+.btn--danger {
+  background: var(--color-danger);
+  color: white;
+  border-color: var(--color-danger);
+}
+
+.btn--danger:hover {
+  background: #e74c3c;
+  transform: translateY(-1px);
+}
+
+.btn--warning {
+  background: var(--color-warning);
+  color: var(--text-primary);
+  border-color: var(--color-warning);
+}
+
+.btn--warning:hover {
+  background: #f39c12;
+  transform: translateY(-1px);
+}
+
+.btn--info {
+  background: var(--color-info);
+  color: white;
+  border-color: var(--color-info);
+}
+
+.btn--info:hover {
+  background: #2980b9;
+  transform: translateY(-1px);
+}
+
+.btn--sm {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  font-size: var(--font-size-xs);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .dashboard__charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard__kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-md);
+  }
+
+  .chart-card__content,
+  .table-card__content {
+    height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard__kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .table-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-sm);
+  }
+}
+`;
+
+// Inject styles
+if (typeof document !== "undefined") {
+  const styleElement = document.getElementById("dashboard-styles");
+  if (!styleElement) {
+    const style = document.createElement("style");
+    style.id = "dashboard-styles";
+    style.textContent = styles;
+    document.head.appendChild(style);
+  }
+}
