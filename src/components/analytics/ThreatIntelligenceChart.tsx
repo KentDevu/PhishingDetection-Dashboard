@@ -14,7 +14,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { AlertTriangle, TrendingUp, Eye } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import type { ThreatMetrics } from "../../models/analytics";
 
 interface ThreatIntelligenceChartProps {
@@ -61,30 +61,7 @@ export function ThreatIntelligenceChart({
       { name: "Malicious", value: data.malicious_count, color: "#EF4444" },
       { name: "Suspicious", value: data.suspicious_count, color: "#F59E0B" },
       { name: "Clean", value: data.clean_count, color: "#22C55E" },
-    ].filter(item => item.value > 0);
-  }, [data]);
-
-  const kpis = useMemo(() => {
-    if (!data) return [];
-
-    return [
-      {
-        label: "False Positive Rate",
-        value: `${(data.false_positive_rate * 100).toFixed(2)}%`,
-        icon: <TrendingUp size={20} />,
-        trend: "-0.5%",
-        trendUp: false,
-        color: "info",
-      },
-      {
-        label: "Emails Analyzed",
-        value: data.total_emails.toLocaleString(),
-        icon: <Eye size={20} />,
-        trend: "+15.7%",
-        trendUp: true,
-        color: "primary",
-      },
-    ];
+    ].filter((item) => item.value > 0);
   }, [data]);
 
   if (loading) {
@@ -112,7 +89,6 @@ export function ThreatIntelligenceChart({
 
   return (
     <div className="threat-intel-chart">
-
       {/* Charts Section */}
       <div className="threat-intel-charts">
         {/* Threat Distribution Bar Chart */}
@@ -121,7 +97,12 @@ export function ThreatIntelligenceChart({
             <h3>Threat Distribution</h3>
             <p>Email classification breakdown</p>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            minWidth={300}
+            minHeight={300}
+          >
             <BarChart
               data={chartData}
               margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
@@ -169,7 +150,12 @@ export function ThreatIntelligenceChart({
             <h3>Threat Composition</h3>
             <p>Proportional threat analysis</p>
           </div>
-          <ResponsiveContainer width="100%" height={300}>
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            minWidth={250}
+            minHeight={250}
+          >
             <PieChart>
               <Pie
                 data={pieData}
@@ -359,6 +345,11 @@ const styles = `
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   padding: var(--spacing-lg);
+  overflow: hidden;
+  min-height: 400px;
+  max-height: 500px;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-header {
@@ -390,26 +381,74 @@ const styles = `
 @media (max-width: 1024px) {
   .threat-intel-charts {
     grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+
+  .chart-container {
+    padding: var(--spacing-md);
+    min-height: 350px;
+    max-height: 450px;
   }
 }
 
 @media (max-width: 768px) {
-  .threat-intel-kpis {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  .threat-intel-chart {
+    padding: var(--spacing-lg);
+  }
+
+  .threat-intel-charts {
     gap: var(--spacing-md);
   }
-  
-  .kpi-card {
+
+  .chart-container {
+    padding: var(--spacing-sm);
+    min-height: 300px;
+    max-height: 400px;
+  }
+
+  .chart-header h3 {
+    font-size: var(--font-size-md);
+  }
+
+  .chart-header p {
+    font-size: var(--font-size-xs);
+  }
+}
+
+@media (max-width: 480px) {
+  .threat-intel-chart {
     padding: var(--spacing-md);
   }
-  
-  .kpi-card__icon {
-    width: 40px;
-    height: 40px;
+
+  .threat-intel-kpis {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
   }
-  
+
+  .kpi-card {
+    padding: var(--spacing-sm);
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-sm);
+  }
+
+  .kpi-card__icon {
+    width: 36px;
+    height: 36px;
+  }
+
   .kpi-card__value {
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-lg);
+  }
+
+  .kpi-card__label {
+    font-size: var(--font-size-xs);
+  }
+
+  .chart-container {
+    min-height: 250px;
+    max-height: 350px;
+    padding: var(--spacing-xs);
   }
 }
 `;

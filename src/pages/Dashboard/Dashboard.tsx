@@ -1,7 +1,7 @@
 // Dashboard Page - Main overview page for email threat analysis
 
 import { useEffect, useMemo } from "react";
-import { Mail, AlertTriangle, TrendingUp, Shield } from "lucide-react";
+import { Mail, AlertTriangle } from "lucide-react";
 import {
   KPICard,
   RiskDistributionChart,
@@ -39,7 +39,9 @@ export function Dashboard() {
   const totalEmails = emails?.length || 0;
   const highRiskEmails =
     emails?.filter(
-      (email) => mapRiskLevel(email.threat_summary?.overall_risk || "low") === "malicious"
+      (email) =>
+        mapRiskLevel(email.threat_summary?.overall_risk || "low") ===
+        "malicious"
     ).length || 0;
 
   const avgPhishingScore =
@@ -55,14 +57,25 @@ export function Dashboard() {
     emails?.filter((email) => email.threat_summary.malicious_found > 0)
       .length || 0;
 
-  console.log("Dashboard: totalEmails", totalEmails, "highRiskEmails", highRiskEmails, "avgPhishingScore", avgPhishingScore, "activeThreats", activeThreats);
+  console.log(
+    "Dashboard: totalEmails",
+    totalEmails,
+    "highRiskEmails",
+    highRiskEmails,
+    "avgPhishingScore",
+    avgPhishingScore,
+    "activeThreats",
+    activeThreats
+  );
 
   // Compute risk distribution data for chart
   const riskDistributionData = useMemo(() => {
     if (!emails?.length) return [];
 
     const distribution = emails.reduce((acc, email) => {
-      const risk = email.threat_summary ? mapRiskLevel(email.threat_summary.overall_risk) : "clean";
+      const risk = email.threat_summary
+        ? mapRiskLevel(email.threat_summary.overall_risk)
+        : "clean";
       acc[risk] = (acc[risk] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -137,7 +150,8 @@ export function Dashboard() {
   useEffect(() => {
     if (emails && emails.length > 0) {
       const criticalEmails = emails.filter(
-        (email) => mapRiskLevel(email.threat_summary.overall_risk) === "malicious"
+        (email) =>
+          mapRiskLevel(email.threat_summary.overall_risk) === "malicious"
       );
 
       // Only show notifications for the first critical email to avoid spam
@@ -217,24 +231,12 @@ export function Dashboard() {
                   variant="danger"
                   loading={loading}
                 />
-
               </div>
             </div>
 
             {/* Charts Row */}
             <div className="dashboard__section">
               <div className="dashboard__charts-grid">
-                {/* Risk Distribution Chart */}
-                <div className="chart-card">
-                  <h3 className="chart-card__title">Risk Distribution</h3>
-                  <div className="chart-card__content">
-                    <RiskDistributionChart
-                      data={riskDistributionData}
-                      loading={loading}
-                    />
-                  </div>
-                </div>
-
                 {/* Threat Trend Chart */}
                 <div className="chart-card">
                   <h3 className="chart-card__title">Threat Trends</h3>
@@ -243,6 +245,17 @@ export function Dashboard() {
                       data={threatTrendData}
                       loading={loading}
                       timeRange="7d"
+                    />
+                  </div>
+                </div>
+
+                {/* Risk Distribution Chart */}
+                <div className="chart-card">
+                  <h3 className="chart-card__title">Risk Distribution</h3>
+                  <div className="chart-card__content">
+                    <RiskDistributionChart
+                      data={riskDistributionData}
+                      loading={loading}
                     />
                   </div>
                 </div>

@@ -274,98 +274,102 @@ export function DomainIntelligenceTable({
             {filteredAndSortedData.map((domain, index) => {
               console.log("DomainIntelligenceTable: rendering domain", domain);
               return (
-              <tr key={index} className="table-row">
-                <td className="domain-cell">
-                  <div className="domain-info">
-                    <Globe size={16} />
-                    <span className="domain-name">{domain.domain}</span>
-                    {domain.categories.length > 0 && (
-                      <div className="domain-categories">
-                        {domain.categories.slice(0, 2).map((category, idx) => (
-                          <span key={idx} className="category-tag">
-                            {category}
-                          </span>
-                        ))}
-                        {domain.categories.length > 2 && (
-                          <span className="category-more">
-                            +{domain.categories.length - 2}
-                          </span>
-                        )}
+                <tr key={index} className="table-row">
+                  <td className="domain-cell">
+                    <div className="domain-info">
+                      <Globe size={16} />
+                      <span className="domain-name">{domain.domain}</span>
+                      {domain.categories.length > 0 && (
+                        <div className="domain-categories">
+                          {domain.categories
+                            .slice(0, 2)
+                            .map((category, idx) => (
+                              <span key={idx} className="category-tag">
+                                {category}
+                              </span>
+                            ))}
+                          {domain.categories.length > 2 && (
+                            <span className="category-more">
+                              +{domain.categories.length - 2}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+
+                  <td>
+                    <div
+                      className="threat-level-badge"
+                      style={{
+                        backgroundColor: getThreatLevelColor(
+                          domain.threat_level
+                        ),
+                      }}
+                    >
+                      {domain.threat_level.charAt(0).toUpperCase() +
+                        domain.threat_level.slice(1)}
+                    </div>
+                  </td>
+
+                  <td>
+                    <div
+                      className={`reputation-score ${getReputationClass(
+                        domain.reputation_score
+                      )}`}
+                    >
+                      <div className="score-value">
+                        {domain.reputation_score}
                       </div>
-                    )}
-                  </div>
-                </td>
-
-                <td>
-                  <div
-                    className="threat-level-badge"
-                    style={{
-                      backgroundColor: getThreatLevelColor(domain.threat_level),
-                    }}
-                  >
-                    {domain.threat_level.charAt(0).toUpperCase() +
-                      domain.threat_level.slice(1)}
-                  </div>
-                </td>
-
-                <td>
-                  <div
-                    className={`reputation-score ${getReputationClass(
-                      domain.reputation_score
-                    )}`}
-                  >
-                    <div className="score-value">
-                      {domain.reputation_score}
+                      <div className="score-bar">
+                        <div
+                          className="score-fill"
+                          style={{ width: `${domain.reputation_score}%` }}
+                        />
+                      </div>
                     </div>
-                    <div className="score-bar">
-                      <div
-                        className="score-fill"
-                        style={{ width: `${domain.reputation_score}%` }}
-                      />
+                  </td>
+
+                  <td className="email-count">
+                    {domain.email_count.toLocaleString()}
+                  </td>
+
+                  <td>
+                    <div className="engine-info">
+                      <span className="malicious-engines">
+                        {domain.malicious_engines.length}
+                      </span>
+                      <span className="total-engines">
+                        / {domain.total_engines}
+                      </span>
                     </div>
-                  </div>
-                </td>
+                  </td>
 
-                <td className="email-count">
-                  {domain.email_count.toLocaleString()}
-                </td>
+                  <td className="last-seen">
+                    <div className="date-info">
+                      <Clock size={14} />
+                      {format(parseISO(domain.last_seen), "MMM dd, yyyy")}
+                    </div>
+                  </td>
 
-                <td>
-                  <div className="engine-info">
-                    <span className="malicious-engines">
-                      {domain.malicious_engines.length}
-                    </span>
-                    <span className="total-engines">
-                      / {domain.total_engines}
-                    </span>
-                  </div>
-                </td>
-
-                <td className="last-seen">
-                  <div className="date-info">
-                    <Clock size={14} />
-                    {format(parseISO(domain.last_seen), "MMM dd, yyyy")}
-                  </div>
-                </td>
-
-                <td>
-                  <div className="actions">
-                    <button className="action-btn" title="View Details">
-                      <Shield size={14} />
-                    </button>
-                    <button className="action-btn" title="External Analysis">
-                      <ExternalLink size={14} />
-                    </button>
-                    {domain.geographic_distribution.length > 0 && (
-                      <button className="action-btn" title="Geographic Data">
-                        <MapPin size={14} />
+                  <td>
+                    <div className="actions">
+                      <button className="action-btn" title="View Details">
+                        <Shield size={14} />
                       </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
+                      <button className="action-btn" title="External Analysis">
+                        <ExternalLink size={14} />
+                      </button>
+                      {domain.geographic_distribution.length > 0 && (
+                        <button className="action-btn" title="Geographic Data">
+                          <MapPin size={14} />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -556,25 +560,37 @@ const styles = `
 /* Table Container */
 .table-container {
   overflow-x: auto;
+  overflow-y: auto;
+  max-height: 600px;
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
+  position: relative;
 }
 
 .intel-table {
   width: 100%;
   border-collapse: collapse;
   background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.intel-table thead {
+  background: var(--bg-secondary);
 }
 
 .intel-table th {
   padding: var(--spacing-md) var(--spacing-lg);
   background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-primary);
-  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border-primary);
+  color: var(--text-primary);
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   text-align: left;
   white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .intel-table th.sortable {
@@ -599,10 +615,12 @@ const styles = `
   padding: var(--spacing-md) var(--spacing-lg);
   border-bottom: 1px solid var(--border-primary);
   vertical-align: top;
+  background: var(--bg-primary);
 }
 
 .table-row:hover {
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
+  transition: background-color var(--duration-fast) var(--ease-in-out);
 }
 
 /* Domain Cell */
@@ -779,40 +797,168 @@ const styles = `
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .domain-intel-table {
+    padding: var(--spacing-lg);
+  }
+
+  .table-header h2 {
+    font-size: var(--font-size-xl);
+  }
+
+  .search-box {
+    min-width: 180px;
+  }
+
+  .table-container {
+    max-height: 500px;
+  }
+}
+
 @media (max-width: 768px) {
+  .domain-intel-table {
+    padding: var(--spacing-md);
+  }
+
   .table-header {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
+    text-align: center;
   }
-  
+
+  .table-header__info h2 {
+    font-size: var(--font-size-lg);
+  }
+
   .table-controls {
     justify-content: center;
     flex-wrap: wrap;
+    gap: var(--spacing-sm);
   }
-  
+
   .search-box {
     min-width: 150px;
+    width: 100%;
+    max-width: 300px;
   }
-  
+
+  .filter-dropdown {
+    width: 100%;
+    max-width: 200px;
+    justify-content: center;
+  }
+
   .table-stats {
     flex-direction: column;
     gap: var(--spacing-sm);
     align-items: stretch;
+    padding: var(--spacing-sm) var(--spacing-md);
   }
-  
+
+  .stat-item {
+    justify-content: center;
+  }
+
   .intel-table th,
   .intel-table td {
     padding: var(--spacing-sm);
+    font-size: var(--font-size-xs);
   }
-  
+
   .domain-info {
     flex-direction: column;
     align-items: flex-start;
+    gap: var(--spacing-xs);
   }
-  
+
+  .domain-categories {
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+  }
+
+  .category-tag {
+    font-size: 10px;
+    padding: 1px var(--spacing-xs);
+  }
+
+  .threat-level-badge {
+    font-size: 10px;
+    padding: var(--spacing-xs);
+  }
+
+  .reputation-score {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--spacing-xs);
+  }
+
+  .score-bar {
+    width: 100%;
+    max-width: 80px;
+  }
+
   .actions {
     flex-direction: column;
+    gap: 2px;
+  }
+
+  .action-btn {
+    padding: 4px;
+  }
+
+  .table-container {
+    max-height: 400px;
+  }
+}
+
+@media (max-width: 480px) {
+  .domain-intel-table {
+    padding: var(--spacing-sm);
+  }
+
+  .table-header__info h2 {
+    font-size: var(--font-size-md);
+  }
+
+  .table-header__info p {
+    font-size: var(--font-size-xs);
+  }
+
+  .search-box {
+    min-width: auto;
+  }
+
+  .filter-dropdown {
+    max-width: none;
+  }
+
+  .intel-table {
+    font-size: var(--font-size-xs);
+  }
+
+  .intel-table th,
+  .intel-table td {
+    padding: var(--spacing-xs);
+  }
+
+  .domain-name {
+    word-break: break-all;
+  }
+
+  .engine-info,
+  .date-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .score-value {
+    font-size: var(--font-size-xs);
+  }
+
+  .table-container {
+    max-height: 300px;
   }
 }
 `;
