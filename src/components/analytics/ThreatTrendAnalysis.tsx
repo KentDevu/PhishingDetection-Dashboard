@@ -13,7 +13,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import { Calendar, TrendingUp, TrendingDown, Activity } from "lucide-react";
+import { Calendar, TrendingUp, Activity } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import type { ThreatTrend } from "../../models/analytics";
 
@@ -191,8 +191,7 @@ export function ThreatTrendAnalysis({
                 className={`summary-stat__change ${
                   summaryStats.threatChange >= 0 ? "positive" : "negative"
                 }`}
-              >
-              </div>
+              ></div>
             </div>
           </div>
 
@@ -209,11 +208,9 @@ export function ThreatTrendAnalysis({
                 className={`summary-stat__change ${
                   summaryStats.emailChange >= 0 ? "positive" : "negative"
                 }`}
-              >
-              </div>
+              ></div>
             </div>
           </div>
-
         </div>
       )}
 
@@ -224,7 +221,12 @@ export function ThreatTrendAnalysis({
           <p>Daily threat detection and email processing metrics</p>
         </div>
 
-        <ResponsiveContainer width="100%" height={400}>
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          minWidth={400}
+          minHeight={350}
+        >
           {chartType === "area" ? (
             <AreaChart
               data={chartData}
@@ -566,6 +568,11 @@ const styles = `
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-lg);
   padding: var(--spacing-lg);
+  overflow: hidden;
+  min-height: 450px;
+  max-height: 550px;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-header {
@@ -594,30 +601,120 @@ const styles = `
 }
 
 /* Responsive Design */
+@media (max-width: 1024px) {
+  .threat-trend-analysis {
+    padding: var(--spacing-lg);
+  }
+
+  .trend-header h2 {
+    font-size: var(--font-size-xl);
+  }
+
+  .trend-controls {
+    gap: var(--spacing-md);
+  }
+
+  .trend-chart {
+    min-height: 400px;
+    max-height: 500px;
+  }
+}
+
 @media (max-width: 768px) {
+  .threat-trend-analysis {
+    padding: var(--spacing-md);
+  }
+
   .trend-header {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
+    text-align: center;
   }
-  
+
+  .trend-header__info h2 {
+    font-size: var(--font-size-lg);
+  }
+
   .trend-controls {
     justify-content: center;
     flex-wrap: wrap;
+    gap: var(--spacing-sm);
   }
-  
+
+  .period-selector {
+    order: 2;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .chart-type-toggle {
+    order: 1;
+  }
+
   .trend-summary {
     grid-template-columns: 1fr;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
   }
-  
+
   .summary-stat {
+    padding: var(--spacing-sm);
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-sm);
+  }
+
+  .summary-stat__icon {
+    width: 36px;
+    height: 36px;
+  }
+
+  .summary-stat__value {
+    font-size: var(--font-size-lg);
+  }
+
+  .summary-stat__label {
+    font-size: var(--font-size-xs);
+  }
+
+  .trend-chart {
+    min-height: 350px;
+    max-height: 450px;
     padding: var(--spacing-md);
   }
-  
-  .summary-stat__icon {
-    width: 40px;
-    height: 40px;
+}
+
+@media (max-width: 480px) {
+  .threat-trend-analysis {
+    padding: var(--spacing-sm);
+  }
+
+  .trend-header__info h2 {
+    font-size: var(--font-size-md);
+  }
+
+  .period-selector {
+    flex-wrap: wrap;
+  }
+
+  .period-btn {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-xs);
+  }
+
+  .toggle-btn {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: var(--font-size-xs);
+  }
+
+  .trend-chart {
+    min-height: 300px;
+    max-height: 400px;
+    padding: var(--spacing-sm);
+  }
+
+  .chart-header h3 {
+    font-size: var(--font-size-sm);
   }
 }
 `;

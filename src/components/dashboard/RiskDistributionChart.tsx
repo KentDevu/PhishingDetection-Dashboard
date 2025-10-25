@@ -132,10 +132,26 @@ export function RiskDistributionChart({
           </PieChart>
         </ResponsiveContainer>
 
-        {/* Center Total */}
+        {/* Center Statistics Card */}
         <div className="risk-chart__center">
-          <div className="risk-chart__total-value">{total}</div>
-          <div className="risk-chart__total-label">Total Emails</div>
+          <div className="risk-chart__stats-card">
+            <div className="risk-chart__total-value">{total}</div>
+            <div className="risk-chart__total-label">Total Emails</div>
+            <div className="risk-chart__stats-breakdown">
+              {chartData.map((item, index) => (
+                <div key={index} className="risk-chart__stat-item">
+                  <div
+                    className="risk-chart__stat-dot"
+                    style={{ backgroundColor: item.color }}
+                  ></div>
+                  <div className="risk-chart__stat-info">
+                    <span className="risk-chart__stat-name">{item.name}</span>
+                    <span className="risk-chart__stat-value">{item.value}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -154,7 +170,6 @@ const styles = `
   position: relative;
   width: 100%;
   height: 100%;
-  min-height: 300px;
 }
 
 .risk-chart__center {
@@ -164,21 +179,86 @@ const styles = `
   transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: none;
+  z-index: 10;
+}
+
+.risk-chart__stats-card {
+  background: var(--bg-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  box-shadow: var(--shadow-md);
+  min-width: 140px;
+  max-width: 180px;
 }
 
 .risk-chart__total-value {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   line-height: var(--line-height-tight);
+  margin-bottom: var(--spacing-xs);
 }
 
 .risk-chart__total-label {
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-top: 2px;
+  margin-bottom: var(--spacing-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.risk-chart__stats-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.risk-chart__stat-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+  transition: background-color var(--duration-fast) var(--ease-in-out);
+}
+
+.risk-chart__stat-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.risk-chart__stat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.risk-chart__stat-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.risk-chart__stat-name {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.risk-chart__stat-value {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-left: var(--spacing-xs);
+  flex-shrink: 0;
 }
 
 /* Tooltip Styles */
@@ -339,7 +419,29 @@ const styles = `
 /* Responsive Design */
 @media (max-width: 768px) {
   .risk-chart__container {
-    min-height: 250px;
+    /* min-height removed to use parent height */
+  }
+
+  .risk-chart__stats-card {
+    min-width: 120px;
+    max-width: 160px;
+    padding: var(--spacing-sm);
+  }
+
+  .risk-chart__total-value {
+    font-size: var(--font-size-lg);
+  }
+
+  .risk-chart__stat-item {
+    padding: 2px var(--spacing-xs);
+  }
+
+  .risk-chart__stat-name {
+    font-size: 10px;
+  }
+
+  .risk-chart__stat-value {
+    font-size: 10px;
   }
 
   .chart-legend {

@@ -485,15 +485,14 @@ export function EmailList({
                     </div>
                     <div className="email-table__cell">
                       <span
-                        className={`threat-badge threat-badge--${email.threat_summary.overall_risk}`}
-                        style={{
-                          color: getThreatColor(
-                            email.threat_summary.overall_risk
-                          ),
-                        }}
+                        className={`threat-badge threat-badge--${
+                          email.threat_summary?.overall_risk || "clean"
+                        }`}
                       >
                         <AlertTriangle size={12} />
-                        {email.threat_summary.overall_risk.toUpperCase()}
+                        {(
+                          email.threat_summary?.overall_risk || "clean"
+                        ).toUpperCase()}
                       </span>
                     </div>
                     <div className="email-table__cell email-table__cell--sender">
@@ -509,7 +508,7 @@ export function EmailList({
                       <div className="subject-content">
                         <span className="subject-text">{email.subject}</span>
                         <div className="email-indicators">
-                          {email.attachments.length > 0 && (
+                          {(email.attachments?.length || 0) > 0 && (
                             <span
                               className="indicator"
                               title={`${email.attachments.length} attachments`}
@@ -517,7 +516,7 @@ export function EmailList({
                               📎 {email.attachments.length}
                             </span>
                           )}
-                          {email.extracted_urls.length > 0 && (
+                          {(email.extracted_urls?.length || 0) > 0 && (
                             <span
                               className="indicator"
                               title={`${email.extracted_urls.length} URLs`}
@@ -533,33 +532,33 @@ export function EmailList({
                         className="score-value"
                         style={{
                           color: getThreatColor(
-                            email.threat_summary.overall_risk
+                            email.threat_summary?.overall_risk || "clean"
                           ),
                         }}
                       >
-                        {(email.phishing_score_cti * 100).toFixed(1)}%
+                        {((email.phishing_score_cti || 0) * 100).toFixed(1)}%
                       </span>
                     </div>
                     <div className="email-table__cell">
                       <div className="auth-indicators">
                         <span
                           className={`auth-badge ${
-                            email.spf_result === "pass"
+                            (email.spf_result || "unknown") === "pass"
                               ? "auth-badge--pass"
                               : "auth-badge--fail"
                           }`}
-                          title={`SPF: ${email.spf_result}`}
+                          title={`SPF: ${email.spf_result || "unknown"}`}
                         >
                           <Shield size={10} />
                           SPF
                         </span>
                         <span
                           className={`auth-badge ${
-                            email.dkim_result === "pass"
+                            (email.dkim_result || "unknown") === "pass"
                               ? "auth-badge--pass"
                               : "auth-badge--fail"
                           }`}
-                          title={`DKIM: ${email.dkim_result}`}
+                          title={`DKIM: ${email.dkim_result || "unknown"}`}
                         >
                           <Shield size={10} />
                           DKIM
@@ -760,9 +759,47 @@ const styles = `
 
 /* Email Cards Grid */
 .email-cards-grid {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
   gap: var(--spacing-lg);
+  padding: 0 var(--spacing-md);
+}
+
+/* Responsive Design for Email Cards */
+@media (max-width: 1400px) {
+  .email-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--spacing-md);
+  }
+}
+
+@media (max-width: 1200px) {
+  .email-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+    padding: 0 var(--spacing-sm);
+  }
+}
+
+@media (max-width: 900px) {
+  .email-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: var(--spacing-sm);
+  }
+}
+
+@media (max-width: 768px) {
+  .email-cards-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+    padding: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .email-cards-grid {
+    gap: var(--spacing-xs);
+  }
 }
 
 /* Email Table */
@@ -924,9 +961,46 @@ const styles = `
   font-weight: var(--font-weight-medium);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  border: 1px solid currentColor;
   background: currentColor;
-  color: white !important;
   opacity: 0.9;
+}
+
+.threat-badge--clean {
+  background: var(--color-success);
+  color: var(--text-primary);
+  border-color: var(--color-success);
+}
+
+.threat-badge--low {
+  background: var(--color-success);
+  color: var(--text-primary);
+  border-color: var(--color-success);
+}
+
+.threat-badge--medium {
+  background: var(--color-warning);
+  color: var(--text-primary);
+  border-color: var(--color-warning);
+}
+
+.threat-badge--suspicious {
+  background: var(--color-warning);
+  color: var(--text-primary);
+  border-color: var(--color-warning);
+}
+
+.threat-badge--high {
+  background: #FF6B35;
+  color: white;
+  border-color: #FF6B35;
+}
+
+.threat-badge--critical,
+.threat-badge--malicious {
+  background: var(--color-danger);
+  color: white;
+  border-color: var(--color-danger);
 }
 
 .score-value {
@@ -1025,6 +1099,23 @@ const styles = `
 
 /* Responsive Design */
 @media (max-width: 1200px) {
+  .email-list__controls {
+    padding: var(--spacing-sm) var(--spacing-md);
+    gap: var(--spacing-md);
+  }
+
+  .email-list__view-controls {
+    gap: var(--spacing-md);
+  }
+
+  .sort-controls {
+    gap: var(--spacing-xs);
+  }
+
+  .sort-label {
+    display: none;
+  }
+
   .email-table__header,
   .email-table__row {
     grid-template-columns: 30px 100px 1fr 60px 80px 50px;
@@ -1041,21 +1132,76 @@ const styles = `
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .email-list__controls {
     flex-direction: column;
     align-items: stretch;
-    gap: var(--spacing-md);
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
+  }
+
+  .email-list__selection {
+    justify-content: center;
   }
 
   .email-list__view-controls {
     justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .bulk-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .sort-select {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .view-mode-btn {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+}
+
+@media (max-width: 768px) {
+  .email-list {
+    gap: var(--spacing-md);
+  }
+
+  .email-list__controls {
+    margin: 0 var(--spacing-sm);
+  }
+
+  .email-list__selection {
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  .bulk-actions {
+    justify-content: center;
+  }
+
+  .email-list__view-controls {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    align-items: center;
+  }
+
+  .sort-controls {
+    order: 2;
+  }
+
+  .view-mode-toggle {
+    order: 1;
   }
 
   .email-table__header,
   .email-table__row {
     grid-template-columns: 30px 1fr 60px 40px;
     font-size: var(--font-size-xs);
+    padding: var(--spacing-sm);
   }
 
   .email-table__cell:nth-child(n+5) {
@@ -1068,6 +1214,58 @@ const styles = `
 
   .sender-info {
     gap: 1px;
+  }
+
+  .subject-content {
+    gap: 2px;
+  }
+
+  .email-indicators {
+    gap: 2px;
+  }
+
+  .indicator {
+    font-size: 10px;
+    padding: 1px 3px;
+  }
+}
+
+@media (max-width: 480px) {
+  .email-list {
+    gap: var(--spacing-sm);
+  }
+
+  .email-list__controls {
+    margin: 0;
+    border-radius: var(--radius-md);
+  }
+
+  .select-all-btn {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .bulk-action-btn {
+    font-size: var(--font-size-xs);
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .email-table__header,
+  .email-table__row {
+    padding: var(--spacing-xs);
+    gap: var(--spacing-xs);
+  }
+
+  .empty-state {
+    padding: var(--spacing-xl);
+  }
+
+  .empty-state__title {
+    font-size: var(--font-size-md);
+  }
+
+  .empty-state__description {
+    font-size: var(--font-size-sm);
   }
 }
 `;

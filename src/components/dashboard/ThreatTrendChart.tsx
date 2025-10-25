@@ -247,7 +247,6 @@ const styles = `
 
 .trend-chart__container {
   flex: 1;
-  min-height: 250px;
 }
 
 /* Tooltip Styles */
@@ -377,7 +376,7 @@ const styles = `
   }
 
   .trend-chart__container {
-    min-height: 200px;
+    /* min-height removed to use parent height */
   }
 }
 `;

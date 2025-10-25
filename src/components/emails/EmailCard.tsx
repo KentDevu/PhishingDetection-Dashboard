@@ -3,8 +3,6 @@
 import { useState } from "react";
 import {
   Mail,
-  AlertTriangle,
-  Shield,
   Clock,
   User,
   Globe,
@@ -59,21 +57,6 @@ export function EmailCard({
     }
   };
 
-  const getThreatIcon = (threat: ThreatLevel) => {
-    switch (threat) {
-      case "critical":
-      case "malicious":
-        return <AlertTriangle size={16} />;
-      case "high":
-      case "suspicious":
-        return <Flag size={16} />;
-      case "clean":
-        return <Shield size={16} />;
-      default:
-        return <Shield size={16} />;
-    }
-  };
-
   const getAuthStatusIcon = (result: string) => {
     return result === "pass" ? <Check size={14} /> : <X size={14} />;
   };
@@ -93,8 +76,8 @@ export function EmailCard({
 
   return (
     <div className={`email-card ${isSelected ? "email-card--selected" : ""}`}>
-      {/* Card Header */}
-      <div className="email-card__header">
+      {/* Top Actions Bar */}
+      <div className="email-card__top-actions">
         <div className="email-card__select">
           <button
             className="select-checkbox"
@@ -108,25 +91,59 @@ export function EmailCard({
           </button>
         </div>
 
-        <div className="email-card__threat">
-          <div
-            className="threat-indicator"
-            style={{
-              color: getThreatColor(
-                email.threat_summary?.overall_risk || "clean"
-              ),
-              backgroundColor: `${getThreatColor(
-                email.threat_summary?.overall_risk || "clean"
-              )}20`,
-            }}
+        <div className="top-action-buttons">
+          <button
+            className="action-btn"
+            onClick={() => onView?.(email)}
+            title="View Details"
           >
-            {getThreatIcon(email.threat_summary?.overall_risk || "clean")}
-            <span className="threat-level">
-              {(email.threat_summary?.overall_risk || "clean").toUpperCase()}
-            </span>
+            <Eye size={16} />
+          </button>
+          <button
+            className="action-btn"
+            onClick={() => setIsExpanded(!isExpanded)}
+            title={isExpanded ? "Collapse" : "Expand"}
+          >
+            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+          <div className="dropdown">
+            <button
+              className="action-btn"
+              onClick={() => setShowActions(!showActions)}
+              title="More Actions"
+            >
+              <MoreVertical size={16} />
+            </button>
+            {showActions && (
+              <div className="dropdown-menu">
+                <button onClick={() => handleCopyToClipboard(email.sender)}>
+                  <Copy size={14} />
+                  Copy Sender
+                </button>
+                <button onClick={() => handleCopyToClipboard(email.subject)}>
+                  <Copy size={14} />
+                  Copy Subject
+                </button>
+                <button onClick={() => onView?.(email)}>
+                  <ExternalLink size={14} />
+                  View Full Email
+                </button>
+                <hr className="dropdown-divider" />
+                <button
+                  className="dropdown-item--danger"
+                  onClick={() => onDelete?.(email.id)}
+                >
+                  <Trash2 size={14} />
+                  Delete Email
+                </button>
+              </div>
+            )}
           </div>
         </div>
+      </div>
 
+      {/* Card Header */}
+      <div className="email-card__header">
         <div className="email-card__main">
           <div className="email-header">
             <div className="sender-info">
@@ -143,6 +160,17 @@ export function EmailCard({
                   addSuffix: true,
                 })}
               </span>
+              <span
+                className="threat-level-text"
+                style={{
+                  color: getThreatColor(
+                    email.threat_summary?.overall_risk || "clean"
+                  ),
+                }}
+              >
+                •{" "}
+                {(email.threat_summary?.overall_risk || "clean").toUpperCase()}
+              </span>
             </div>
           </div>
 
@@ -156,7 +184,7 @@ export function EmailCard({
           </div>
         </div>
 
-        <div className="email-card__actions">
+        <div className="email-card__score">
           <div className="phishing-score">
             <span className="score-label">Risk Score</span>
             <span
@@ -169,56 +197,6 @@ export function EmailCard({
             >
               {formatScore(email.phishing_score_cti)}%
             </span>
-          </div>
-
-          <div className="action-buttons">
-            <button
-              className="action-btn"
-              onClick={() => onView?.(email)}
-              title="View Details"
-            >
-              <Eye size={16} />
-            </button>
-            <button
-              className="action-btn"
-              onClick={() => setIsExpanded(!isExpanded)}
-              title={isExpanded ? "Collapse" : "Expand"}
-            >
-              {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </button>
-            <div className="dropdown">
-              <button
-                className="action-btn"
-                onClick={() => setShowActions(!showActions)}
-                title="More Actions"
-              >
-                <MoreVertical size={16} />
-              </button>
-              {showActions && (
-                <div className="dropdown-menu">
-                  <button onClick={() => handleCopyToClipboard(email.sender)}>
-                    <Copy size={14} />
-                    Copy Sender
-                  </button>
-                  <button onClick={() => handleCopyToClipboard(email.subject)}>
-                    <Copy size={14} />
-                    Copy Subject
-                  </button>
-                  <button onClick={() => onView?.(email)}>
-                    <ExternalLink size={14} />
-                    View Full Email
-                  </button>
-                  <hr className="dropdown-divider" />
-                  <button
-                    className="dropdown-item--danger"
-                    onClick={() => onDelete?.(email.id)}
-                  >
-                    <Trash2 size={14} />
-                    Delete Email
-                  </button>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>
@@ -411,11 +389,26 @@ const styles = `
   background: var(--bg-accent);
 }
 
+.email-card__top-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--border-primary);
+  background: var(--bg-tertiary);
+}
+
+.top-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
 .email-card__header {
   display: grid;
-  grid-template-columns: auto auto 1fr auto;
+  grid-template-columns: auto 1fr;
   gap: var(--spacing-md);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   align-items: flex-start;
 }
 
@@ -451,30 +444,12 @@ const styles = `
   color: var(--bg-primary);
 }
 
-.email-card__threat {
-  display: flex;
-  align-items: flex-start;
-  padding-top: var(--spacing-xs);
-}
-
-.threat-indicator {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border: 1px solid currentColor;
-}
-
 .email-card__main {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
   min-width: 0;
+  width: 100%;
 }
 
 .email-header {
@@ -487,15 +462,20 @@ const styles = `
 
 .sender-info {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
+  width: 100%;
+  line-height: 1.4;
 }
 
 .sender-name {
   font-weight: var(--font-weight-medium);
   color: var(--text-primary);
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
 .sender-email {
@@ -504,6 +484,7 @@ const styles = `
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 300px;
 }
 
 .email-timestamp {
@@ -513,13 +494,23 @@ const styles = `
   color: var(--text-muted);
   font-size: var(--font-size-xs);
   white-space: nowrap;
+  line-height: 1.4;
+}
+
+.threat-level-text {
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
 }
 
 .email-subject {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--spacing-sm);
   min-width: 0;
+  line-height: 1.4;
 }
 
 .email-subject h3 {
@@ -530,6 +521,9 @@ const styles = `
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.4;
+  flex: 1;
+  min-width: 0;
 }
 
 .email-recipient {
@@ -538,13 +532,12 @@ const styles = `
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  line-height: 1.4;
 }
 
-.email-card__actions {
+.email-card__score {
   display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  align-items: flex-end;
+  align-items: center;
 }
 
 .phishing-score {
@@ -565,12 +558,6 @@ const styles = `
 .score-value {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
-}
-
-.action-buttons {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
 }
 
 .action-btn {
@@ -605,7 +592,7 @@ const styles = `
   border-radius: var(--radius-md);
   padding: var(--spacing-xs);
   min-width: 180px;
-  z-index: 10;
+  z-index: 1000;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   animation: slideDown var(--duration-fast) var(--ease-out);
 }
@@ -648,7 +635,7 @@ const styles = `
 /* Expanded Content */
 .email-card__content {
   border-top: 1px solid var(--border-primary);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-md);
   background: var(--bg-primary);
   animation: slideDown var(--duration-normal) var(--ease-out);
 }
@@ -664,8 +651,8 @@ const styles = `
 }
 
 .email-card__content > div:not(:last-child) {
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
   border-bottom: 1px solid var(--border-primary);
 }
 
@@ -840,16 +827,15 @@ const styles = `
 }
 
 /* Responsive Design */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .email-card__header {
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto 1fr;
     gap: var(--spacing-sm);
+    padding: var(--spacing-sm);
   }
 
-  .email-card__threat {
-    grid-column: 1 / -1;
-    order: 4;
-    padding-top: var(--spacing-md);
+  .email-card__score {
+    display: none;
   }
 
   .email-header {
@@ -864,15 +850,137 @@ const styles = `
   }
 
   .auth-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   }
 
   .threat-stats {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+
+  .technical-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .email-card {
+    margin: 0;
+  }
+
+  .email-card__top-actions {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .top-action-buttons {
+    gap: var(--spacing-xs);
+  }
+
+  .email-card__header {
+    padding: var(--spacing-sm);
+  }
+
+  .email-card__content {
+    padding: var(--spacing-sm);
+  }
+
+  .email-subject h3 {
+    font-size: var(--font-size-sm);
+  }
+
+  .score-value {
+    font-size: var(--font-size-md);
+  }
+
+  .threat-level-text {
+    font-size: var(--font-size-xs);
+  }
+
+  .sender-name {
+    max-width: 150px;
+  }
+
+  .sender-email {
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  .email-card__top-actions {
+    padding: var(--spacing-xs);
+  }
+
+  .top-action-buttons {
+    gap: 2px;
+  }
+
+  .action-btn {
+    padding: var(--spacing-xs);
+    min-width: 32px;
+    min-height: 32px;
+  }
+
+  .email-card__header {
+    padding: var(--spacing-xs);
+  }
+
+  .email-card__content {
+    padding: var(--spacing-xs);
+  }
+
+  .email-header {
+    gap: 2px;
+  }
+
+  .sender-info {
+    font-size: var(--font-size-xs);
+  }
+
+  .email-subject {
+    gap: var(--spacing-xs);
+  }
+
+  .email-subject h3 {
+    font-size: var(--font-size-sm);
+    line-height: 1.3;
+  }
+
+  .email-recipient {
+    font-size: var(--font-size-xs);
+  }
+
+  .threat-level-text {
+    display: none;
+  }
+
+  .sender-name {
+    max-width: 120px;
+  }
+
+  .sender-email {
+    max-width: 150px;
+  }
+
+  .auth-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-sm);
+  }
+
+  .threat-stats {
+    grid-template-columns: 1fr;
   }
 
   .technical-grid {
     grid-template-columns: 1fr;
+  }
+
+  .content-section {
+    gap: var(--spacing-md);
+  }
+
+  .url-item,
+  .attachment-item {
+    padding: var(--spacing-xs);
+    font-size: var(--font-size-xs);
   }
 }
 `;
