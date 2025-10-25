@@ -1,71 +1,85 @@
-// Custom hook for analytics dashboard data
+// Custom hook for analytics dashboard data - CLIENT-SIDE COMPUTATION
 
 import { useState, useEffect, useCallback } from "react";
-import { analyticsService } from "../services/analyticsService";
-import { handleApiError } from "../utils/errorUtils";
+import {
+  clientAnalyticsService,
+  type ClientAnalyticsFilters,
+} from "../services/clientAnalyticsService";
+import { useEmails } from "./useEmails";
 import type {
-  AnalyticsDashboardData,
-  AnalyticsFilters,
+  ThreatMetrics,
+  ThreatTrend,
+  DomainIntelligence,
 } from "../models/analytics";
-import type { AsyncState } from "../models/email";
 
-interface UseAnalyticsDashboardReturn
-  extends AsyncState<AnalyticsDashboardData> {
-  refetch: () => Promise<void>;
-  applyFilters: (filters: AnalyticsFilters) => Promise<void>;
+interface AnalyticsDashboardData {
+  metrics: ThreatMetrics;
+  trends: ThreatTrend[];
+  domains: DomainIntelligence[];
+}
+
+interface UseAnalyticsDashboardReturn {
+  data: AnalyticsDashboardData | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+  applyFilters: (filters: ClientAnalyticsFilters) => void;
 }
 
 export function useAnalyticsDashboard(
-  initialFilters?: AnalyticsFilters
+  initialFilters?: ClientAnalyticsFilters
 ): UseAnalyticsDashboardReturn {
-  const [state, setState] = useState<AsyncState<AnalyticsDashboardData>>({
-    data: null,
-    loading: false,
-    error: null,
-  });
+  const {
+    data: emails,
+    loading: emailsLoading,
+    error: emailsError,
+    refetch: refetchEmails,
+  } = useEmails();
+  const [filters, setFilters] = useState<ClientAnalyticsFilters | undefined>(
+    initialFilters
+  );
+  const [data, setData] = useState<AnalyticsDashboardData | null>(null);
 
-  const [currentFilters, setCurrentFilters] = useState<
-    AnalyticsFilters | undefined
-  >(initialFilters);
-
-  const fetchDashboardData = useCallback(async (filters?: AnalyticsFilters) => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const data = await analyticsService.getDashboardData(filters);
-      setState({
-        data,
-        loading: false,
-        error: null,
-      });
-    } catch (error) {
-      const apiError = handleApiError(error, "fetchAnalyticsDashboard");
-      setState({
-        data: null,
-        loading: false,
-        error: apiError,
-      });
+  // Compute analytics data from emails
+  useEffect(() => {
+    if (!emails || emails.length === 0) {
+      setData(null);
+      return;
     }
+
+    const filteredEmails = filters
+      ? clientAnalyticsService.applyFilters(emails, filters)
+      : emails;
+
+    const metrics = clientAnalyticsService.computeThreatMetrics(filteredEmails);
+    const trends = clientAnalyticsService.computeThreatTrends(
+      filteredEmails,
+      30
+    );
+    const domains = clientAnalyticsService.computeDomainIntelligence(
+      filteredEmails,
+      50
+    );
+
+    setData({
+      metrics,
+      trends,
+      domains,
+    });
+  }, [emails, filters]);
+
+  const applyFilters = useCallback((newFilters: ClientAnalyticsFilters) => {
+    setFilters(newFilters);
   }, []);
 
-  const refetch = useCallback(async () => {
-    await fetchDashboardData(currentFilters);
-  }, [fetchDashboardData, currentFilters]);
-
-  const applyFilters = useCallback(
-    async (filters: AnalyticsFilters) => {
-      setCurrentFilters(filters);
-      await fetchDashboardData(filters);
-    },
-    [fetchDashboardData]
-  );
-
-  useEffect(() => {
-    fetchDashboardData(currentFilters);
-  }, [fetchDashboardData, currentFilters]);
+  const refetch = useCallback(() => {
+    refetchEmails();
+  }, [refetchEmails]);
 
   return {
-    ...state,
+    data,
+    loading: emailsLoading,
+    error: emailsError ? String(emailsError) : null,
     refetch,
     applyFilters,
   };

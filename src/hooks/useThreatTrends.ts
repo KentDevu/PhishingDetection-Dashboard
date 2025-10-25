@@ -1,65 +1,49 @@
-// Custom hook for threat trend data
+// Custom hook for threat trend data - CLIENT-SIDE COMPUTATION
 
 import { useState, useEffect, useCallback } from "react";
-import { analyticsService } from "../services/analyticsService";
-import { handleApiError } from "../utils/errorUtils";
+import { clientAnalyticsService } from "../services/clientAnalyticsService";
+import { useEmails } from "./useEmails";
 import type { ThreatTrend } from "../models/analytics";
-import type { AsyncState } from "../models/email";
 
-interface UseThreatTrendsReturn extends AsyncState<ThreatTrend[]> {
-  refetch: () => Promise<void>;
-  changePeriod: (period: string) => Promise<void>;
+interface UseThreatTrendsReturn {
+  data: ThreatTrend[] | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+  changePeriod: (period: string) => void;
 }
 
 export function useThreatTrends(
   initialPeriod: string = "30d"
 ): UseThreatTrendsReturn {
-  const [state, setState] = useState<AsyncState<ThreatTrend[]>>({
-    data: null,
-    loading: false,
-    error: null,
-  });
-
+  const { data: emails, loading, error, refetch: refetchEmails } = useEmails();
   const [period, setPeriod] = useState<string>(initialPeriod);
+  const [data, setData] = useState<ThreatTrend[] | null>(null);
 
-  const fetchTrends = useCallback(async (selectedPeriod: string) => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const trends = await analyticsService.getThreatTrends(selectedPeriod);
-      setState({
-        data: trends,
-        loading: false,
-        error: null,
-      });
-    } catch (error) {
-      const apiError = handleApiError(error, "fetchThreatTrends");
-      setState({
-        data: null,
-        loading: false,
-        error: apiError,
-      });
+  // Compute trends from emails
+  useEffect(() => {
+    if (!emails || emails.length === 0) {
+      setData(null);
+      return;
     }
+
+    const days = parseInt(period.replace("d", "")) || 30;
+    const trends = clientAnalyticsService.computeThreatTrends(emails, days);
+    setData(trends);
+  }, [emails, period]);
+
+  const refetch = useCallback(() => {
+    refetchEmails();
+  }, [refetchEmails]);
+
+  const changePeriod = useCallback((newPeriod: string) => {
+    setPeriod(newPeriod);
   }, []);
 
-  const refetch = useCallback(async () => {
-    await fetchTrends(period);
-  }, [fetchTrends, period]);
-
-  const changePeriod = useCallback(
-    async (newPeriod: string) => {
-      setPeriod(newPeriod);
-      await fetchTrends(newPeriod);
-    },
-    [fetchTrends]
-  );
-
-  useEffect(() => {
-    fetchTrends(period);
-  }, [fetchTrends, period]);
-
   return {
-    ...state,
+    data,
+    loading,
+    error: error ? String(error) : null,
     refetch,
     changePeriod,
   };

@@ -1,9 +1,8 @@
-// Settings API Service - Handles application configuration and user preferences
+// Settings API Service - Handles application configuration
 
 import { apiService } from "./apiService";
 import type {
   ApplicationSettings,
-  UserPreferences,
   NotificationSettings,
   SecuritySettings,
   SystemConfiguration,
@@ -32,52 +31,6 @@ export class SettingsService {
       return response.data;
     } catch (error) {
       console.error("Failed to fetch settings:", error);
-      throw error as ApiError;
-    }
-  }
-
-  /**
-   * Fetches user preferences
-   * @returns Promise resolving to user preferences
-   */
-  async getUserPreferences(): Promise<UserPreferences> {
-    try {
-      const response = await apiService.get<SettingsResponse<UserPreferences>>(
-        `${this.endpoint}/user-preferences`
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Failed to fetch user preferences:", error);
-      throw error as ApiError;
-    }
-  }
-
-  /**
-   * Updates user preferences
-   * @param preferences - Updated user preferences
-   * @returns Promise resolving to update response
-   */
-  async updateUserPreferences(
-    preferences: Partial<UserPreferences>
-  ): Promise<UserPreferences> {
-    try {
-      const request: SettingsUpdateRequest<UserPreferences> = {
-        settings: preferences,
-      };
-
-      const response = await apiService.get<SettingsResponse<UserPreferences>>(
-        `${this.endpoint}/user-preferences`,
-        {
-          method: "PUT",
-          body: JSON.stringify(request),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      return response.data;
-    } catch (error) {
-      console.error("Failed to update user preferences:", error);
       throw error as ApiError;
     }
   }

@@ -1,18 +1,5 @@
 // Settings and Configuration Data Models
 
-export interface UserPreferences {
-  theme: "light" | "dark" | "auto";
-  language: string;
-  timezone: string;
-  date_format: "MM/DD/YYYY" | "DD/MM/YYYY" | "YYYY-MM-DD";
-  time_format: "12h" | "24h";
-  notifications_enabled: boolean;
-  sound_enabled: boolean;
-  dashboard_refresh_interval: number; // seconds
-  default_page_size: number;
-  compact_view: boolean;
-}
-
 export interface NotificationSettings {
   email_notifications: boolean;
   email_address: string;
@@ -219,7 +206,6 @@ export interface SettingsValidationResponse {
 
 // Combined settings interface for the main settings object
 export interface ApplicationSettings {
-  user_preferences: UserPreferences;
   notifications: NotificationSettings;
   security: SecuritySettings;
   system: SystemConfiguration;
