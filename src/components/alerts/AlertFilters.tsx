@@ -11,20 +11,15 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
-import type { AlertSeverity, AlertStatus, AlertType } from "./AlertCard";
-
-interface FilterState {
-  search: string;
-  severity: AlertSeverity[];
-  status: AlertStatus[];
-  type: AlertType[];
-  assignee: string[];
-  dateRange: "today" | "3d" | "7d" | "30d" | "custom" | "all";
-  tags: string[];
-}
+import type {
+  AlertSeverity,
+  AlertStatus,
+  AlertType,
+  AlertFilterState,
+} from "../../models/alerts";
 
 interface AlertFiltersProps {
-  onFiltersChange: (filters: FilterState) => void;
+  onFiltersChange: (filters: AlertFilterState) => void;
   totalCount: number;
   filteredCount: number;
 }
@@ -34,7 +29,7 @@ export function AlertFilters({
   totalCount,
   filteredCount,
 }: AlertFiltersProps) {
-  const [filters, setFilters] = useState<FilterState>({
+  const [filters, setFilters] = useState<AlertFilterState>({
     search: "",
     severity: [],
     status: [],
@@ -72,13 +67,13 @@ export function AlertFilters({
     "Security Team",
   ];
 
-  const updateFilters = (newFilters: Partial<FilterState>) => {
+  const updateFilters = (newFilters: Partial<AlertFilterState>) => {
     const updatedFilters = { ...filters, ...newFilters };
     setFilters(updatedFilters);
     onFiltersChange(updatedFilters);
   };
 
-  const toggleArrayFilter = <T,>(key: keyof FilterState, value: T) => {
+  const toggleArrayFilter = <T,>(key: keyof AlertFilterState, value: T) => {
     const currentArray = filters[key] as T[];
     const newArray = currentArray.includes(value)
       ? currentArray.filter((item) => item !== value)
@@ -88,7 +83,7 @@ export function AlertFilters({
   };
 
   const clearFilters = () => {
-    const clearedFilters: FilterState = {
+    const clearedFilters: AlertFilterState = {
       search: "",
       severity: [],
       status: [],

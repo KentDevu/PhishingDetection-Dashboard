@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { AlertTriangle, Plus, Settings, Download, Bell } from "lucide-react";
 import { AlertList } from "../components/alerts/AlertList";
-import type { Alert } from "../components/alerts/AlertCard";
+import type { Alert } from "../models/alerts";
 
 export function Alerts() {
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -31,7 +31,7 @@ export function Alerts() {
             type: "phishing",
             timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(), // 10 minutes ago
             source: "Email Scanner",
-            affectedEmails: 5,
+            affected_emails: 5,
             metadata: {
               sourceIp: "192.168.1.100",
               targetUsers: ["john.doe@company.com", "jane.smith@company.com"],
@@ -49,7 +49,7 @@ export function Alerts() {
             type: "malware",
             timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(), // 45 minutes ago
             source: "Anti-Malware Engine",
-            affectedEmails: 1,
+            affected_emails: 1,
             metadata: {
               fileName: "invoice_urgent.exe",
               sender: "noreply@suspicious-domain.com",
@@ -67,7 +67,7 @@ export function Alerts() {
             type: "spam",
             timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
             source: "Spam Filter",
-            affectedEmails: 247,
+            affected_emails: 247,
             metadata: {
               campaign: "Crypto Investment Scam",
               blockedEmails: 247,
@@ -85,7 +85,7 @@ export function Alerts() {
             type: "policy_violation",
             timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
             source: "DLP Engine",
-            affectedEmails: 1,
+            affected_emails: 1,
             metadata: {
               document: "Financial_Report_Q4.pdf",
               sender: "finance@company.com",
@@ -103,7 +103,7 @@ export function Alerts() {
             type: "anomaly",
             timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
             source: "Behavioral Analytics",
-            affectedEmails: 12,
+            affected_emails: 12,
             metadata: {
               user: "executive@company.com",
               anomalyType: "Login from unusual location",
@@ -121,7 +121,7 @@ export function Alerts() {
             type: "phishing",
             timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
             source: "Threat Intelligence",
-            affectedEmails: 8,
+            affected_emails: 8,
             metadata: {
               kit: "Office365 Credential Harvester v2.3",
               iocs: ["phish-site.com", "192.168.1.1"],

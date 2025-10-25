@@ -1,5 +1,6 @@
-// Dashboard Page - Main overview page
+// Dashboard Page - Main overview page with Real-time Threat Monitoring
 
+import { useEffect } from "react";
 import { Mail, AlertTriangle, TrendingUp, Shield, Bell } from "lucide-react";
 import {
   KPICard,
@@ -7,11 +8,16 @@ import {
   ThreatTrendChart,
   RecentEmailsTable,
 } from "../components/dashboard";
+import {
+  ThreatStatusIndicator,
+  ThreatCounter,
+  LiveEventFeed,
+} from "../components/monitoring/ThreatStatusIndicator";
 import { useEmails } from "../hooks/useEmails";
 import { useNotifications } from "../contexts/NotificationContext";
 
 export function Dashboard() {
-  const { data: emails, loading } = useEmails();
+  const { data: emails, loading, error, refetch } = useEmails();
   const { addNotification } = useNotifications();
 
   // Calculate KPI values from emails
@@ -35,6 +41,72 @@ export function Dashboard() {
   const activeThreats =
     emails?.filter((email) => email.threat_summary.malicious_found > 0)
       .length || 0;
+
+  // Auto-trigger threat notifications for high-risk emails
+  useEffect(() => {
+    if (emails && emails.length > 0) {
+      const criticalEmails = emails.filter(
+        (email) => email.threat_summary.overall_risk === "critical"
+      );
+
+      // Only show notifications for the first critical email to avoid spam
+      if (criticalEmails.length > 0 && criticalEmails.length <= 2) {
+        criticalEmails.slice(0, 1).forEach((email) => {
+          addNotification({
+            type: "threat",
+            title: "Critical Threat Detected",
+            message: `High-risk email from ${
+              email.sender
+            } detected with ${Math.round(
+              email.phishing_score_cti * 100
+            )}% phishing score.`,
+            persistent: true,
+            metadata: {
+              severity: "critical",
+              emailId: email.id,
+              sender: email.sender,
+            },
+            actions: [
+              {
+                id: "view",
+                label: "View Email",
+                action: () => console.log("Viewing email:", email.id),
+                primary: true,
+              },
+              {
+                id: "quarantine",
+                label: "Quarantine",
+                action: () => console.log("Quarantining email:", email.id),
+                destructive: true,
+              },
+            ],
+          });
+        });
+      }
+    }
+  }, [emails, addNotification]);
+
+  // Handle API errors with user feedback
+  useEffect(() => {
+    if (error) {
+      addNotification({
+        type: "error",
+        title: "Failed to Load Email Data",
+        message:
+          error.error ||
+          "Unable to connect to the threat analysis API. Email data may not be current.",
+        duration: 8000,
+        actions: [
+          {
+            id: "retry",
+            label: "Retry",
+            action: () => refetch(),
+            primary: true,
+          },
+        ],
+      });
+    }
+  }, [error, addNotification, refetch]);
 
   // Demo notification functions
   const showThreatAlert = () => {
@@ -95,140 +167,189 @@ export function Dashboard() {
   return (
     <div className="dashboard">
       <div className="dashboard__grid">
-        {/* KPI Cards Row */}
-        <div className="dashboard__section">
-          <h2 className="dashboard__section-title">Threat Overview</h2>
-          <div className="dashboard__kpi-grid">
-            <KPICard
-              title="Total Emails"
-              value={totalEmails.toLocaleString()}
-              subtitle="Analyzed this month"
-              icon={<Mail size={20} />}
-              variant="default"
-              loading={loading}
-              trend={{
-                direction: "up",
-                value: "+12%",
-                type: "positive",
-              }}
-            />
-
-            <KPICard
-              title="High Risk"
-              value={highRiskEmails}
-              subtitle="Critical threats detected"
-              icon={<AlertTriangle size={20} />}
-              variant="danger"
-              loading={loading}
-              trend={{
-                direction: "up",
-                value: "+5%",
-                type: "negative",
-              }}
-            />
-
-            <KPICard
-              title="Avg Phishing Score"
-              value={`${avgPhishingScore}%`}
-              subtitle="Detection confidence"
-              icon={<TrendingUp size={20} />}
-              variant="warning"
-              loading={loading}
-              trend={{
-                direction: "down",
-                value: "-3%",
-                type: "positive",
-              }}
-            />
-
-            <KPICard
-              title="Active Threats"
-              value={activeThreats}
-              subtitle="Requiring attention"
-              icon={<Shield size={20} />}
-              variant="info"
-              loading={loading}
-              trend={{
-                direction: "down",
-                value: "-2",
-                type: "positive",
-              }}
-            />
+        {/* Show loading state across all sections */}
+        {loading && (
+          <div className="dashboard__loading">
+            <div className="loading-spinner"></div>
+            <p>Loading threat analysis data...</p>
           </div>
-        </div>
+        )}
 
-        {/* Charts Row */}
-        <div className="dashboard__section">
-          <div className="dashboard__charts-grid">
-            {/* Risk Distribution Chart */}
-            <div className="chart-card">
-              <h3 className="chart-card__title">Risk Distribution</h3>
-              <div className="chart-card__content">
-                <RiskDistributionChart data={[]} loading={loading} />
+        {/* Show error state if API fails */}
+        {error && !loading && (
+          <div className="dashboard__error">
+            <AlertTriangle size={24} />
+            <h3>Unable to Load Threat Data</h3>
+            <p>{error.error}</p>
+            <button className="btn btn--primary" onClick={() => refetch()}>
+              Retry Connection
+            </button>
+          </div>
+        )}
+
+        {/* Main dashboard content */}
+        {!loading && !error && (
+          <>
+            {/* KPI Cards Row */}
+            <div className="dashboard__section">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="dashboard__section-title">Threat Overview</h2>
+                {/* Real-time threat status */}
+                <ThreatStatusIndicator
+                  showDetails={true}
+                  onClick={() => (window.location.href = "/monitoring")}
+                  autoStart={true}
+                />
+              </div>
+              <div className="dashboard__kpi-grid">
+                <KPICard
+                  title="Total Emails"
+                  value={totalEmails.toLocaleString()}
+                  subtitle="Analyzed this month"
+                  icon={<Mail size={20} />}
+                  variant="default"
+                  loading={loading}
+                  trend={{
+                    direction: "up",
+                    value: "+12%",
+                    type: "positive",
+                  }}
+                />
+
+                <KPICard
+                  title="High Risk"
+                  value={highRiskEmails}
+                  subtitle="Critical threats detected"
+                  icon={<AlertTriangle size={20} />}
+                  variant="danger"
+                  loading={loading}
+                  trend={{
+                    direction: "up",
+                    value: "+5%",
+                    type: "negative",
+                  }}
+                />
+
+                <KPICard
+                  title="Avg Phishing Score"
+                  value={`${avgPhishingScore}%`}
+                  subtitle="Detection confidence"
+                  icon={<TrendingUp size={20} />}
+                  variant="warning"
+                  loading={loading}
+                  trend={{
+                    direction: "down",
+                    value: "-3%",
+                    type: "positive",
+                  }}
+                />
+
+                <KPICard
+                  title="Active Threats"
+                  value={activeThreats}
+                  subtitle="Requiring attention"
+                  icon={<Shield size={20} />}
+                  variant="info"
+                  loading={loading}
+                  trend={{
+                    direction: "down",
+                    value: "-2",
+                    type: "positive",
+                  }}
+                />
               </div>
             </div>
 
-            {/* Threat Trend Chart */}
-            <div className="chart-card">
-              <h3 className="chart-card__title">Threat Trends</h3>
-              <div className="chart-card__content">
-                <ThreatTrendChart loading={loading} timeRange="7d" />
+            {/* Real-time Threat Monitoring Section */}
+            <div className="dashboard__section">
+              <h2 className="dashboard__section-title">Real-time Monitoring</h2>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2">
+                  <ThreatCounter variant="default" />
+                </div>
+                <div className="lg:col-span-1">
+                  <LiveEventFeed maxEvents={5} showSystemEvents={false} />
+                </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        {/* Recent Activity Table */}
-        <div className="dashboard__section">
-          <h2 className="dashboard__section-title">Recent Email Activity</h2>
-          <div className="table-card">
-            <div className="table-card__header">
-              <h3>Latest Threats</h3>
-              <button className="btn btn--outline btn--sm">View All</button>
-            </div>
-            <div className="table-card__content">
-              <RecentEmailsTable
-                emails={emails || []}
-                loading={loading}
-                limit={10}
-              />
-            </div>
-          </div>
-        </div>
+            {/* Charts Row */}
+            <div className="dashboard__section">
+              <div className="dashboard__charts-grid">
+                {/* Risk Distribution Chart */}
+                <div className="chart-card">
+                  <h3 className="chart-card__title">Risk Distribution</h3>
+                  <div className="chart-card__content">
+                    <RiskDistributionChart data={[]} loading={loading} />
+                  </div>
+                </div>
 
-        {/* Demo Notification Section */}
-        <div className="dashboard__section">
-          <h2 className="dashboard__section-title">
-            <Bell size={24} /> Real-time Notifications Demo
-          </h2>
-          <div className="notification-demo">
-            <p className="notification-demo__description">
-              Test the real-time notification system with these demo buttons:
-            </p>
-            <div className="notification-demo__buttons">
-              <button className="btn btn--danger" onClick={showThreatAlert}>
-                <Shield size={16} />
-                Threat Alert
-              </button>
-              <button
-                className="btn btn--success"
-                onClick={showSuccessNotification}
-              >
-                Success Message
-              </button>
-              <button
-                className="btn btn--warning"
-                onClick={showWarningNotification}
-              >
-                <AlertTriangle size={16} />
-                Warning
-              </button>
-              <button className="btn btn--info" onClick={showSystemUpdate}>
-                System Update
-              </button>
+                {/* Threat Trend Chart */}
+                <div className="chart-card">
+                  <h3 className="chart-card__title">Threat Trends</h3>
+                  <div className="chart-card__content">
+                    <ThreatTrendChart loading={loading} timeRange="7d" />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+
+            {/* Recent Activity Table */}
+            <div className="dashboard__section">
+              <h2 className="dashboard__section-title">
+                Recent Email Activity
+              </h2>
+              <div className="table-card">
+                <div className="table-card__header">
+                  <h3>Latest Threats</h3>
+                  <button className="btn btn--outline btn--sm">View All</button>
+                </div>
+                <div className="table-card__content">
+                  <RecentEmailsTable
+                    emails={emails || []}
+                    loading={loading}
+                    limit={10}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Demo Notification Section */}
+            <div className="dashboard__section">
+              <h2 className="dashboard__section-title">
+                <Bell size={24} /> Real-time Notifications Demo
+              </h2>
+              <div className="notification-demo">
+                <p className="notification-demo__description">
+                  Test the real-time notification system with these demo
+                  buttons:
+                </p>
+                <div className="notification-demo__buttons">
+                  <button className="btn btn--danger" onClick={showThreatAlert}>
+                    <Shield size={16} />
+                    Threat Alert
+                  </button>
+                  <button
+                    className="btn btn--success"
+                    onClick={showSuccessNotification}
+                  >
+                    Success Message
+                  </button>
+                  <button
+                    className="btn btn--warning"
+                    onClick={showWarningNotification}
+                  >
+                    <AlertTriangle size={16} />
+                    Warning
+                  </button>
+                  <button className="btn btn--info" onClick={showSystemUpdate}>
+                    System Update
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -238,6 +359,100 @@ export function Dashboard() {
 const styles = `
 .dashboard {
   padding: 0;
+}
+
+.dashboard__grid {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* Loading State */
+.dashboard__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: var(--spacing-lg);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  margin: var(--spacing-xl) 0;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border-primary);
+  border-top: 4px solid var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.dashboard__loading p {
+  color: var(--text-muted);
+  font-size: var(--font-size-md);
+  text-align: center;
+}
+
+/* Error State */
+.dashboard__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: var(--spacing-lg);
+  text-align: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--color-danger);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  margin: var(--spacing-xl) 0;
+}
+
+.dashboard__error svg {
+  color: var(--color-danger);
+}
+
+.dashboard__error h3 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.dashboard__error p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  max-width: 400px;
+}
+
+.dashboard__error .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background: var(--color-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-in-out);
+}
+
+.dashboard__error .btn:hover {
+  background: #00CC80;
+  transform: translateY(-1px);
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 .dashboard__grid {

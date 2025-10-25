@@ -1,20 +1,37 @@
 // Emails Page - Main email management interface
 
 import { useState } from "react";
-import { Mail, Settings, Download, Filter, Zap } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Mail, Settings, Download, Filter, Zap, Upload } from "lucide-react";
 import { EmailList } from "../components/emails/EmailList";
+import { EnhancedEmailFilters } from "../components/emails/EnhancedEmailFilters";
 import { useEmails } from "../hooks/useEmails";
 import { useBulkDelete } from "../hooks/useBulkDelete";
 import { useDeleteEmail } from "../hooks/useDeleteEmail";
 import type { Email } from "../models/email";
 
 export function Emails() {
-  const { data: emails, loading, error, refetch } = useEmails();
+  const navigate = useNavigate();
+  const {
+    data: emails,
+    loading,
+    error,
+    refetch,
+    searchEmails,
+    filterEmails,
+    clearFilters,
+    currentFilters,
+  } = useEmails();
   const { bulkDeleteEmails, loading: bulkDeleteLoading } = useBulkDelete();
   const { deleteEmail, loading: deleteLoading } = useDeleteEmail();
 
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [showEmailDetail, setShowEmailDetail] = useState(false);
+
+  // Handle email upload completion
+  const handleUploadNavigation = () => {
+    navigate("/emails/upload");
+  };
 
   // Handle individual email view
   const handleEmailView = (email: Email) => {
@@ -130,6 +147,10 @@ export function Emails() {
             <Settings size={18} />
             Settings
           </button>
+          <button className="btn btn--primary" onClick={handleUploadNavigation}>
+            <Upload size={18} />
+            Upload Email
+          </button>
           <button className="btn btn--primary">
             <Zap size={18} />
             Run Scan
@@ -244,6 +265,16 @@ export function Emails() {
           </div>
         </div>
       </div>
+
+      <EnhancedEmailFilters
+        onFiltersChange={filterEmails}
+        onSearch={searchEmails}
+        onClearFilters={clearFilters}
+        currentFilters={currentFilters}
+        totalCount={emails?.length || 0}
+        filteredCount={emails?.length || 0}
+        loading={loading}
+      />
 
       <EmailList
         emails={emails || []}
@@ -636,6 +667,12 @@ const styles = `
   max-width: 800px;
   max-height: 80vh;
   overflow-y: auto;
+}
+
+.email-upload-modal {
+  max-width: 900px;
+  max-height: 90vh;
+  padding: var(--spacing-lg);
 }
 
 .modal-header {

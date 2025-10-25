@@ -13,38 +13,21 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import type { Alert, AlertSeverity, AlertStatus } from "../../models/alerts";
 
-export type AlertSeverity = "low" | "medium" | "high" | "critical";
-export type AlertStatus = "open" | "investigating" | "resolved" | "dismissed";
-export type AlertType =
-  | "phishing"
-  | "malware"
-  | "spam"
-  | "policy_violation"
-  | "anomaly";
-
-export interface Alert {
-  id: number;
-  title: string;
-  description: string;
-  severity: AlertSeverity;
-  status: AlertStatus;
-  type: AlertType;
-  timestamp: string;
-  affectedEmails: number;
-  source?: string;
-  assignee?: string;
-  tags?: string[];
-  metadata?: {
-    [key: string]: any;
-  };
-}
+// Re-export types for backwards compatibility
+export type {
+  Alert,
+  AlertSeverity,
+  AlertStatus,
+  AlertType,
+} from "../../models/alerts";
 
 interface AlertCardProps {
   alert: Alert;
-  onStatusChange?: (alertId: number, status: AlertStatus) => void;
-  onView?: (alertId: number) => void;
-  onAssign?: (alertId: number, assignee: string) => void;
+  onStatusChange?: (alertId: string | number, status: AlertStatus) => void;
+  onView?: (alertId: string | number) => void;
+  onAssign?: (alertId: string | number, assignee: string) => void;
 }
 
 export function AlertCard({
@@ -138,10 +121,10 @@ export function AlertCard({
                   addSuffix: true,
                 })}
               </span>
-              {alert.affectedEmails > 0 && (
-                <span className="alert-meta-item">
-                  {alert.affectedEmails} email
-                  {alert.affectedEmails !== 1 ? "s" : ""} affected
+              {(alert.affected_emails ?? 0) > 0 && (
+                <span className="alert-card__meta-item">
+                  {alert.affected_emails} email
+                  {(alert.affected_emails ?? 0) !== 1 ? "s" : ""} affected
                 </span>
               )}
               {alert.source && (

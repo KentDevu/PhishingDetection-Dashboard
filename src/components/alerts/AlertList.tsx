@@ -14,17 +14,7 @@ import {
 } from "lucide-react";
 import { AlertCard } from "./AlertCard";
 import { AlertFilters } from "./AlertFilters";
-import type { Alert } from "./AlertCard";
-
-interface FilterState {
-  search: string;
-  severity: ("critical" | "high" | "medium" | "low")[];
-  status: ("open" | "investigating" | "resolved" | "dismissed")[];
-  type: ("phishing" | "malware" | "spam" | "policy_violation" | "anomaly")[];
-  assignee: string[];
-  dateRange: "today" | "3d" | "7d" | "30d" | "custom" | "all";
-  tags: string[];
-}
+import type { Alert, AlertFilterState } from "../../models/alerts";
 
 interface AlertListProps {
   alerts: Alert[];
@@ -37,7 +27,7 @@ type SortDirection = "asc" | "desc";
 const SEVERITY_ORDER = { critical: 4, high: 3, medium: 2, low: 1 };
 
 export function AlertList({ alerts, onBulkAction }: AlertListProps) {
-  const [filters, setFilters] = useState<FilterState>({
+  const [filters, setFilters] = useState<AlertFilterState>({
     search: "",
     severity: [],
     status: [],
@@ -149,7 +139,7 @@ export function AlertList({ alerts, onBulkAction }: AlertListProps) {
     }
   };
 
-  const handleSelectAlert = (alertId: number) => {
+  const handleSelectAlert = (alertId: string | number) => {
     const alertIdStr = alertId.toString();
     const newSelected = new Set(selectedAlerts);
     if (newSelected.has(alertIdStr)) {
@@ -195,7 +185,9 @@ export function AlertList({ alerts, onBulkAction }: AlertListProps) {
   return (
     <div className="alert-list">
       <AlertFilters
-        onFiltersChange={setFilters}
+        onFiltersChange={(newFilters: AlertFilterState) =>
+          setFilters(newFilters)
+        }
         totalCount={alerts.length}
         filteredCount={filteredAlerts.length}
       />

@@ -1,50 +1,106 @@
 // Email-related TypeScript interfaces and types for the phishing detection system
+// Updated to match actual API response structure from phishing-detection-api.kentharold.space
 
 export interface EmailHeaders {
-  received: string;
-  "authentication-results": string;
+  to?: string;
+  date?: string;
+  from?: string;
+  subject?: string;
+  "x-gm-gg"?: string;
+  "arc-seal"?: string;
+  received?: string;
+  "message-id"?: string;
+  "x-received"?: string;
+  "return-path"?: string;
+  "content-type"?: string;
+  "delivered-to"?: string;
+  "mime-version"?: string;
+  "received-spf"?: string;
+  "x-gm-features"?: string;
+  "dkim-signature"?: string;
+  "x-gm-message-state"?: string;
+  "x-google-smtp-source"?: string;
+  "arc-message-signature"?: string;
+  "authentication-results"?: string;
+  "x-google-dkim-signature"?: string;
+  "arc-authentication-results"?: string;
+  [key: string]: string | undefined; // For any additional headers
 }
 
-export interface ExtractedUrl {
-  url: string;
-  domain: string;
-  isMalicious: boolean;
+export interface CTIAnalysisEngine {
+  engine: string;
+  method: string;
+  result: string;
+}
+
+export interface CTIAnalysisStats {
+  timeout: number;
+  harmless: number;
+  malicious: number;
+  suspicious: number;
+  undetected: number;
+}
+
+export interface PopularityRank {
+  rank: number;
+  timestamp: number;
 }
 
 export interface DomainAnalysis {
-  threat_level: "clean" | "suspicious" | "high" | "malicious";
+  tags: string[];
+  type: "domain";
+  stats: CTIAnalysisStats;
+  categories: Record<string, string>;
+  confidence: "low" | "medium" | "high";
+  identifier: string;
+  threat_level: "clean" | "low" | "medium" | "high" | "critical";
+  popularity_ranks: Record<string, PopularityRank>;
   reputation_score: number;
-  malicious_engines: string[];
-  total_engines: number;
-  last_analysis: string;
+  malicious_engines: CTIAnalysisEngine[];
+  last_analysis_date: number;
+  suspicious_engines: CTIAnalysisEngine[];
 }
 
 export interface IPAnalysis {
-  threat_level: "clean" | "suspicious" | "high" | "malicious";
+  tags: string[];
+  type: "ip";
+  stats: CTIAnalysisStats;
+  categories: string[];
+  confidence: "low" | "medium" | "high";
+  identifier: string;
+  threat_level: "clean" | "low" | "medium" | "high" | "critical";
+  popularity_ranks: Record<string, PopularityRank>;
   reputation_score: number;
-  malicious_engines: string[];
-  total_engines: number;
-  last_analysis: string;
+  malicious_engines: CTIAnalysisEngine[];
+  last_analysis_date: number;
+  suspicious_engines: CTIAnalysisEngine[];
 }
 
 export interface UrlAnalysis {
-  threat_level: "clean" | "suspicious" | "high" | "malicious";
+  tags: string[];
+  type: "url";
+  stats: CTIAnalysisStats;
+  categories: Record<string, string>;
+  confidence: "low" | "medium" | "high";
+  identifier: string;
+  threat_level: "clean" | "low" | "medium" | "high" | "critical";
+  popularity_ranks: Record<string, PopularityRank>;
   reputation_score: number;
-  malicious_engines: string[];
-  total_engines: number;
-  last_analysis: string;
+  malicious_engines: CTIAnalysisEngine[];
+  last_analysis_date: number;
+  suspicious_engines: CTIAnalysisEngine[];
 }
 
 export interface DetailedAnalysis {
-  domains: Record<string, DomainAnalysis>;
   ips: Record<string, IPAnalysis>;
   urls: Record<string, UrlAnalysis>;
+  domains: Record<string, DomainAnalysis>;
   summary: {
     total_checks: number;
+    confidence_level: "low" | "medium" | "high";
+    reputation_score: number;
     malicious_detections: number;
     suspicious_detections: number;
-    reputation_score: number;
-    confidence_level: "low" | "medium" | "high";
   };
 }
 
@@ -76,7 +132,9 @@ export interface Email {
   dmarc_result: "pass" | "fail" | "none";
   phishing_score_cti: number; // 0.0 to 1.0
   cti_flags: string[];
+  cti_confidence: ConfidenceLevel;
   detailed_analysis: DetailedAnalysis;
+  detailed_cti_analysis: DetailedAnalysis; // Duplicate field from API
   threat_summary: ThreatSummary;
 }
 

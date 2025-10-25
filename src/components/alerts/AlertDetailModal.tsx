@@ -17,15 +17,15 @@ import {
   MessageSquare,
   Plus,
 } from "lucide-react";
-import type { Alert, AlertStatus } from "./AlertCard";
+import type { Alert, AlertStatus } from "../../models/alerts";
 import { formatDistanceToNow, format } from "date-fns";
 
 interface AlertDetailModalProps {
   alert: Alert | null;
   isOpen: boolean;
   onClose: () => void;
-  onStatusChange?: (alertId: number, status: AlertStatus) => void;
-  onAssign?: (alertId: number, assignee: string) => void;
+  onStatusChange?: (alertId: string | number, status: AlertStatus) => void;
+  onAssign?: (alertId: string | number, assignee: string) => void;
 }
 
 interface TimelineEvent {
@@ -197,7 +197,7 @@ export function AlertDetailModal({
                     </div>
                     <div className="overview-card__content">
                       <div className="overview-value">
-                        {alert.affectedEmails}
+                        {alert.affected_emails ?? 0}
                       </div>
                       <div className="overview-meta">emails impacted</div>
                     </div>

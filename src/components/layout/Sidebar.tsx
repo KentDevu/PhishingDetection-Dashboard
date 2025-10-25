@@ -40,6 +40,13 @@ export function Sidebar() {
       badge: 23, // Example badge for new threats
     },
     {
+      id: "threats",
+      label: "Threats",
+      icon: <Shield size={20} />,
+      path: "/threats",
+      badge: 8, // Active threat alerts
+    },
+    {
       id: "analytics",
       label: "Analytics",
       icon: <BarChart3 size={20} />,
