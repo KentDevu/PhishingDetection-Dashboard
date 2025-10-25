@@ -2,6 +2,7 @@
 
 export interface ThreatMetrics {
   total_emails: number;
+  high_risk_emails: number;
   malicious_count: number;
   suspicious_count: number;
   clean_count: number;
@@ -23,7 +24,7 @@ export interface ThreatTrend {
 export interface DomainIntelligence {
   domain: string;
   reputation_score: number;
-  threat_level: "critical" | "high" | "medium" | "low" | "clean";
+  threat_level: "clean" | "suspicious" | "malicious";
   first_seen: string;
   last_seen: string;
   email_count: number;

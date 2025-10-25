@@ -5,11 +5,13 @@
 import { apiService } from "./apiService";
 import type {
   Email,
+  ThreatLevel,
+} from "../types/email";
+import type {
   DeleteEmailResponse,
   BulkDeleteEmailsRequest,
   BulkDeleteEmailsResponse,
   ApiError,
-  ThreatLevel,
   ConfidenceLevel,
 } from "../models/email";
 
@@ -149,9 +151,7 @@ export class EmailService {
       const threatOrder: Record<ThreatLevel, number> = {
         clean: 0,
         suspicious: 1,
-        high: 2,
-        malicious: 3,
-        critical: 4,
+        malicious: 2,
       };
       const minLevel = threatOrder[threatLevel];
 

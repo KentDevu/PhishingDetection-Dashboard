@@ -1,7 +1,7 @@
 // Email Types and Interfaces
 
 export interface Email {
-  id: string;
+  id: number;
   sender: string;
   recipient: string;
   subject: string;
@@ -20,11 +20,24 @@ export interface Email {
   in_reply_to: string | null;
   references: string[];
   threat_summary: {
-    overall_risk: "low" | "medium" | "high" | "critical";
+    confidence: "low" | "medium" | "high";
+    overall_risk: "clean" | "suspicious" | "malicious";
+    total_analyzed: number;
     malicious_found: number;
     suspicious_found: number;
-    clean_found: number;
+    average_reputation: number;
   };
+  timestamp: string;
+  cti_flags: string[];
+  extracted_urls: string[];
+  sender_domain: string;
+  sender_ip: string;
+  sender_name: string;
+  spf_result: "pass" | "fail" | "neutral" | "softfail" | "none";
+  dkim_result: "pass" | "fail" | "neutral" | "none";
+  dmarc_result: "pass" | "fail" | "none";
+  headers: any; // EmailHeaders
+  detailed_analysis: any; // DetailedAnalysis
 }
 
 export interface EmailFolder {
@@ -188,10 +201,9 @@ export function isValidEmail(email: string): boolean {
 }
 
 export function calculateThreatLevel(phishing_score: number): ThreatLevel {
-  if (phishing_score >= 0.8) return "critical";
-  if (phishing_score >= 0.6) return "high";
-  if (phishing_score >= 0.3) return "medium";
-  return "low";
+  if (phishing_score >= 0.6) return "malicious";
+  if (phishing_score >= 0.3) return "suspicious";
+  return "clean";
 }
 
 export function formatEmailSize(bytes: number): string {

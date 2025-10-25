@@ -192,12 +192,6 @@ export function ThreatTrendAnalysis({
                   summaryStats.threatChange >= 0 ? "positive" : "negative"
                 }`}
               >
-                {summaryStats.threatChange >= 0 ? (
-                  <TrendingUp size={14} />
-                ) : (
-                  <TrendingDown size={14} />
-                )}
-                {Math.abs(summaryStats.threatChange).toFixed(1)}%
               </div>
             </div>
           </div>
@@ -216,41 +210,10 @@ export function ThreatTrendAnalysis({
                   summaryStats.emailChange >= 0 ? "positive" : "negative"
                 }`}
               >
-                {summaryStats.emailChange >= 0 ? (
-                  <TrendingUp size={14} />
-                ) : (
-                  <TrendingDown size={14} />
-                )}
-                {Math.abs(summaryStats.emailChange).toFixed(1)}%
               </div>
             </div>
           </div>
 
-          <div className="summary-stat">
-            <div className="summary-stat__icon summary-stat__icon--danger">
-              <TrendingUp size={20} />
-            </div>
-            <div className="summary-stat__content">
-              <div className="summary-stat__value">
-                {summaryStats.detectionRate.toFixed(1)}%
-              </div>
-              <div className="summary-stat__label">Detection Rate</div>
-              <div className="summary-stat__trend">Average performance</div>
-            </div>
-          </div>
-
-          <div className="summary-stat">
-            <div className="summary-stat__icon summary-stat__icon--warning">
-              <Activity size={20} />
-            </div>
-            <div className="summary-stat__content">
-              <div className="summary-stat__value">
-                {summaryStats.avgRisk.toFixed(0)}%
-              </div>
-              <div className="summary-stat__label">Avg Risk Score</div>
-              <div className="summary-stat__trend">Threat severity</div>
-            </div>
-          </div>
         </div>
       )}
 

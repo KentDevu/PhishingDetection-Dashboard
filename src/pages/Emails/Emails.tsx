@@ -48,17 +48,13 @@ export function Emails() {
       await refetch();
       addNotification({
         type: "success",
-        title: "Email Deleted",
         message: "The email has been successfully removed.",
-        duration: 4000,
       });
     } catch (error) {
       console.error("Failed to delete email:", error);
       addNotification({
         type: "error",
-        title: "Delete Failed",
         message: "Unable to delete the email. Please try again.",
-        duration: 5000,
       });
     }
   };
@@ -77,41 +73,58 @@ export function Emails() {
       await refetch();
       addNotification({
         type: "success",
-        title: "Emails Deleted",
         message: `Successfully deleted ${emailIds.length} email${
           emailIds.length === 1 ? "" : "s"
         }.`,
-        duration: 4000,
       });
     } catch (error) {
       console.error("Failed to delete emails:", error);
       addNotification({
         type: "error",
-        title: "Bulk Delete Failed",
         message: "Unable to delete the selected emails. Please try again.",
-        duration: 5000,
       });
+    }
+  };
+
+  const mapRiskLevel = (risk: string) => {
+    switch (risk) {
+      case "low":
+      case "clean":
+        return "clean";
+      case "medium":
+      case "suspicious":
+        return "suspicious";
+      case "high":
+      case "critical":
+      case "malicious":
+        return "malicious";
+      default:
+        return "clean"; // default to clean
     }
   };
 
   const getEmailStats = () => {
     if (!emails)
-      return { total: 0, critical: 0, malicious: 0, suspicious: 0, clean: 0 };
+      return { total: 0, malicious: 0, suspicious: 0, clean: 0 };
+
+    console.log("Emails stats debug:", {
+      totalEmails: emails.length,
+      sampleRisks: emails.slice(0, 5).map(e => e.threat_summary?.overall_risk),
+      allRisks: emails.map(e => e.threat_summary?.overall_risk)
+    });
 
     const stats = {
       total: emails.length,
-      critical: emails.filter(
-        (e) => e.threat_summary.overall_risk === "critical"
-      ).length,
       malicious: emails.filter(
-        (e) => e.threat_summary.overall_risk === "malicious"
+        (e) => mapRiskLevel(e.threat_summary?.overall_risk || "low") === "malicious"
       ).length,
       suspicious: emails.filter(
-        (e) => e.threat_summary.overall_risk === "suspicious"
+        (e) => mapRiskLevel(e.threat_summary?.overall_risk || "low") === "suspicious"
       ).length,
-      clean: emails.filter((e) => e.threat_summary.overall_risk === "clean")
+      clean: emails.filter((e) => mapRiskLevel(e.threat_summary?.overall_risk || "low") === "clean")
         .length,
     };
+    console.log("Calculated stats:", stats);
     return stats;
   };
 
@@ -215,8 +228,8 @@ export function Emails() {
         </div>
 
         <div className="stat-card stat-card--danger">
-          <div className="stat-card__value">{stats.critical}</div>
-          <div className="stat-card__label">Critical Threats</div>
+          <div className="stat-card__value">{stats.malicious}</div>
+          <div className="stat-card__label">Malicious Threats</div>
           <div className="stat-card__trend">
             <span className="trend-indicator trend-indicator--up">▲</span>
             <span>Immediate action required</span>
@@ -224,9 +237,7 @@ export function Emails() {
         </div>
 
         <div className="stat-card stat-card--warning">
-          <div className="stat-card__value">
-            {stats.malicious + stats.suspicious}
-          </div>
+          <div className="stat-card__value">{stats.suspicious}</div>
           <div className="stat-card__label">Suspicious</div>
           <div className="stat-card__trend">
             <span className="trend-indicator trend-indicator--up">▲</span>
@@ -240,20 +251,6 @@ export function Emails() {
           <div className="stat-card__trend">
             <span className="trend-indicator trend-indicator--down">▼</span>
             <span>Safe emails</span>
-          </div>
-        </div>
-
-        <div className="stat-card stat-card--info">
-          <div className="stat-card__value">
-            {stats.total > 0
-              ? Math.round((stats.clean / stats.total) * 100)
-              : 0}
-            %
-          </div>
-          <div className="stat-card__label">Safety Rate</div>
-          <div className="stat-card__trend">
-            <span className="trend-indicator trend-indicator--neutral">●</span>
-            <span>System performance</span>
           </div>
         </div>
       </div>
