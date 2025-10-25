@@ -16,13 +16,30 @@ export function Dashboard() {
   const { data: emails, loading, error, refetch } = useEmails();
   const { addNotification } = useNotifications();
 
+  console.log("Dashboard: emails received", emails);
+
+  const mapRiskLevel = (risk: string) => {
+    switch (risk) {
+      case "low":
+      case "clean":
+        return "clean";
+      case "medium":
+      case "suspicious":
+        return "suspicious";
+      case "high":
+      case "critical":
+      case "malicious":
+        return "malicious";
+      default:
+        return "clean"; // default to clean
+    }
+  };
+
   // Calculate KPI values from emails
   const totalEmails = emails?.length || 0;
   const highRiskEmails =
     emails?.filter(
-      (email) =>
-        email.threat_summary.overall_risk === "high" ||
-        email.threat_summary.overall_risk === "critical"
+      (email) => mapRiskLevel(email.threat_summary?.overall_risk || "low") === "malicious"
     ).length || 0;
 
   const avgPhishingScore =
@@ -38,12 +55,14 @@ export function Dashboard() {
     emails?.filter((email) => email.threat_summary.malicious_found > 0)
       .length || 0;
 
+  console.log("Dashboard: totalEmails", totalEmails, "highRiskEmails", highRiskEmails, "avgPhishingScore", avgPhishingScore, "activeThreats", activeThreats);
+
   // Compute risk distribution data for chart
   const riskDistributionData = useMemo(() => {
     if (!emails?.length) return [];
 
     const distribution = emails.reduce((acc, email) => {
-      const risk = email.threat_summary.overall_risk;
+      const risk = email.threat_summary ? mapRiskLevel(email.threat_summary.overall_risk) : "clean";
       acc[risk] = (acc[risk] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
@@ -62,22 +81,10 @@ export function Dashboard() {
         color: "#13FFA0",
       },
       {
-        name: "High Risk",
-        value: distribution.high || 0,
-        level: "high" as const,
-        color: "#B8E96B",
-      },
-      {
         name: "Malicious",
         value: distribution.malicious || 0,
         level: "malicious" as const,
         color: "#ED3333",
-      },
-      {
-        name: "Critical",
-        value: distribution.critical || 0,
-        level: "critical" as const,
-        color: "#DC2626",
       },
     ].filter((item) => item.value > 0);
   }, [emails]);
@@ -104,16 +111,13 @@ export function Dashboard() {
       });
 
       const clean = dayEmails.filter(
-        (e) => e.threat_summary.overall_risk === "clean"
+        (e) => mapRiskLevel(e.threat_summary.overall_risk) === "clean"
       ).length;
       const suspicious = dayEmails.filter(
-        (e) => e.threat_summary.overall_risk === "suspicious"
+        (e) => mapRiskLevel(e.threat_summary.overall_risk) === "suspicious"
       ).length;
       const malicious = dayEmails.filter(
-        (e) =>
-          e.threat_summary.overall_risk === "high" ||
-          e.threat_summary.overall_risk === "malicious" ||
-          e.threat_summary.overall_risk === "critical"
+        (e) => mapRiskLevel(e.threat_summary.overall_risk) === "malicious"
       ).length;
 
       return {
@@ -133,40 +137,19 @@ export function Dashboard() {
   useEffect(() => {
     if (emails && emails.length > 0) {
       const criticalEmails = emails.filter(
-        (email) => email.threat_summary.overall_risk === "critical"
+        (email) => mapRiskLevel(email.threat_summary.overall_risk) === "malicious"
       );
 
       // Only show notifications for the first critical email to avoid spam
       if (criticalEmails.length > 0 && criticalEmails.length <= 2) {
         criticalEmails.slice(0, 1).forEach((email) => {
           addNotification({
-            type: "threat",
-            title: "Critical Threat Detected",
+            type: "error",
             message: `High-risk email from ${
               email.sender
             } detected with ${Math.round(
               email.phishing_score_cti * 100
             )}% phishing score.`,
-            persistent: true,
-            metadata: {
-              severity: "critical",
-              emailId: email.id,
-              sender: email.sender,
-            },
-            actions: [
-              {
-                id: "view",
-                label: "View Email",
-                action: () => console.log("Viewing email:", email.id),
-                primary: true,
-              },
-              {
-                id: "quarantine",
-                label: "Quarantine",
-                action: () => console.log("Quarantining email:", email.id),
-                destructive: true,
-              },
-            ],
           });
         });
       }
@@ -178,19 +161,9 @@ export function Dashboard() {
     if (error) {
       addNotification({
         type: "error",
-        title: "Failed to Load Email Data",
         message:
           error.error ||
           "Unable to connect to the threat analysis API. Email data may not be current.",
-        duration: 8000,
-        actions: [
-          {
-            id: "retry",
-            label: "Retry",
-            action: () => refetch(),
-            primary: true,
-          },
-        ],
       });
     }
   }, [error, addNotification, refetch]);
@@ -234,11 +207,6 @@ export function Dashboard() {
                   icon={<Mail size={20} />}
                   variant="default"
                   loading={loading}
-                  trend={{
-                    direction: "up",
-                    value: "+12%",
-                    type: "positive",
-                  }}
                 />
 
                 <KPICard
@@ -248,40 +216,8 @@ export function Dashboard() {
                   icon={<AlertTriangle size={20} />}
                   variant="danger"
                   loading={loading}
-                  trend={{
-                    direction: "up",
-                    value: "+5%",
-                    type: "negative",
-                  }}
                 />
 
-                <KPICard
-                  title="Avg Phishing Score"
-                  value={`${avgPhishingScore}%`}
-                  subtitle="Detection confidence"
-                  icon={<TrendingUp size={20} />}
-                  variant="warning"
-                  loading={loading}
-                  trend={{
-                    direction: "down",
-                    value: "-3%",
-                    type: "positive",
-                  }}
-                />
-
-                <KPICard
-                  title="Active Threats"
-                  value={activeThreats}
-                  subtitle="Requiring attention"
-                  icon={<Shield size={20} />}
-                  variant="info"
-                  loading={loading}
-                  trend={{
-                    direction: "down",
-                    value: "-2",
-                    type: "positive",
-                  }}
-                />
               </div>
             </div>
 

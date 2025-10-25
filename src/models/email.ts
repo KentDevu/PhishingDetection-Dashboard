@@ -106,8 +106,8 @@ export interface DetailedAnalysis {
 
 // Threat Summary structure
 export interface ThreatSummary {
-  overall_risk: "clean" | "suspicious" | "high" | "malicious" | "critical";
   confidence: "low" | "medium" | "high";
+  overall_risk: "clean" | "suspicious" | "malicious";
   total_analyzed: number;
   malicious_found: number;
   suspicious_found: number;

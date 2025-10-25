@@ -1,6 +1,7 @@
 // Sidebar Navigation Component
 
-import { useState } from "react";
+import { useState, createContext, useContext } from "react";
+import type { ReactNode } from "react";
 import { NavLink } from "react-router-dom";
 import {
   Home,
@@ -21,8 +22,37 @@ interface SidebarItem {
   badge?: number;
 }
 
-export function Sidebar() {
+interface SidebarContextType {
+  isCollapsed: boolean;
+  toggleSidebar: () => void;
+}
+
+const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
+
+export const useSidebar = () => {
+  const context = useContext(SidebarContext);
+  if (!context) {
+    throw new Error("useSidebar must be used within a SidebarProvider");
+  }
+  return context;
+};
+
+export const SidebarProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
+  return (
+    <SidebarContext.Provider value={{ isCollapsed, toggleSidebar }}>
+      {children}
+    </SidebarContext.Provider>
+  );
+};
+
+export function Sidebar() {
+  const { isCollapsed, toggleSidebar } = useSidebar();
 
   const sidebarItems: SidebarItem[] = [
     {
@@ -65,7 +95,7 @@ export function Sidebar() {
         </div>
         <button
           className="sidebar__toggle"
-          onClick={() => setIsCollapsed(!isCollapsed)}
+          onClick={toggleSidebar}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}

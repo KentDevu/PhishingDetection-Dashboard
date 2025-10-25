@@ -2,10 +2,11 @@
 // CLIENT-SIDE COMPUTATION from email data
 
 import { useState } from "react";
-import { BarChart3, TrendingUp, RefreshCw, Filter } from "lucide-react";
+import { BarChart3, TrendingUp, RefreshCw, Filter, Mail, AlertTriangle } from "lucide-react";
 import { ThreatIntelligenceChart } from "../../components/analytics/ThreatIntelligenceChart";
 import { ThreatTrendAnalysis } from "../../components/analytics/ThreatTrendAnalysis";
 import { DomainIntelligenceTable } from "../../components/analytics/DomainIntelligenceTable";
+import { KPICard } from "../../components/dashboard";
 import { useAnalyticsDashboard } from "../../hooks/useAnalyticsDashboard";
 import { useThreatMetrics } from "../../hooks/useThreatMetrics";
 import { useThreatTrends } from "../../hooks/useThreatTrends";
@@ -35,12 +36,6 @@ export function Analytics() {
 
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<ClientAnalyticsFilters>({
-    date_range: {
-      start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      end: new Date().toISOString().split("T")[0],
-    },
     threat_levels: [],
     domains: [],
   });
@@ -172,6 +167,33 @@ export function Analytics() {
       )}
 
       <div className="analytics-content">
+        {/* KPI Cards Row */}
+        <section className="analytics-section">
+          <div className="section-header">
+            <h2>Key Metrics</h2>
+            <p>Essential threat analysis indicators</p>
+          </div>
+          <div className="analytics-kpi-grid">
+            <KPICard
+              title="Total Emails"
+              value={threatMetrics?.total_emails?.toLocaleString() || "0"}
+              subtitle="Analyzed this period"
+              icon={<Mail size={20} />}
+              variant="default"
+              loading={metricsLoading}
+            />
+
+            <KPICard
+              title="High Risk"
+              value={threatMetrics?.high_risk_emails || 0}
+              subtitle="Critical threats detected"
+              icon={<AlertTriangle size={20} />}
+              variant="danger"
+              loading={metricsLoading}
+            />
+          </div>
+        </section>
+
         <section className="analytics-section">
           <div className="section-header">
             <h2>Threat Intelligence Overview</h2>

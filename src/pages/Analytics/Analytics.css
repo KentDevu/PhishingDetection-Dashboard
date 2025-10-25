@@ -226,6 +226,13 @@
   font-size: var(--font-size-sm);
 }
 
+.analytics-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
 /* Animations */
 @keyframes spin {
   0% {

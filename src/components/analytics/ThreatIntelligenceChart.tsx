@@ -14,7 +14,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Shield, AlertTriangle, TrendingUp, Eye } from "lucide-react";
+import { AlertTriangle, TrendingUp, Eye } from "lucide-react";
 import type { ThreatMetrics } from "../../models/analytics";
 
 interface ThreatIntelligenceChartProps {
@@ -28,16 +28,7 @@ export function ThreatIntelligenceChart({
 }: ThreatIntelligenceChartProps) {
   const chartData = useMemo(() => {
     if (!data) return [];
-
     return [
-      {
-        name: "Critical",
-        count: Math.round(data.malicious_count * 0.3), // Assume 30% are critical
-        percentage: Math.round(
-          ((data.malicious_count * 0.3) / data.total_emails) * 100
-        ),
-        color: "#EF4444",
-      },
       {
         name: "Malicious",
         count: data.malicious_count,
@@ -70,29 +61,13 @@ export function ThreatIntelligenceChart({
       { name: "Malicious", value: data.malicious_count, color: "#EF4444" },
       { name: "Suspicious", value: data.suspicious_count, color: "#F59E0B" },
       { name: "Clean", value: data.clean_count, color: "#22C55E" },
-    ];
+    ].filter(item => item.value > 0);
   }, [data]);
 
   const kpis = useMemo(() => {
     if (!data) return [];
 
     return [
-      {
-        label: "Detection Rate",
-        value: `${(data.detection_rate * 100).toFixed(1)}%`,
-        icon: <Shield size={20} />,
-        trend: "+2.3%",
-        trendUp: true,
-        color: "success",
-      },
-      {
-        label: "Avg Risk Score",
-        value: `${(data.average_risk_score * 100).toFixed(0)}%`,
-        icon: <AlertTriangle size={20} />,
-        trend: "-1.2%",
-        trendUp: false,
-        color: "warning",
-      },
       {
         label: "False Positive Rate",
         value: `${(data.false_positive_rate * 100).toFixed(2)}%`,
@@ -137,28 +112,6 @@ export function ThreatIntelligenceChart({
 
   return (
     <div className="threat-intel-chart">
-      {/* KPI Cards */}
-      <div className="threat-intel-kpis">
-        {kpis.map((kpi, index) => (
-          <div key={index} className={`kpi-card kpi-card--${kpi.color}`}>
-            <div className="kpi-card__icon">{kpi.icon}</div>
-            <div className="kpi-card__content">
-              <div className="kpi-card__value">{kpi.value}</div>
-              <div className="kpi-card__label">{kpi.label}</div>
-              <div
-                className={`kpi-card__trend ${
-                  kpi.trendUp ? "kpi-card__trend--up" : "kpi-card__trend--down"
-                }`}
-              >
-                <span className="trend-indicator">
-                  {kpi.trendUp ? "↗" : "↘"}
-                </span>
-                <span>{kpi.trend}</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
 
       {/* Charts Section */}
       <div className="threat-intel-charts">
