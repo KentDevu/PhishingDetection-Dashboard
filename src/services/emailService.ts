@@ -1,4 +1,6 @@
 // Email-specific API service methods
+// READ-ONLY: This frontend only displays emails processed by n8n automation
+// Email ingestion and analysis is handled by n8n -> POST /emails
 
 import { apiService } from "./apiService";
 import type {
@@ -28,6 +30,7 @@ export class EmailService {
 
   /**
    * Fetches all emails from the database with optional filtering
+   * This is the PRIMARY method - all emails are already analyzed by n8n
    * @param filters - Optional filtering parameters
    * @returns Promise resolving to array of emails
    */
@@ -184,133 +187,6 @@ export class EmailService {
    */
   async getEmailsByAttachments(hasAttachments: boolean): Promise<Email[]> {
     return this.getAllEmails({ has_attachments: hasAttachments });
-  }
-
-  /**
-   * Analyzes an email for phishing threats using the POST /emails endpoint
-   * @param emailData - Email content and metadata to analyze
-   * @returns Promise resolving to analysis results
-   */
-  async analyzeEmail(emailData: {
-    sender: string;
-    recipient: string;
-    subject: string;
-    body: string;
-    attachments?: string[];
-    headers?: Record<string, string>;
-  }): Promise<Email> {
-    try {
-      const response = await apiService.post<Email>(
-        this.endpoint, // POST /emails endpoint
-        emailData
-      );
-      return response;
-    } catch (error) {
-      console.error("Failed to analyze email:", error);
-      throw error as ApiError;
-    }
-  }
-
-  /**
-   * Uploads and analyzes an email file for phishing threats
-   * @param file - Email file (.eml, .msg, or .txt format)
-   * @param metadata - Optional email metadata
-   * @returns Promise resolving to analysis results
-   */
-  async uploadAndAnalyzeEmail(
-    file: File,
-    metadata?: {
-      sender?: string;
-      recipient?: string;
-      subject?: string;
-    }
-  ): Promise<Email> {
-    try {
-      // Read file content
-      const fileContent = await this.readFileAsText(file);
-
-      // Extract basic info from file if metadata not provided
-      const emailData = {
-        sender: metadata?.sender || this.extractSenderFromContent(fileContent),
-        recipient:
-          metadata?.recipient || this.extractRecipientFromContent(fileContent),
-        subject:
-          metadata?.subject || this.extractSubjectFromContent(fileContent),
-        body: fileContent,
-        attachments: [], // File attachments would need separate handling
-        headers: this.extractHeadersFromContent(fileContent),
-      };
-
-      return this.analyzeEmail(emailData);
-    } catch (error) {
-      console.error("Failed to upload and analyze email:", error);
-      throw error as ApiError;
-    }
-  }
-
-  /**
-   * Reads file content as text
-   * @param file - File to read
-   * @returns Promise resolving to file content
-   */
-  private async readFileAsText(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target?.result as string);
-      reader.onerror = () => reject(new Error("Failed to read file"));
-      reader.readAsText(file);
-    });
-  }
-
-  /**
-   * Extracts sender email from email content
-   * @param content - Email content
-   * @returns Sender email or placeholder
-   */
-  private extractSenderFromContent(content: string): string {
-    const fromMatch = content.match(/^From:\s*(.+)$/m);
-    return fromMatch ? fromMatch[1].trim() : "unknown@example.com";
-  }
-
-  /**
-   * Extracts recipient email from email content
-   * @param content - Email content
-   * @returns Recipient email or placeholder
-   */
-  private extractRecipientFromContent(content: string): string {
-    const toMatch = content.match(/^To:\s*(.+)$/m);
-    return toMatch ? toMatch[1].trim() : "recipient@example.com";
-  }
-
-  /**
-   * Extracts subject from email content
-   * @param content - Email content
-   * @returns Subject or placeholder
-   */
-  private extractSubjectFromContent(content: string): string {
-    const subjectMatch = content.match(/^Subject:\s*(.+)$/m);
-    return subjectMatch ? subjectMatch[1].trim() : "No Subject";
-  }
-
-  /**
-   * Extracts headers from email content
-   * @param content - Email content
-   * @returns Headers object
-   */
-  private extractHeadersFromContent(content: string): Record<string, string> {
-    const headers: Record<string, string> = {};
-    const headerMatches = content.match(/^[\w-]+:\s*.+$/gm);
-
-    if (headerMatches) {
-      headerMatches.forEach((header) => {
-        const [key, ...valueParts] = header.split(":");
-        if (key && valueParts.length > 0) {
-          headers[key.trim()] = valueParts.join(":").trim();
-        }
-      });
-    }
-
-    return headers;
   }
 
   /**

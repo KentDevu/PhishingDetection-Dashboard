@@ -112,15 +112,17 @@ export function EmailCard({
           <div
             className="threat-indicator"
             style={{
-              color: getThreatColor(email.threat_summary.overall_risk),
+              color: getThreatColor(
+                email.threat_summary?.overall_risk || "clean"
+              ),
               backgroundColor: `${getThreatColor(
-                email.threat_summary.overall_risk
+                email.threat_summary?.overall_risk || "clean"
               )}20`,
             }}
           >
-            {getThreatIcon(email.threat_summary.overall_risk)}
+            {getThreatIcon(email.threat_summary?.overall_risk || "clean")}
             <span className="threat-level">
-              {email.threat_summary.overall_risk.toUpperCase()}
+              {(email.threat_summary?.overall_risk || "clean").toUpperCase()}
             </span>
           </div>
         </div>
@@ -160,7 +162,9 @@ export function EmailCard({
             <span
               className="score-value"
               style={{
-                color: getThreatColor(email.threat_summary.overall_risk),
+                color: getThreatColor(
+                  email.threat_summary?.overall_risk || "clean"
+                ),
               }}
             >
               {formatScore(email.phishing_score_cti)}%
@@ -266,25 +270,27 @@ export function EmailCard({
               <div className="threat-stat">
                 <span className="stat-label">Confidence</span>
                 <span className="stat-value">
-                  {email.threat_summary.confidence.toUpperCase()}
+                  {(
+                    email.threat_summary?.confidence || "unknown"
+                  ).toUpperCase()}
                 </span>
               </div>
               <div className="threat-stat">
                 <span className="stat-label">Malicious Found</span>
                 <span className="stat-value">
-                  {email.threat_summary.malicious_found}
+                  {email.threat_summary?.malicious_found || 0}
                 </span>
               </div>
               <div className="threat-stat">
                 <span className="stat-label">Suspicious Found</span>
                 <span className="stat-value">
-                  {email.threat_summary.suspicious_found}
+                  {email.threat_summary?.suspicious_found || 0}
                 </span>
               </div>
               <div className="threat-stat">
                 <span className="stat-label">Avg Reputation</span>
                 <span className="stat-value">
-                  {email.threat_summary.average_reputation.toFixed(1)}
+                  {(email.threat_summary?.average_reputation || 0).toFixed(1)}
                 </span>
               </div>
             </div>

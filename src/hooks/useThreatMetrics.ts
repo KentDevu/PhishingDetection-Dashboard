@@ -1,71 +1,65 @@
-// Custom hook for threat metrics
+// Custom hook for threat metrics - CLIENT-SIDE COMPUTATION
 
 import { useState, useEffect, useCallback } from "react";
-import { analyticsService } from "../services/analyticsService";
-import { handleApiError } from "../utils/errorUtils";
+import {
+  clientAnalyticsService,
+  type ClientAnalyticsFilters,
+} from "../services/clientAnalyticsService";
+import { useEmails } from "./useEmails";
 import type { ThreatMetrics } from "../models/analytics";
-import type { AsyncState } from "../models/email";
 
-interface UseThreatMetricsReturn extends AsyncState<ThreatMetrics> {
-  refetch: () => Promise<void>;
-  updateDateRange: (dateRange: { start: string; end: string }) => Promise<void>;
+interface UseThreatMetricsReturn {
+  data: ThreatMetrics | null;
+  loading: boolean;
+  error: string | null;
+  refetch: () => void;
+  updateDateRange: (dateRange: { start: string; end: string }) => void;
 }
 
 export function useThreatMetrics(initialDateRange?: {
   start: string;
   end: string;
 }): UseThreatMetricsReturn {
-  const [state, setState] = useState<AsyncState<ThreatMetrics>>({
-    data: null,
-    loading: false,
-    error: null,
-  });
-
+  const { data: emails, loading, error, refetch: refetchEmails } = useEmails();
   const [dateRange, setDateRange] = useState<
     { start: string; end: string } | undefined
   >(initialDateRange);
+  const [data, setData] = useState<ThreatMetrics | null>(null);
 
-  const fetchMetrics = useCallback(
-    async (range?: { start: string; end: string }) => {
-      setState((prev) => ({ ...prev, loading: true, error: null }));
+  // Compute metrics from emails
+  useEffect(() => {
+    if (!emails || emails.length === 0) {
+      setData(null);
+      return;
+    }
 
-      try {
-        const metrics = await analyticsService.getThreatMetrics(range);
-        setState({
-          data: metrics,
-          loading: false,
-          error: null,
-        });
-      } catch (error) {
-        const apiError = handleApiError(error, "fetchThreatMetrics");
-        setState({
-          data: null,
-          loading: false,
-          error: apiError,
-        });
-      }
+    const filters: ClientAnalyticsFilters | undefined = dateRange
+      ? { date_range: dateRange }
+      : undefined;
+
+    const filteredEmails = filters
+      ? clientAnalyticsService.applyFilters(emails, filters)
+      : emails;
+
+    const metrics = clientAnalyticsService.computeThreatMetrics(filteredEmails);
+    setData(metrics);
+  }, [emails, dateRange]);
+
+  const refetch = useCallback(() => {
+    refetchEmails();
+  }, [refetchEmails]);
+
+  const updateDateRange = useCallback(
+    (newDateRange: { start: string; end: string }) => {
+      setDateRange(newDateRange);
     },
     []
   );
 
-  const refetch = useCallback(async () => {
-    await fetchMetrics(dateRange);
-  }, [fetchMetrics, dateRange]);
-
-  const updateDateRange = useCallback(
-    async (newDateRange: { start: string; end: string }) => {
-      setDateRange(newDateRange);
-      await fetchMetrics(newDateRange);
-    },
-    [fetchMetrics]
-  );
-
-  useEffect(() => {
-    fetchMetrics(dateRange);
-  }, [fetchMetrics, dateRange]);
-
   return {
-    ...state,
+    data,
+    loading,
+    error: error ? String(error) : null,
     refetch,
     updateDateRange,
   };

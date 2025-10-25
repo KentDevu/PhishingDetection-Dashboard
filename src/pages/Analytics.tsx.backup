@@ -1,12 +1,10 @@
 // Analytics Page - Comprehensive threat intelligence and reporting dashboard
+// CLIENT-SIDE COMPUTATION from email data
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   BarChart3,
   TrendingUp,
-  Globe,
-  Download,
-  Settings,
   RefreshCw,
   Filter,
 } from "lucide-react";
@@ -16,37 +14,33 @@ import { DomainIntelligenceTable } from "../components/analytics/DomainIntellige
 import { useAnalyticsDashboard } from "../hooks/useAnalyticsDashboard";
 import { useThreatMetrics } from "../hooks/useThreatMetrics";
 import { useThreatTrends } from "../hooks/useThreatTrends";
-import { analyticsService } from "../services/analyticsService";
-import type { DomainIntelligence, AnalyticsFilters } from "../models/analytics";
+import type { ClientAnalyticsFilters } from "../services/clientAnalyticsService";
 
 export function Analytics() {
-  // Analytics data hooks
+  // Client-side computed analytics hooks
   const {
+    data: dashboardData,
     loading: dashboardLoading,
     error: dashboardError,
     refetch: refetchDashboard,
+    applyFilters: applyDashboardFilters,
   } = useAnalyticsDashboard();
+  
   const {
     data: threatMetrics,
     loading: metricsLoading,
     refetch: refetchMetrics,
   } = useThreatMetrics();
+  
   const {
     data: threatTrends,
     loading: trendsLoading,
     changePeriod,
   } = useThreatTrends();
 
-  // Domain intelligence data (managed locally)
-  const [domainData, setDomainData] = useState<DomainIntelligence[] | null>(
-    null
-  );
-  const [domainLoading, setDomainLoading] = useState(false);
-  const [domainError, setDomainError] = useState<string | null>(null);
-
   // Filter states
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<AnalyticsFilters>({
+  const [filters, setFilters] = useState<ClientAnalyticsFilters>({
     date_range: {
       start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
         .toISOString()
@@ -55,94 +49,22 @@ export function Analytics() {
     },
     threat_levels: [],
     domains: [],
-    countries: [],
-    attack_types: [],
-    confidence_threshold: 0.7,
   });
 
-  // Load domain intelligence data
-  useEffect(() => {
-    const fetchDomainData = async () => {
-      setDomainLoading(true);
-      try {
-        const domains = await analyticsService.getDomainIntelligence(
-          100,
-          "threat_level"
-        );
-        setDomainData(domains);
-        setDomainError(null);
-      } catch (error) {
-        console.error("Failed to fetch domain intelligence:", error);
-        setDomainError("Failed to load domain intelligence data");
-      } finally {
-        setDomainLoading(false);
-      }
-    };
-
-    fetchDomainData();
-  }, []);
-
   // Handle data refresh
-  const handleRefreshAll = async () => {
-    await Promise.all([
-      refetchDashboard(),
-      refetchMetrics(),
-      // Refresh domain data
-      (async () => {
-        setDomainLoading(true);
-        try {
-          const domains = await analyticsService.getDomainIntelligence(
-            100,
-            "threat_level"
-          );
-          setDomainData(domains);
-          setDomainError(null);
-        } catch (error) {
-          console.error("Failed to refresh domain intelligence:", error);
-          setDomainError("Failed to refresh domain intelligence data");
-        } finally {
-          setDomainLoading(false);
-        }
-      })(),
-    ]);
+  const handleRefreshAll = () => {
+    refetchDashboard();
+    refetchMetrics();
   };
 
   // Handle filter application
-  const handleApplyFilters = (newFilters: AnalyticsFilters) => {
+  const handleApplyFilters = (newFilters: ClientAnalyticsFilters) => {
     setFilters(newFilters);
-    // Apply filters to data sources
-    // This would typically trigger API calls with new parameters
-  };
-
-  // Handle report generation
-  const handleGenerateReport = async () => {
-    try {
-      const reportConfig = {
-        name: `Security Analytics Report - ${
-          new Date().toISOString().split("T")[0]
-        }`,
-        type: "technical" as const,
-        frequency: "monthly" as const,
-        format: "pdf" as const,
-        filters: {
-          ...filters,
-          users: [], // Add required users field
-        },
-        sections: ["metrics", "trends", "domains", "incidents"],
-      };
-
-      const response = await analyticsService.generateReport(reportConfig);
-
-      // In a real application, this would trigger a download or redirect
-      window.open(response.report_url, "_blank");
-    } catch (error) {
-      console.error("Failed to generate report:", error);
-      alert("Failed to generate report. Please try again.");
-    }
+    applyDashboardFilters(newFilters);
   };
 
   const isLoading = dashboardLoading || metricsLoading || trendsLoading;
-  const hasError = dashboardError || domainError;
+  const hasError = dashboardError;
 
   return (
     <div className="analytics-page">
@@ -356,11 +278,13 @@ const styles = `
 .analytics-page {
   padding: var(--spacing-xl);
   max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* Header */
-.analytics-header {
+          <p>
+            {typeof dashboardError === "string"
+              ? dashboardError
+              : dashboardError instanceof Error
+              ? dashboardError.message
+              : (dashboardError as any)?.error || domainError || "An unknown error occurred"}
+          </p>
   display: flex;
   align-items: center;
   justify-content: space-between;

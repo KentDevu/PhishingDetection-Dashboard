@@ -1,118 +1,120 @@
 // Email-related TypeScript interfaces and types for the phishing detection system
-// Updated to match actual API response structure from phishing-detection-api.kentharold.space
+// Matches exact API response structure from GET /api/emails/all
 
 export interface EmailHeaders {
-  to?: string;
-  date?: string;
-  from?: string;
-  subject?: string;
-  "x-gm-gg"?: string;
-  "arc-seal"?: string;
-  received?: string;
-  "message-id"?: string;
-  "x-received"?: string;
   "return-path"?: string;
+  received?: string;
+  to?: string;
+  from?: string;
+  date?: string;
+  subject?: string;
+  "message-id"?: string;
   "content-type"?: string;
-  "delivered-to"?: string;
   "mime-version"?: string;
+  "authentication-results"?: string;
   "received-spf"?: string;
-  "x-gm-features"?: string;
   "dkim-signature"?: string;
+  "x-received"?: string;
+  "delivered-to"?: string;
+  "arc-seal"?: string;
+  "arc-message-signature"?: string;
+  "arc-authentication-results"?: string;
   "x-gm-message-state"?: string;
   "x-google-smtp-source"?: string;
-  "arc-message-signature"?: string;
-  "authentication-results"?: string;
   "x-google-dkim-signature"?: string;
-  "arc-authentication-results"?: string;
+  "x-gm-features"?: string;
+  "x-gm-gg"?: string;
   [key: string]: string | undefined; // For any additional headers
 }
 
+// CTI Analysis Engine from VirusTotal
 export interface CTIAnalysisEngine {
   engine: string;
-  method: string;
   result: string;
+  method?: string;
 }
 
 export interface CTIAnalysisStats {
-  timeout: number;
-  harmless: number;
   malicious: number;
   suspicious: number;
+  harmless: number;
   undetected: number;
+  timeout?: number;
 }
 
-export interface PopularityRank {
-  rank: number;
-  timestamp: number;
-}
-
+// Domain Analysis from detailed_analysis
 export interface DomainAnalysis {
-  tags: string[];
+  identifier: string;
   type: "domain";
   stats: CTIAnalysisStats;
-  categories: Record<string, string>;
-  confidence: "low" | "medium" | "high";
-  identifier: string;
-  threat_level: "clean" | "low" | "medium" | "high" | "critical";
-  popularity_ranks: Record<string, PopularityRank>;
   reputation_score: number;
+  threat_level: "clean" | "low" | "medium" | "high" | "critical";
+  confidence: "low" | "medium" | "high";
   malicious_engines: CTIAnalysisEngine[];
-  last_analysis_date: number;
   suspicious_engines: CTIAnalysisEngine[];
+  categories: string[];
+  tags: string[];
+  last_analysis_date: string;
+  popularity_ranks: Record<string, { rank: number; timestamp: number }>;
 }
 
+// IP Analysis from detailed_analysis
 export interface IPAnalysis {
-  tags: string[];
+  identifier: string;
   type: "ip";
   stats: CTIAnalysisStats;
-  categories: string[];
-  confidence: "low" | "medium" | "high";
-  identifier: string;
-  threat_level: "clean" | "low" | "medium" | "high" | "critical";
-  popularity_ranks: Record<string, PopularityRank>;
   reputation_score: number;
+  threat_level: "clean" | "low" | "medium" | "high" | "critical";
+  confidence: "low" | "medium" | "high";
   malicious_engines: CTIAnalysisEngine[];
-  last_analysis_date: number;
   suspicious_engines: CTIAnalysisEngine[];
+  categories: string[];
+  tags: string[];
+  last_analysis_date: string;
+  popularity_ranks: Record<string, { rank: number; timestamp: number }>;
 }
 
+// URL Analysis from detailed_analysis
 export interface UrlAnalysis {
-  tags: string[];
+  identifier: string;
   type: "url";
   stats: CTIAnalysisStats;
-  categories: Record<string, string>;
-  confidence: "low" | "medium" | "high";
-  identifier: string;
-  threat_level: "clean" | "low" | "medium" | "high" | "critical";
-  popularity_ranks: Record<string, PopularityRank>;
   reputation_score: number;
+  threat_level: "clean" | "low" | "medium" | "high" | "critical";
+  confidence: "low" | "medium" | "high";
   malicious_engines: CTIAnalysisEngine[];
-  last_analysis_date: number;
   suspicious_engines: CTIAnalysisEngine[];
+  categories: string[];
+  tags: string[];
+  last_analysis_date: string;
+  popularity_ranks: Record<string, { rank: number; timestamp: number }>;
 }
 
+// Detailed Analysis structure
 export interface DetailedAnalysis {
+  domains: Record<string, DomainAnalysis>;
   ips: Record<string, IPAnalysis>;
   urls: Record<string, UrlAnalysis>;
-  domains: Record<string, DomainAnalysis>;
   summary: {
     total_checks: number;
-    confidence_level: "low" | "medium" | "high";
-    reputation_score: number;
     malicious_detections: number;
     suspicious_detections: number;
+    reputation_score: number;
+    confidence_level: "low" | "medium" | "high";
   };
 }
 
+// Threat Summary structure
 export interface ThreatSummary {
-  overall_risk: ThreatLevel;
-  confidence: ConfidenceLevel;
+  overall_risk: "clean" | "suspicious" | "high" | "malicious" | "critical";
+  confidence: "low" | "medium" | "high";
   total_analyzed: number;
   malicious_found: number;
   suspicious_found: number;
   average_reputation: number;
 }
 
+// Main Email interface - matches GET /api/emails/all response
 export interface Email {
   id: number;
   sender: string;
@@ -120,9 +122,9 @@ export interface Email {
   subject: string;
   body: string;
   attachments: string[];
-  attachment_hashes: string[];
   timestamp: string; // ISO 8601 date string
-  headers: EmailHeaders;
+  phishing_score_cti: number; // 0.0 to 1.0
+  cti_flags: string[];
   extracted_urls: string[];
   sender_domain: string;
   sender_ip: string;
@@ -130,11 +132,9 @@ export interface Email {
   spf_result: "pass" | "fail" | "neutral" | "softfail" | "none";
   dkim_result: "pass" | "fail" | "neutral" | "none";
   dmarc_result: "pass" | "fail" | "none";
-  phishing_score_cti: number; // 0.0 to 1.0
-  cti_flags: string[];
-  cti_confidence: ConfidenceLevel;
+  headers: EmailHeaders;
+  attachment_hashes: string[];
   detailed_analysis: DetailedAnalysis;
-  detailed_cti_analysis: DetailedAnalysis; // Duplicate field from API
   threat_summary: ThreatSummary;
 }
 

@@ -1,24 +1,17 @@
-// Dashboard Page - Main overview page with Real-time Threat Monitoring
+// Dashboard Page - Main overview page for email threat analysis
 
-import { useEffect } from "react";
-import { Mail, AlertTriangle, TrendingUp, Shield, Bell } from "lucide-react";
+import { useMemo } from "react";
+import { Mail, AlertTriangle, TrendingUp, Shield, RefreshCw } from "lucide-react";
 import {
   KPICard,
   RiskDistributionChart,
   ThreatTrendChart,
   RecentEmailsTable,
 } from "../components/dashboard";
-import {
-  ThreatStatusIndicator,
-  ThreatCounter,
-  LiveEventFeed,
-} from "../components/monitoring/ThreatStatusIndicator";
 import { useEmails } from "../hooks/useEmails";
-import { useNotifications } from "../contexts/NotificationContext";
 
 export function Dashboard() {
   const { data: emails, loading, error, refetch } = useEmails();
-  const { addNotification } = useNotifications();
 
   // Calculate KPI values from emails
   const totalEmails = emails?.length || 0;
@@ -41,6 +34,97 @@ export function Dashboard() {
   const activeThreats =
     emails?.filter((email) => email.threat_summary.malicious_found > 0)
       .length || 0;
+
+  // Compute risk distribution data for chart
+  const riskDistributionData = useMemo(() => {
+    if (!emails?.length) return [];
+
+    const distribution = emails.reduce((acc, email) => {
+      const risk = email.threat_summary.overall_risk;
+      acc[risk] = (acc[risk] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    return [
+      {
+        name: "Clean",
+        value: distribution.clean || 0,
+        level: "clean" as const,
+        color: "#0DBB64",
+      },
+      {
+        name: "Suspicious",
+        value: distribution.suspicious || 0,
+        level: "suspicious" as const,
+        color: "#13FFA0",
+      },
+      {
+        name: "High Risk",
+        value: distribution.high || 0,
+        level: "high" as const,
+        color: "#B8E96B",
+      },
+      {
+        name: "Malicious",
+        value: distribution.malicious || 0,
+        level: "malicious" as const,
+        color: "#ED3333",
+      },
+      {
+        name: "Critical",
+        value: distribution.critical || 0,
+        level: "critical" as const,
+        color: "#DC2626",
+      },
+    ].filter((item) => item.value > 0);
+  }, [emails]);
+
+  // Compute threat trends for the last 7 days
+  const threatTrendData = useMemo(() => {
+    if (!emails?.length) return [];
+
+    const now = new Date();
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(now);
+      date.setDate(date.getDate() - (6 - i));
+      date.setHours(0, 0, 0, 0);
+      return date;
+    });
+
+    return last7Days.map((date) => {
+      const nextDay = new Date(date);
+      nextDay.setDate(nextDay.getDate() + 1);
+
+      const dayEmails = emails.filter((email) => {
+        const emailDate = new Date(email.timestamp);
+        return emailDate >= date && emailDate < nextDay;
+      });
+
+      const clean = dayEmails.filter(
+        (e) => e.threat_summary.overall_risk === "clean"
+      ).length;
+      const suspicious = dayEmails.filter(
+        (e) => e.threat_summary.overall_risk === "suspicious"
+      ).length;
+      const malicious = dayEmails.filter(
+        (e) =>
+          e.threat_summary.overall_risk === "high" ||
+          e.threat_summary.overall_risk === "malicious" ||
+          e.threat_summary.overall_risk === "critical"
+      ).length;
+
+      return {
+        date: date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "2-digit",
+        }),
+        clean,
+        suspicious,
+        malicious,
+        total: clean + suspicious + malicious,
+      };
+    });
+  }, [emails]);
 
   // Auto-trigger threat notifications for high-risk emails
   useEffect(() => {
@@ -108,7 +192,8 @@ export function Dashboard() {
     }
   }, [error, addNotification, refetch]);
 
-  // Demo notification functions
+  // Demo notification functions - Removed (no real-time demo features)
+  /*
   const showThreatAlert = () => {
     addNotification({
       type: "threat",
@@ -163,6 +248,7 @@ export function Dashboard() {
       duration: 6000,
     });
   };
+  */
 
   return (
     <div className="dashboard">
@@ -194,12 +280,7 @@ export function Dashboard() {
             <div className="dashboard__section">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="dashboard__section-title">Threat Overview</h2>
-                {/* Real-time threat status */}
-                <ThreatStatusIndicator
-                  showDetails={true}
-                  onClick={() => (window.location.href = "/monitoring")}
-                  autoStart={true}
-                />
+                {/* Real-time threat status removed - no monitoring API */}
               </div>
               <div className="dashboard__kpi-grid">
                 <KPICard
@@ -260,8 +341,8 @@ export function Dashboard() {
               </div>
             </div>
 
-            {/* Real-time Threat Monitoring Section */}
-            <div className="dashboard__section">
+            {/* Real-time Threat Monitoring Section - Removed (no monitoring API) */}
+            {/* <div className="dashboard__section">
               <h2 className="dashboard__section-title">Real-time Monitoring</h2>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
@@ -271,7 +352,7 @@ export function Dashboard() {
                   <LiveEventFeed maxEvents={5} showSystemEvents={false} />
                 </div>
               </div>
-            </div>
+            </div> */}
 
             {/* Charts Row */}
             <div className="dashboard__section">
@@ -280,7 +361,10 @@ export function Dashboard() {
                 <div className="chart-card">
                   <h3 className="chart-card__title">Risk Distribution</h3>
                   <div className="chart-card__content">
-                    <RiskDistributionChart data={[]} loading={loading} />
+                    <RiskDistributionChart
+                      data={riskDistributionData}
+                      loading={loading}
+                    />
                   </div>
                 </div>
 
@@ -288,7 +372,11 @@ export function Dashboard() {
                 <div className="chart-card">
                   <h3 className="chart-card__title">Threat Trends</h3>
                   <div className="chart-card__content">
-                    <ThreatTrendChart loading={loading} timeRange="7d" />
+                    <ThreatTrendChart
+                      data={threatTrendData}
+                      loading={loading}
+                      timeRange="7d"
+                    />
                   </div>
                 </div>
               </div>
@@ -314,8 +402,8 @@ export function Dashboard() {
               </div>
             </div>
 
-            {/* Demo Notification Section */}
-            <div className="dashboard__section">
+            {/* Demo Notification Section - Removed (no real-time features) */}
+            {/* <div className="dashboard__section">
               <h2 className="dashboard__section-title">
                 <Bell size={24} /> Real-time Notifications Demo
               </h2>
@@ -347,7 +435,7 @@ export function Dashboard() {
                   </button>
                 </div>
               </div>
-            </div>
+            </div> */}
           </>
         )}
       </div>
