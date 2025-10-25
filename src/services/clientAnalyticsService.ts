@@ -11,49 +11,69 @@ import type {
 // Simplified filters for client-side computation
 export interface ClientAnalyticsFilters {
   date_range?: { start: string; end: string };
-  threat_levels?: Array<
-    "clean" | "suspicious" | "high" | "malicious" | "critical"
-  >;
+  threat_levels?: Array<"clean" | "suspicious" | "malicious">;
   domains?: string[];
 }
 
 export class ClientAnalyticsService {
   /**
-   * Computes threat metrics and KPIs from emails
-   * Maps Email.threat_summary.overall_risk to analytics threat levels
+   * Computes threat metrics and KPIs from emails using threat_summary data
    */
   computeThreatMetrics(emails: Email[]): ThreatMetrics {
-    // Count by threat levels - map Email risk to analytics levels
-    const maliciousCount = emails.filter(
-      (e) =>
-        e.threat_summary.overall_risk === "malicious" ||
-        e.threat_summary.overall_risk === "critical"
-    ).length;
+    // Map risk levels consistently
+    const mapRiskLevel = (risk: string) => {
+      switch (risk) {
+        case "low":
+        case "clean":
+          return "clean";
+        case "medium":
+        case "suspicious":
+          return "suspicious";
+        case "high":
+        case "critical":
+        case "malicious":
+          return "malicious";
+        default:
+          return "clean"; // default to clean
+      }
+    };
 
-    const suspiciousCount = emails.filter(
-      (e) =>
-        e.threat_summary.overall_risk === "suspicious" ||
-        e.threat_summary.overall_risk === "high"
-    ).length;
+    // Count emails by risk level (not individual threats)
+    const riskCounts = emails.reduce((acc, email) => {
+      const risk = email.threat_summary ? mapRiskLevel(email.threat_summary.overall_risk) : "clean";
+      acc[risk] = (acc[risk] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
-    const cleanCount = emails.filter(
-      (e) => e.threat_summary.overall_risk === "clean"
-    ).length;
+    const maliciousCount = riskCounts.malicious || 0;
+    const suspiciousCount = riskCounts.suspicious || 0;
+    const cleanCount = riskCounts.clean || 0;
 
-    const total = emails.length;
-    const totalThreats = maliciousCount + suspiciousCount;
+    // Aggregate threat_summary data for other metrics
+    const totalAnalyzed = emails.reduce((sum, e) => sum + (e.threat_summary?.total_analyzed || 0), 0);
+    const totalThreats = emails.reduce((sum, e) => sum + (e.threat_summary?.malicious_found || 0) + (e.threat_summary?.suspicious_found || 0), 0);
+
+    // Average reputation score
+    const validReputations = emails.filter(e => e.threat_summary?.average_reputation != null);
+    const averageRiskScore = validReputations.length > 0
+      ? validReputations.reduce((sum, e) => sum + e.threat_summary!.average_reputation, 0) / validReputations.length
+      : 0;
+
+    // Detection rate based on analyzed items
+    const detectionRate = totalAnalyzed > 0 ? (totalThreats / totalAnalyzed) * 100 : 0;
+
+    // Count high risk emails (mapped to malicious)
+    const highRiskEmails = maliciousCount;
 
     return {
-      total_emails: total,
+      total_emails: emails.length,
+      high_risk_emails: highRiskEmails,
       malicious_count: maliciousCount,
       suspicious_count: suspiciousCount,
       clean_count: cleanCount,
-      blocked_count: maliciousCount, // Critical/malicious emails should be blocked
-      average_risk_score:
-        total > 0
-          ? emails.reduce((sum, e) => sum + e.phishing_score_cti, 0) / total
-          : 0,
-      detection_rate: total > 0 ? (totalThreats / total) * 100 : 0,
+      blocked_count: maliciousCount, // Assume malicious items are blocked
+      average_risk_score: averageRiskScore,
+      detection_rate: detectionRate,
       false_positive_rate: 0, // Would need ground truth data to calculate
     };
   }
@@ -81,25 +101,13 @@ export class ClientAnalyticsService {
         return emailDate >= date && emailDate < nextDate;
       });
 
-      const threatsDetected = dayEmails.filter(
-        (e) =>
-          e.threat_summary.overall_risk === "malicious" ||
-          e.threat_summary.overall_risk === "critical" ||
-          e.threat_summary.overall_risk === "suspicious" ||
-          e.threat_summary.overall_risk === "high"
-      ).length;
-
-      const blockedEmails = dayEmails.filter(
-        (e) =>
-          e.threat_summary.overall_risk === "malicious" ||
-          e.threat_summary.overall_risk === "critical"
-      ).length;
-
-      const avgRisk =
-        dayEmails.length > 0
-          ? dayEmails.reduce((sum, e) => sum + e.phishing_score_cti, 0) /
-            dayEmails.length
-          : 0;
+      const threatsDetected = dayEmails.reduce((sum, e) => sum + (e.threat_summary?.malicious_found || 0) + (e.threat_summary?.suspicious_found || 0), 0);
+      const emailsProcessed = dayEmails.length;
+      const blockedEmails = dayEmails.reduce((sum, e) => sum + (e.threat_summary?.malicious_found || 0), 0);
+      const validReps = dayEmails.filter(e => e.threat_summary?.average_reputation != null);
+      const avgRisk = validReps.length > 0
+        ? validReps.reduce((sum, e) => sum + e.threat_summary!.average_reputation, 0) / validReps.length
+        : 0;
 
       // Extract top threat types from cti_flags
       const threatTypeCounts = new Map<string, number>();
@@ -117,7 +125,7 @@ export class ClientAnalyticsService {
       trends.push({
         date: date.toISOString().split("T")[0],
         threats_detected: threatsDetected,
-        emails_processed: dayEmails.length,
+        emails_processed: emailsProcessed,
         blocked_emails: blockedEmails,
         average_risk: avgRisk,
         top_threat_types: topThreatTypes,
@@ -159,18 +167,8 @@ export class ClientAnalyticsService {
 
       const domainInfo = domainMap.get(domain)!;
       domainInfo.emails.push(email);
-
-      if (
-        email.threat_summary.overall_risk === "malicious" ||
-        email.threat_summary.overall_risk === "critical"
-      ) {
-        domainInfo.maliciousCount++;
-      } else if (
-        email.threat_summary.overall_risk === "suspicious" ||
-        email.threat_summary.overall_risk === "high"
-      ) {
-        domainInfo.suspiciousCount++;
-      }
+      domainInfo.maliciousCount += email.threat_summary?.malicious_found || 0;
+      domainInfo.suspiciousCount += email.threat_summary?.suspicious_found || 0;
     });
 
     // Convert to DomainIntelligence array
@@ -180,23 +178,20 @@ export class ClientAnalyticsService {
       const emailCount = info.emails.length;
       const threatCount = info.maliciousCount + info.suspiciousCount;
 
-      // Calculate reputation score (0-100)
-      const reputationScore =
-        emailCount > 0 ? ((emailCount - threatCount) / emailCount) * 100 : 50;
+      // Calculate reputation score (0-100) - use average of threat_summary.average_reputation
+      const validReps = info.emails.filter(e => e.threat_summary?.average_reputation != null);
+      const reputationScore = validReps.length > 0
+        ? validReps.reduce((sum, e) => sum + e.threat_summary!.average_reputation, 0) / validReps.length
+        : 50;
 
       // Determine threat level
-      let threatLevel: "critical" | "high" | "medium" | "low" | "clean" =
-        "clean";
+      let threatLevel: "clean" | "suspicious" | "malicious" = "clean";
       const threatPercentage = (threatCount / emailCount) * 100;
 
-      if (info.maliciousCount > 0 || threatPercentage > 75) {
-        threatLevel = "critical";
-      } else if (threatPercentage > 50) {
-        threatLevel = "high";
+      if (info.maliciousCount > 0 || threatPercentage > 50) {
+        threatLevel = "malicious";
       } else if (threatPercentage > 25) {
-        threatLevel = "medium";
-      } else if (threatPercentage > 0) {
-        threatLevel = "low";
+        threatLevel = "suspicious";
       }
 
       // Find domain analysis from most recent email
@@ -242,11 +237,9 @@ export class ClientAnalyticsService {
     return domainIntelligence
       .sort((a, b) => {
         const threatOrder = {
-          critical: 0,
-          high: 1,
-          medium: 2,
-          low: 3,
-          clean: 4,
+          malicious: 0,
+          suspicious: 1,
+          clean: 2,
         };
         if (a.threat_level !== b.threat_level) {
           return threatOrder[a.threat_level] - threatOrder[b.threat_level];
@@ -299,14 +292,9 @@ export class ClientAnalyticsService {
   getSummaryStats(emails: Email[]) {
     return {
       total: emails.length,
-      critical: emails.filter(
-        (e) => e.threat_summary.overall_risk === "critical"
-      ).length,
       malicious: emails.filter(
         (e) => e.threat_summary.overall_risk === "malicious"
       ).length,
-      high: emails.filter((e) => e.threat_summary.overall_risk === "high")
-        .length,
       suspicious: emails.filter(
         (e) => e.threat_summary.overall_risk === "suspicious"
       ).length,
@@ -314,7 +302,7 @@ export class ClientAnalyticsService {
         .length,
       avgPhishingScore:
         emails.length > 0
-          ? emails.reduce((sum, e) => sum + e.phishing_score_cti, 0) /
+          ? emails.reduce((sum, e) => sum + (e.threat_summary?.average_reputation || 0), 0) /
             emails.length
           : 0,
     };

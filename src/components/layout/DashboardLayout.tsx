@@ -1,22 +1,38 @@
 // Dashboard Layout Component - Main container for the application
 
 import type { ReactNode } from "react";
-import { Sidebar } from "./Sidebar.tsx";
+import { SidebarProvider, useSidebar, Sidebar } from "./Sidebar.tsx";
 import { Header } from "./Header.tsx";
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
-export function DashboardLayout({ children }: DashboardLayoutProps) {
+function DashboardLayoutContent({ children }: DashboardLayoutProps) {
+  const { isCollapsed } = useSidebar();
+
   return (
     <div className="dashboard-layout">
       <Sidebar />
-      <div className="main-content">
+      <div
+        className="main-content"
+        style={{
+          marginLeft: isCollapsed ? '80px' : '280px',
+          transition: 'margin-left var(--duration-normal) var(--ease-in-out)'
+        }}
+      >
         <Header />
         <main className="content-area">{children}</main>
       </div>
     </div>
+  );
+}
+
+export function DashboardLayout({ children }: DashboardLayoutProps) {
+  return (
+    <SidebarProvider>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </SidebarProvider>
   );
 }
 
@@ -32,7 +48,6 @@ const styles = `
   flex: 1;
   display: flex;
   flex-direction: column;
-  margin-left: 280px; /* Sidebar width */
 }
 
 .content-area {
@@ -44,7 +59,7 @@ const styles = `
 /* Responsive Design */
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 0;
+    margin-left: 0 !important;
   }
 }
 `;

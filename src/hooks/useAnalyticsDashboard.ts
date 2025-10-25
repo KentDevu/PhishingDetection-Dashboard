@@ -42,6 +42,7 @@ export function useAnalyticsDashboard(
 
   // Compute analytics data from emails
   useEffect(() => {
+    console.log("useAnalyticsDashboard: emails received", emails);
     if (!emails || emails.length === 0) {
       setData(null);
       return;
@@ -51,15 +52,22 @@ export function useAnalyticsDashboard(
       ? clientAnalyticsService.applyFilters(emails, filters)
       : emails;
 
+    console.log("useAnalyticsDashboard: filteredEmails", filteredEmails);
+
     const metrics = clientAnalyticsService.computeThreatMetrics(filteredEmails);
+    console.log("useAnalyticsDashboard: metrics", metrics);
+
     const trends = clientAnalyticsService.computeThreatTrends(
       filteredEmails,
       30
     );
+    console.log("useAnalyticsDashboard: trends", trends);
+
     const domains = clientAnalyticsService.computeDomainIntelligence(
       filteredEmails,
       50
     );
+    console.log("useAnalyticsDashboard: domains", domains);
 
     setData({
       metrics,

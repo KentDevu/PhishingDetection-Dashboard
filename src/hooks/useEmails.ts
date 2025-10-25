@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { emailService, type EmailFilterParams } from "../services/emailService";
 import { handleApiError } from "../utils/errorUtils";
-import type { Email, AsyncState } from "../models/email";
+import type { Email } from "../models/email";
+import type { AsyncState } from "../models/email";
 
 interface UseEmailsReturn extends AsyncState<Email[]> {
   refetch: () => Promise<void>;
@@ -35,6 +36,7 @@ export function useEmails(initialFilters?: EmailFilterParams): UseEmailsReturn {
 
     try {
       const emails = await emailService.getAllEmails(filters);
+      console.log("useEmails: emails fetched", emails);
       setState({
         data: emails,
         loading: false,

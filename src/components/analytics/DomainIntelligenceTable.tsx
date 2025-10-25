@@ -27,6 +27,7 @@ export function DomainIntelligenceTable({
   data,
   loading,
 }: DomainIntelligenceTableProps) {
+  console.log("DomainIntelligenceTable: data received", data);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedThreatLevel, setSelectedThreatLevel] = useState<string>("all");
   const [sortField, setSortField] = useState<SortField>("reputation_score");
@@ -34,10 +35,8 @@ export function DomainIntelligenceTable({
 
   const threatLevels = [
     { value: "all", label: "All Levels", color: "#6B7280" },
-    { value: "critical", label: "Critical", color: "#DC2626" },
-    { value: "high", label: "High", color: "#EF4444" },
-    { value: "medium", label: "Medium", color: "#F59E0B" },
-    { value: "low", label: "Low", color: "#EAB308" },
+    { value: "malicious", label: "Malicious", color: "#DC2626" },
+    { value: "suspicious", label: "Suspicious", color: "#F59E0B" },
     { value: "clean", label: "Clean", color: "#22C55E" },
   ];
 
@@ -191,8 +190,7 @@ export function DomainIntelligenceTable({
           <span className="stat-value stat-value--danger">
             {
               filteredAndSortedData.filter(
-                (d) =>
-                  d.threat_level === "critical" || d.threat_level === "high"
+                (d) => d.threat_level === "malicious"
               ).length
             }
           </span>
@@ -273,7 +271,9 @@ export function DomainIntelligenceTable({
             </tr>
           </thead>
           <tbody>
-            {filteredAndSortedData.map((domain, index) => (
+            {filteredAndSortedData.map((domain, index) => {
+              console.log("DomainIntelligenceTable: rendering domain", domain);
+              return (
               <tr key={index} className="table-row">
                 <td className="domain-cell">
                   <div className="domain-info">
@@ -314,7 +314,9 @@ export function DomainIntelligenceTable({
                       domain.reputation_score
                     )}`}
                   >
-                    <div className="score-value">{domain.reputation_score}</div>
+                    <div className="score-value">
+                      {domain.reputation_score}
+                    </div>
                     <div className="score-bar">
                       <div
                         className="score-fill"
@@ -362,7 +364,8 @@ export function DomainIntelligenceTable({
                   </div>
                 </td>
               </tr>
-            ))}
+            );
+          })}
           </tbody>
         </table>
       </div>
