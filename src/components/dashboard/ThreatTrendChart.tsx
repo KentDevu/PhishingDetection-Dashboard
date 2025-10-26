@@ -9,7 +9,6 @@ import {
   Area,
   AreaChart,
 } from "recharts";
-import { format, subDays } from "date-fns";
 
 interface TrendDataPoint {
   date: string;
@@ -22,34 +21,13 @@ interface TrendDataPoint {
 interface ThreatTrendChartProps {
   data?: TrendDataPoint[];
   loading?: boolean;
-  timeRange?: "7d" | "30d" | "90d";
 }
 
 export function ThreatTrendChart({
   data,
   loading = false,
-  timeRange = "7d",
 }: ThreatTrendChartProps) {
-  // Generate demo data for the last 7 days
-  const generateDemoData = (): TrendDataPoint[] => {
-    const days = timeRange === "7d" ? 7 : timeRange === "30d" ? 30 : 90;
-    return Array.from({ length: days }, (_, i) => {
-      const date = subDays(new Date(), days - 1 - i);
-      const clean = Math.floor(Math.random() * 50) + 20;
-      const suspicious = Math.floor(Math.random() * 20) + 5;
-      const malicious = Math.floor(Math.random() * 10) + 1;
-
-      return {
-        date: format(date, "MMM dd"),
-        clean,
-        suspicious,
-        malicious,
-        total: clean + suspicious + malicious,
-      };
-    });
-  };
-
-  const chartData = data || generateDemoData();
+  const chartData = data || [];
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
@@ -59,20 +37,20 @@ export function ThreatTrendChart({
       );
 
       return (
-        <div className="trend-tooltip">
-          <div className="trend-tooltip__header">
-            <span className="trend-tooltip__date">{label}</span>
-            <span className="trend-tooltip__total">{total} total emails</span>
+        <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-lg z-50">
+          <div className="flex justify-between items-center mb-2 pb-2 border-b border-gray-200">
+            <span className="text-sm font-medium text-gray-900">{label}</span>
+            <span className="text-xs text-gray-500">{total} total emails</span>
           </div>
-          <div className="trend-tooltip__content">
+          <div className="flex flex-col gap-1">
             {payload.map((entry: any, index: number) => (
-              <div key={index} className="trend-tooltip__item">
+              <div key={index} className="flex items-center gap-2 text-xs">
                 <div
-                  className="trend-tooltip__color"
+                  className="w-2 h-2 rounded"
                   style={{ backgroundColor: entry.color }}
                 ></div>
-                <span className="trend-tooltip__label">{entry.name}:</span>
-                <span className="trend-tooltip__value">{entry.value}</span>
+                <span className="text-gray-600 min-w-16">{entry.name}:</span>
+                <span className="font-medium text-gray-900 ml-auto">{entry.value}</span>
               </div>
             ))}
           </div>
@@ -84,11 +62,17 @@ export function ThreatTrendChart({
 
   if (loading) {
     return (
-      <div className="trend-chart trend-chart--loading">
-        <div className="trend-chart__skeleton">
-          <div className="skeleton-lines">
+      <div className="flex items-center justify-center w-full h-64">
+        <div className="w-full h-64 bg-gray-50 rounded-lg overflow-hidden relative">
+          <div className="absolute bottom-5 left-5 right-5 top-5 flex items-end gap-1">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="skeleton-line"></div>
+              <div
+                key={i}
+                className={`flex-1 bg-linear-to-t from-gray-200 via-gray-100 to-transparent rounded animate-pulse ${
+                  i === 0 ? 'h-3/5' : i === 1 ? 'h-4/5' : i === 2 ? 'h-2/5' : 'h-7/10'
+                }`}
+                style={{ animationDelay: `${i * 0.2}s` }}
+              ></div>
             ))}
           </div>
         </div>
@@ -97,25 +81,25 @@ export function ThreatTrendChart({
   }
 
   return (
-    <div className="trend-chart">
-      <div className="trend-chart__header">
-        <div className="trend-chart__legend">
-          <div className="legend-item">
-            <div className="legend-color legend-color--clean"></div>
+    <div className="w-full h-full flex flex-col">
+      <div className="flex justify-between items-center mb-4">
+        <div className="flex gap-4">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="w-3 h-3 bg-green-500 rounded"></div>
             <span>Clean</span>
           </div>
-          <div className="legend-item">
-            <div className="legend-color legend-color--suspicious"></div>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="w-3 h-3 bg-yellow-400 rounded"></div>
             <span>Suspicious</span>
           </div>
-          <div className="legend-item">
-            <div className="legend-color legend-color--malicious"></div>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="w-3 h-3 bg-red-500 rounded"></div>
             <span>Malicious</span>
           </div>
         </div>
       </div>
 
-      <div className="trend-chart__container">
+      <div className="flex-1">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
@@ -196,198 +180,4 @@ export function ThreatTrendChart({
       </div>
     </div>
   );
-}
-
-// Threat Trend Chart Styles
-const styles = `
-.trend-chart {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.trend-chart__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-md);
-}
-
-.trend-chart__legend {
-  display: flex;
-  gap: var(--spacing-md);
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-}
-
-.legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: var(--radius-sm);
-}
-
-.legend-color--clean {
-  background: #0DBB64;
-}
-
-.legend-color--suspicious {
-  background: #B8E96B;
-}
-
-.legend-color--malicious {
-  background: #ED3333;
-}
-
-.trend-chart__container {
-  flex: 1;
-}
-
-/* Tooltip Styles */
-.trend-tooltip {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-sm);
-  box-shadow: var(--shadow-lg);
-  z-index: var(--z-tooltip);
-}
-
-.trend-tooltip__header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-xs);
-  padding-bottom: var(--spacing-xs);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.trend-tooltip__date {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-}
-
-.trend-tooltip__total {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-}
-
-.trend-tooltip__content {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.trend-tooltip__item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-xs);
-}
-
-.trend-tooltip__color {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-sm);
-}
-
-.trend-tooltip__label {
-  color: var(--text-secondary);
-  min-width: 70px;
-}
-
-.trend-tooltip__value {
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  margin-left: auto;
-}
-
-/* Loading States */
-.trend-chart--loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.trend-chart__skeleton {
-  width: 100%;
-  height: 250px;
-  position: relative;
-  background: var(--bg-primary);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.skeleton-lines {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
-  top: 20px;
-  display: flex;
-  align-items: end;
-  gap: 4px;
-}
-
-.skeleton-line {
-  flex: 1;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    var(--bg-tertiary) 50%,
-    var(--bg-primary) 100%
-  );
-  border-radius: var(--radius-sm);
-  animation: wave 2s ease-in-out infinite;
-}
-
-.skeleton-line:nth-child(1) { height: 60%; animation-delay: 0s; }
-.skeleton-line:nth-child(2) { height: 80%; animation-delay: 0.2s; }
-.skeleton-line:nth-child(3) { height: 40%; animation-delay: 0.4s; }
-.skeleton-line:nth-child(4) { height: 70%; animation-delay: 0.6s; }
-
-@keyframes wave {
-  0%, 100% {
-    opacity: 0.7;
-  }
-  50% {
-    opacity: 0.3;
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .trend-chart__header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-sm);
-  }
-
-  .trend-chart__legend {
-    gap: var(--spacing-sm);
-    flex-wrap: wrap;
-  }
-
-  .trend-chart__container {
-    /* min-height removed to use parent height */
-  }
-}
-`;
-
-// Inject styles
-if (typeof document !== "undefined") {
-  const styleElement = document.getElementById("trend-chart-styles");
-  if (!styleElement) {
-    const style = document.createElement("style");
-    style.id = "trend-chart-styles";
-    style.textContent = styles;
-    document.head.appendChild(style);
-  }
 }

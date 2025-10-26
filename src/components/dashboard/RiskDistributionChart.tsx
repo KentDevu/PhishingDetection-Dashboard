@@ -27,16 +27,7 @@ export function RiskDistributionChart({
   data,
   loading = false,
 }: RiskDistributionChartProps) {
-  // Default data for demo/loading state
-  const defaultData: RiskData[] = [
-    { name: "Clean", value: 145, level: "clean", color: "#0DBB64" },
-    { name: "Low Risk", value: 89, level: "suspicious", color: "#13FFA0" },
-    { name: "Medium Risk", value: 34, level: "high", color: "#B8E96B" },
-    { name: "High Risk", value: 12, level: "malicious", color: "#ED3333" },
-    { name: "Critical", value: 3, level: "critical", color: "#DC2626" },
-  ];
-
-  const chartData = data.length > 0 ? data : defaultData;
+  const chartData = data || [];
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
 
   const CustomTooltip = ({ active, payload }: any) => {
@@ -45,17 +36,17 @@ export function RiskDistributionChart({
       const percentage = ((data.value / total) * 100).toFixed(1);
 
       return (
-        <div className="chart-tooltip">
-          <div className="chart-tooltip__header">
+        <div className="bg-white border border-gray-200 rounded-lg p-3 shadow-lg z-50">
+          <div className="flex items-center gap-2 mb-2">
             <div
-              className="chart-tooltip__color"
+              className="w-3 h-3 rounded"
               style={{ backgroundColor: data.color }}
             ></div>
-            <span className="chart-tooltip__name">{data.name}</span>
+            <span className="text-sm font-medium text-gray-900">{data.name}</span>
           </div>
-          <div className="chart-tooltip__content">
-            <div className="chart-tooltip__value">{data.value} emails</div>
-            <div className="chart-tooltip__percentage">
+          <div className="text-xs text-gray-500">
+            <div className="font-medium text-gray-600">{data.value} emails</div>
+            <div className="mt-1">
               {percentage}% of total
             </div>
           </div>
@@ -67,21 +58,21 @@ export function RiskDistributionChart({
 
   const CustomLegend = ({ payload }: any) => {
     return (
-      <div className="chart-legend">
+      <div className="flex flex-col gap-2 mt-4 px-4">
         {payload.map((entry: any, index: number) => {
           const percentage = ((entry.payload.value / total) * 100).toFixed(1);
           return (
-            <div key={index} className="chart-legend__item">
+            <div key={index} className="flex items-center gap-2 p-2 rounded hover:bg-gray-50 transition-colors">
               <div
-                className="chart-legend__color"
+                className="w-3 h-3 rounded shrink-0"
                 style={{ backgroundColor: entry.color }}
               ></div>
-              <div className="chart-legend__content">
-                <span className="chart-legend__name">{entry.payload.name}</span>
-                <span className="chart-legend__value">
+              <div className="flex items-center gap-2 flex-1">
+                <span className="text-sm font-medium text-gray-600">{entry.payload.name}</span>
+                <span className="text-sm font-bold text-gray-900 ml-auto">
                   {entry.payload.value}
                 </span>
-                <span className="chart-legend__percentage">
+                <span className="text-xs text-gray-500">
                   ({percentage}%)
                 </span>
               </div>
@@ -94,12 +85,17 @@ export function RiskDistributionChart({
 
   if (loading) {
     return (
-      <div className="risk-chart risk-chart--loading">
-        <div className="risk-chart__skeleton">
-          <div className="skeleton-donut"></div>
-          <div className="skeleton-legend">
+      <div className="flex items-center justify-center w-full">
+        <div className="flex flex-col items-center gap-8 w-full">
+          <div className="w-48 h-48 rounded-full bg-linear-to-r from-gray-100 via-gray-200 to-gray-100 animate-pulse"></div>
+          <div className="flex flex-col gap-2 w-full max-w-48">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="skeleton-legend-item"></div>
+              <div
+                key={i}
+                className={`h-5 bg-gray-100 rounded animate-pulse ${
+                  i === 0 ? 'w-4/5' : i === 1 ? 'w-7/10' : i === 2 ? 'w-3/5' : i === 3 ? 'w-3/4' : 'w-13/20'
+                }`}
+              ></div>
             ))}
           </div>
         </div>
@@ -108,8 +104,8 @@ export function RiskDistributionChart({
   }
 
   return (
-    <div className="risk-chart">
-      <div className="risk-chart__container">
+    <div className="w-full h-full relative">
+      <div className="relative w-full h-full">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -133,20 +129,20 @@ export function RiskDistributionChart({
         </ResponsiveContainer>
 
         {/* Center Statistics Card */}
-        <div className="risk-chart__center">
-          <div className="risk-chart__stats-card">
-            <div className="risk-chart__total-value">{total}</div>
-            <div className="risk-chart__total-label">Total Emails</div>
-            <div className="risk-chart__stats-breakdown">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none z-10">
+          <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-md min-w-36 max-w-44">
+            <div className="text-xl font-bold text-gray-900 leading-tight mb-1">{total}</div>
+            <div className="text-xs text-gray-500 uppercase tracking-wider mb-3 font-medium">Total Emails</div>
+            <div className="flex flex-col gap-2">
               {chartData.map((item, index) => (
-                <div key={index} className="risk-chart__stat-item">
+                <div key={index} className="flex items-center gap-2 p-2 rounded bg-gray-50 hover:bg-gray-100 transition-colors">
                   <div
-                    className="risk-chart__stat-dot"
+                    className="w-2 h-2 rounded-full shrink-0"
                     style={{ backgroundColor: item.color }}
                   ></div>
-                  <div className="risk-chart__stat-info">
-                    <span className="risk-chart__stat-name">{item.name}</span>
-                    <span className="risk-chart__stat-value">{item.value}</span>
+                  <div className="flex justify-between items-center flex-1 min-w-0">
+                    <span className="text-xs text-gray-600 font-medium whitespace-nowrap overflow-hidden text-ellipsis">{item.name}</span>
+                    <span className="text-xs font-bold text-gray-900 ml-2 shrink-0">{item.value}</span>
                   </div>
                 </div>
               ))}
@@ -156,325 +152,4 @@ export function RiskDistributionChart({
       </div>
     </div>
   );
-}
-
-// Risk Distribution Chart Styles
-const styles = `
-.risk-chart {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.risk-chart__container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.risk-chart__center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-  pointer-events: none;
-  z-index: 10;
-}
-
-.risk-chart__stats-card {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-md);
-  box-shadow: var(--shadow-md);
-  min-width: 140px;
-  max-width: 180px;
-}
-
-.risk-chart__total-value {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  line-height: var(--line-height-tight);
-  margin-bottom: var(--spacing-xs);
-}
-
-.risk-chart__total-label {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: var(--spacing-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-.risk-chart__stats-breakdown {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.risk-chart__stat-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs);
-  border-radius: var(--radius-sm);
-  background: var(--bg-secondary);
-  transition: background-color var(--duration-fast) var(--ease-in-out);
-}
-
-.risk-chart__stat-item:hover {
-  background: var(--bg-tertiary);
-}
-
-.risk-chart__stat-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.risk-chart__stat-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1;
-  min-width: 0;
-}
-
-.risk-chart__stat-name {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
-  font-weight: var(--font-weight-medium);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.risk-chart__stat-value {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  margin-left: var(--spacing-xs);
-  flex-shrink: 0;
-}
-
-/* Tooltip Styles */
-.chart-tooltip {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-sm);
-  box-shadow: var(--shadow-lg);
-  z-index: var(--z-tooltip);
-}
-
-.chart-tooltip__header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  margin-bottom: var(--spacing-xs);
-}
-
-.chart-tooltip__color {
-  width: 12px;
-  height: 12px;
-  border-radius: var(--radius-sm);
-}
-
-.chart-tooltip__name {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-}
-
-.chart-tooltip__content {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-}
-
-.chart-tooltip__value {
-  font-weight: var(--font-weight-medium);
-  color: var(--text-secondary);
-}
-
-.chart-tooltip__percentage {
-  margin-top: 2px;
-}
-
-/* Legend Styles */
-.chart-legend {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  margin-top: var(--spacing-md);
-  padding: 0 var(--spacing-md);
-}
-
-.chart-legend__item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs);
-  border-radius: var(--radius-sm);
-  transition: background-color var(--duration-fast) var(--ease-in-out);
-}
-
-.chart-legend__item:hover {
-  background: var(--bg-tertiary);
-}
-
-.chart-legend__color {
-  width: 12px;
-  height: 12px;
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
-}
-
-.chart-legend__content {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  flex: 1;
-}
-
-.chart-legend__name {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-secondary);
-}
-
-.chart-legend__value {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  margin-left: auto;
-}
-
-.chart-legend__percentage {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-}
-
-/* Loading States */
-.risk-chart--loading {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.risk-chart__skeleton {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-lg);
-  width: 100%;
-}
-
-.skeleton-donut {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  background: linear-gradient(
-    90deg,
-    var(--bg-primary) 25%,
-    var(--bg-tertiary) 50%,
-    var(--bg-primary) 75%
-  );
-  animation: shimmer 1.5s infinite;
-}
-
-.skeleton-legend {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  width: 100%;
-  max-width: 200px;
-}
-
-.skeleton-legend-item {
-  height: 20px;
-  background: var(--bg-primary);
-  border-radius: var(--radius-sm);
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-.skeleton-legend-item:nth-child(1) { width: 80%; }
-.skeleton-legend-item:nth-child(2) { width: 70%; }
-.skeleton-legend-item:nth-child(3) { width: 60%; }
-.skeleton-legend-item:nth-child(4) { width: 75%; }
-.skeleton-legend-item:nth-child(5) { width: 65%; }
-
-@keyframes shimmer {
-  0% {
-    background-position: -200px 0;
-  }
-  100% {
-    background-position: 200px 0;
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .risk-chart__container {
-    /* min-height removed to use parent height */
-  }
-
-  .risk-chart__stats-card {
-    min-width: 120px;
-    max-width: 160px;
-    padding: var(--spacing-sm);
-  }
-
-  .risk-chart__total-value {
-    font-size: var(--font-size-lg);
-  }
-
-  .risk-chart__stat-item {
-    padding: 2px var(--spacing-xs);
-  }
-
-  .risk-chart__stat-name {
-    font-size: 10px;
-  }
-
-  .risk-chart__stat-value {
-    font-size: 10px;
-  }
-
-  .chart-legend {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: var(--spacing-sm);
-  }
-
-  .chart-legend__item {
-    flex-direction: column;
-    text-align: center;
-    min-width: 80px;
-  }
-
-  .chart-legend__content {
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .chart-legend__value {
-    margin-left: 0;
-  }
-}
-`;
-
-// Inject styles
-if (typeof document !== "undefined") {
-  const styleElement = document.getElementById("risk-chart-styles");
-  if (!styleElement) {
-    const style = document.createElement("style");
-    style.id = "risk-chart-styles";
-    style.textContent = styles;
-    document.head.appendChild(style);
-  }
 }

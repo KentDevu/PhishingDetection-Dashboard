@@ -107,10 +107,10 @@ export function ThreatTrendAnalysis({
 
   if (loading) {
     return (
-      <div className="threat-trend-analysis">
-        <div className="threat-trend-analysis__loading">
-          <div className="loading-spinner"></div>
-          <p>Loading trend analysis...</p>
+      <div className="bg-gray-900 border border-gray-700 rounded-lg p-8">
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="w-8 h-8 border-4 border-cyan-800 border-t-cyan-400 rounded-full animate-spin"></div>
+          <p className="text-gray-300">Loading trend analysis...</p>
         </div>
       </div>
     );
@@ -118,33 +118,35 @@ export function ThreatTrendAnalysis({
 
   if (!data || data.length === 0) {
     return (
-      <div className="threat-trend-analysis">
-        <div className="threat-trend-analysis__error">
-          <TrendingUp size={48} />
-          <h3>No Trend Data</h3>
-          <p>Unable to load threat trend analysis</p>
+      <div className="bg-gray-900 border border-gray-700 rounded-lg p-8">
+        <div className="flex flex-col items-center justify-center space-y-4 text-center">
+          <TrendingUp size={48} className="text-gray-500" />
+          <h3 className="text-lg font-semibold text-white">No Trend Data</h3>
+          <p className="text-gray-400">Unable to load threat trend analysis</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="threat-trend-analysis">
+    <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 space-y-6">
       {/* Header Controls */}
-      <div className="trend-header">
-        <div className="trend-header__info">
-          <h2>Threat Trend Analysis</h2>
-          <p>Security metrics over time</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-semibold text-white">Threat Trend Analysis</h2>
+          <p className="text-sm text-gray-400">Security metrics over time</p>
         </div>
 
-        <div className="trend-controls">
+        <div className="flex flex-col sm:flex-row gap-3">
           {/* Period Selector */}
-          <div className="period-selector">
+          <div className="flex bg-gray-800 rounded-lg p-1">
             {TIME_PERIODS.map((period) => (
               <button
                 key={period.value}
-                className={`period-btn ${
-                  selectedPeriod === period.value ? "period-btn--active" : ""
+                className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                  selectedPeriod === period.value
+                    ? 'bg-gray-700 text-white shadow-sm'
+                    : 'text-gray-400 hover:text-white'
                 }`}
                 onClick={() => handlePeriodChange(period.value)}
               >
@@ -154,18 +156,22 @@ export function ThreatTrendAnalysis({
           </div>
 
           {/* Chart Type Toggle */}
-          <div className="chart-type-toggle">
+          <div className="flex bg-gray-800 rounded-lg p-1">
             <button
-              className={`toggle-btn ${
-                chartType === "line" ? "toggle-btn--active" : ""
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                chartType === "line"
+                  ? 'bg-gray-700 text-white shadow-sm'
+                  : 'text-gray-400 hover:text-white'
               }`}
               onClick={() => setChartType("line")}
             >
               Line
             </button>
             <button
-              className={`toggle-btn ${
-                chartType === "area" ? "toggle-btn--active" : ""
+              className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+                chartType === "area"
+                  ? 'bg-gray-700 text-white shadow-sm'
+                  : 'text-gray-400 hover:text-white'
               }`}
               onClick={() => setChartType("area")}
             >
@@ -177,555 +183,169 @@ export function ThreatTrendAnalysis({
 
       {/* Summary Statistics */}
       {summaryStats && (
-        <div className="trend-summary">
-          <div className="summary-stat">
-            <div className="summary-stat__icon">
-              <Activity size={20} />
-            </div>
-            <div className="summary-stat__content">
-              <div className="summary-stat__value">
-                {summaryStats.totalThreats.toLocaleString()}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-cyan-900/50 rounded-lg border border-cyan-700">
+                <Activity size={20} className="text-cyan-400" />
               </div>
-              <div className="summary-stat__label">Threats Detected</div>
-              <div
-                className={`summary-stat__change ${
-                  summaryStats.threatChange >= 0 ? "positive" : "negative"
-                }`}
-              ></div>
+              <div>
+                <div className="text-2xl font-bold text-white">
+                  {summaryStats.totalThreats.toLocaleString()}
+                </div>
+                <div className="text-sm text-gray-400">Threats Detected</div>
+                <div className={`text-xs font-medium ${
+                  summaryStats.threatChange >= 0 ? 'text-red-400' : 'text-green-400'
+                }`}>
+                  {summaryStats.threatChange >= 0 ? '+' : ''}{summaryStats.threatChange.toFixed(1)}% from last period
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="summary-stat">
-            <div className="summary-stat__icon">
-              <Calendar size={20} />
-            </div>
-            <div className="summary-stat__content">
-              <div className="summary-stat__value">
-                {summaryStats.totalEmails.toLocaleString()}
+          <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-900/50 rounded-lg border border-green-700">
+                <Calendar size={20} className="text-green-400" />
               </div>
-              <div className="summary-stat__label">Emails Processed</div>
-              <div
-                className={`summary-stat__change ${
-                  summaryStats.emailChange >= 0 ? "positive" : "negative"
-                }`}
-              ></div>
+              <div>
+                <div className="text-2xl font-bold text-white">
+                  {summaryStats.totalEmails.toLocaleString()}
+                </div>
+                <div className="text-sm text-gray-400">Emails Processed</div>
+                <div className={`text-xs font-medium ${
+                  summaryStats.emailChange >= 0 ? 'text-green-400' : 'text-red-400'
+                }`}>
+                  {summaryStats.emailChange >= 0 ? '+' : ''}{summaryStats.emailChange.toFixed(1)}% from last period
+                </div>
+              </div>
             </div>
           </div>
         </div>
       )}
 
       {/* Main Chart */}
-      <div className="trend-chart">
-        <div className="chart-header">
-          <h3>Threat Detection Timeline</h3>
-          <p>Daily threat detection and email processing metrics</p>
+      <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold text-white">Threat Detection Timeline</h3>
+          <p className="text-sm text-gray-400">Daily threat detection and email processing metrics</p>
         </div>
 
-        <ResponsiveContainer
-          width="100%"
-          height="100%"
-          minWidth={400}
-          minHeight={350}
-        >
-          {chartType === "area" ? (
-            <AreaChart
-              data={chartData}
-              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-            >
-              <defs>
-                <linearGradient id="colorThreats" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#EF4444" stopOpacity={0.1} />
-                </linearGradient>
-                <linearGradient id="colorEmails" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="var(--border-primary)"
-              />
-              <XAxis
-                dataKey="date"
-                tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
-                axisLine={{ stroke: "var(--border-primary)" }}
-              />
-              <YAxis
-                tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
-                axisLine={{ stroke: "var(--border-primary)" }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "var(--bg-secondary)",
-                  border: "1px solid var(--border-primary)",
-                  borderRadius: "var(--radius-md)",
-                  color: "var(--text-primary)",
-                }}
-              />
-              <Legend />
-              <Area
-                type="monotone"
-                dataKey="threats_detected"
-                stroke="#EF4444"
-                fillOpacity={1}
-                fill="url(#colorThreats)"
-                name="Threats Detected"
-              />
-              <Area
-                type="monotone"
-                dataKey="emails_processed"
-                stroke="#3B82F6"
-                fillOpacity={1}
-                fill="url(#colorEmails)"
-                name="Emails Processed"
-              />
-            </AreaChart>
-          ) : (
-            <LineChart
-              data={chartData}
-              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="var(--border-primary)"
-              />
-              <XAxis
-                dataKey="date"
-                tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
-                axisLine={{ stroke: "var(--border-primary)" }}
-              />
-              <YAxis
-                tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
-                axisLine={{ stroke: "var(--border-primary)" }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "var(--bg-secondary)",
-                  border: "1px solid var(--border-primary)",
-                  borderRadius: "var(--radius-md)",
-                  color: "var(--text-primary)",
-                }}
-              />
-              <Legend />
-              <Line
-                type="monotone"
-                dataKey="threats_detected"
-                stroke="#EF4444"
-                strokeWidth={3}
-                name="Threats Detected"
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="emails_processed"
-                stroke="#3B82F6"
-                strokeWidth={3}
-                name="Emails Processed"
-                dot={{ r: 4 }}
-                activeDot={{ r: 6 }}
-              />
-              <Line
-                type="monotone"
-                dataKey="blocked_emails"
-                stroke="#F59E0B"
-                strokeWidth={2}
-                name="Blocked Emails"
-                dot={{ r: 3 }}
-                activeDot={{ r: 5 }}
-              />
-            </LineChart>
-          )}
-        </ResponsiveContainer>
+        <div className="h-96">
+          <ResponsiveContainer width="100%" height="100%">
+            {chartType === "area" ? (
+              <AreaChart
+                data={chartData}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
+                <defs>
+                  <linearGradient id="colorThreats" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#EF4444" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#EF4444" stopOpacity={0.1} />
+                  </linearGradient>
+                  <linearGradient id="colorEmails" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#374151"
+                />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: "#9CA3AF", fontSize: 12 }}
+                  axisLine={{ stroke: "#4B5563" }}
+                />
+                <YAxis
+                  tick={{ fill: "#9CA3AF", fontSize: 12 }}
+                  axisLine={{ stroke: "#4B5563" }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1F2937",
+                    border: "1px solid #374151",
+                    borderRadius: "6px",
+                    color: "#F9FAFB",
+                  }}
+                />
+                <Legend />
+                <Area
+                  type="monotone"
+                  dataKey="threats_detected"
+                  stroke="#EF4444"
+                  fillOpacity={1}
+                  fill="url(#colorThreats)"
+                  name="Threats Detected"
+                />
+                <Area
+                  type="monotone"
+                  dataKey="emails_processed"
+                  stroke="#3B82F6"
+                  fillOpacity={1}
+                  fill="url(#colorEmails)"
+                  name="Emails Processed"
+                />
+              </AreaChart>
+            ) : (
+              <LineChart
+                data={chartData}
+                margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#E5E7EB"
+                />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fill: "#6B7280", fontSize: 12 }}
+                  axisLine={{ stroke: "#D1D5DB" }}
+                />
+                <YAxis
+                  tick={{ fill: "#6B7280", fontSize: 12 }}
+                  axisLine={{ stroke: "#D1D5DB" }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#F9FAFB",
+                    border: "1px solid #D1D5DB",
+                    borderRadius: "6px",
+                    color: "#111827",
+                  }}
+                />
+                <Legend />
+                <Line
+                  type="monotone"
+                  dataKey="threats_detected"
+                  stroke="#EF4444"
+                  strokeWidth={3}
+                  name="Threats Detected"
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="emails_processed"
+                  stroke="#3B82F6"
+                  strokeWidth={3}
+                  name="Emails Processed"
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="blocked_emails"
+                  stroke="#F59E0B"
+                  strokeWidth={2}
+                  name="Blocked Emails"
+                  dot={{ r: 3 }}
+                  activeDot={{ r: 5 }}
+                />
+              </LineChart>
+            )}
+          </ResponsiveContainer>
+        </div>
       </div>
     </div>
-  );
-}
-
-// Threat Trend Analysis Styles
-const styles = `
-.threat-trend-analysis {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-xl);
-}
-
-.threat-trend-analysis__loading,
-.threat-trend-analysis__error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  gap: var(--spacing-lg);
-  text-align: center;
-}
-
-.threat-trend-analysis__error svg {
-  color: var(--color-info);
-}
-
-.threat-trend-analysis__error h3 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: var(--font-size-xl);
-}
-
-.threat-trend-analysis__error p {
-  margin: 0;
-  color: var(--text-muted);
-}
-
-.loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border-primary);
-  border-top: 4px solid var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-/* Header */
-.trend-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--spacing-xl);
-  padding-bottom: var(--spacing-lg);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.trend-header__info h2 {
-  margin: 0 0 var(--spacing-xs);
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-}
-
-.trend-header__info p {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: var(--font-size-sm);
-}
-
-.trend-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-lg);
-}
-
-/* Period Selector */
-.period-selector {
-  display: flex;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.period-btn {
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-in-out);
-  border-right: 1px solid var(--border-primary);
-}
-
-.period-btn:last-child {
-  border-right: none;
-}
-
-.period-btn--active,
-.period-btn:hover {
-  background: var(--color-primary);
-  color: var(--text-inverse);
-}
-
-/* Chart Type Toggle */
-.chart-type-toggle {
-  display: flex;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.toggle-btn {
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-in-out);
-  border-right: 1px solid var(--border-primary);
-}
-
-.toggle-btn:last-child {
-  border-right: none;
-}
-
-.toggle-btn--active,
-.toggle-btn:hover {
-  background: var(--color-primary);
-  color: var(--text-inverse);
-}
-
-/* Summary Statistics */
-.trend-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
-}
-
-.summary-stat {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  transition: all var(--duration-fast) var(--ease-in-out);
-}
-
-.summary-stat:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.summary-stat__icon {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-primary);
-  color: var(--text-inverse);
-  border-radius: var(--radius-md);
-}
-
-.summary-stat__icon--danger {
-  background: var(--color-danger);
-}
-
-.summary-stat__icon--warning {
-  background: var(--color-warning);
-}
-
-.summary-stat__content {
-  flex: 1;
-}
-
-.summary-stat__value {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  line-height: var(--line-height-tight);
-  margin-bottom: var(--spacing-xs);
-}
-
-.summary-stat__label {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-  font-weight: var(--font-weight-medium);
-  margin-bottom: var(--spacing-xs);
-}
-
-.summary-stat__change,
-.summary-stat__trend {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-}
-
-.summary-stat__change.positive {
-  color: var(--color-success);
-}
-
-.summary-stat__change.negative {
-  color: var(--color-danger);
-}
-
-.summary-stat__trend {
-  color: var(--text-muted);
-}
-
-/* Chart Container */
-.trend-chart {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
-  overflow: hidden;
-  min-height: 450px;
-  max-height: 550px;
-  display: flex;
-  flex-direction: column;
-}
-
-.chart-header {
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.chart-header h3 {
-  margin: 0 0 var(--spacing-xs);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-}
-
-.chart-header p {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-}
-
-/* Animations */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .threat-trend-analysis {
-    padding: var(--spacing-lg);
-  }
-
-  .trend-header h2 {
-    font-size: var(--font-size-xl);
-  }
-
-  .trend-controls {
-    gap: var(--spacing-md);
-  }
-
-  .trend-chart {
-    min-height: 400px;
-    max-height: 500px;
-  }
-}
-
-@media (max-width: 768px) {
-  .threat-trend-analysis {
-    padding: var(--spacing-md);
-  }
-
-  .trend-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--spacing-md);
-    text-align: center;
-  }
-
-  .trend-header__info h2 {
-    font-size: var(--font-size-lg);
-  }
-
-  .trend-controls {
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-  }
-
-  .period-selector {
-    order: 2;
-    width: 100%;
-    justify-content: center;
-  }
-
-  .chart-type-toggle {
-    order: 1;
-  }
-
-  .trend-summary {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
-  }
-
-  .summary-stat {
-    padding: var(--spacing-sm);
-    flex-direction: column;
-    text-align: center;
-    gap: var(--spacing-sm);
-  }
-
-  .summary-stat__icon {
-    width: 36px;
-    height: 36px;
-  }
-
-  .summary-stat__value {
-    font-size: var(--font-size-lg);
-  }
-
-  .summary-stat__label {
-    font-size: var(--font-size-xs);
-  }
-
-  .trend-chart {
-    min-height: 350px;
-    max-height: 450px;
-    padding: var(--spacing-md);
-  }
-}
-
-@media (max-width: 480px) {
-  .threat-trend-analysis {
-    padding: var(--spacing-sm);
-  }
-
-  .trend-header__info h2 {
-    font-size: var(--font-size-md);
-  }
-
-  .period-selector {
-    flex-wrap: wrap;
-  }
-
-  .period-btn {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: var(--font-size-xs);
-  }
-
-  .toggle-btn {
-    padding: var(--spacing-xs) var(--spacing-sm);
-    font-size: var(--font-size-xs);
-  }
-
-  .trend-chart {
-    min-height: 300px;
-    max-height: 400px;
-    padding: var(--spacing-sm);
-  }
-
-  .chart-header h3 {
-    font-size: var(--font-size-sm);
-  }
-}
-`;
-
-// Inject styles
-if (typeof document !== "undefined") {
-  const styleElement = document.getElementById("threat-trend-analysis-styles");
-  if (!styleElement) {
-    const style = document.createElement("style");
-    style.id = "threat-trend-analysis-styles";
-    style.textContent = styles;
-    document.head.appendChild(style);
-  }
+  )
 }

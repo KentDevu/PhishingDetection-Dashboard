@@ -111,19 +111,12 @@ export function DomainIntelligenceTable({
     return levelConfig?.color || "#6B7280";
   };
 
-  const getReputationClass = (score: number) => {
-    if (score >= 80) return "reputation--high";
-    if (score >= 60) return "reputation--medium";
-    if (score >= 40) return "reputation--low";
-    return "reputation--critical";
-  };
-
   if (loading) {
     return (
-      <div className="domain-intel-table">
-        <div className="domain-intel-table__loading">
-          <div className="loading-spinner"></div>
-          <p>Loading domain intelligence...</p>
+      <div className="bg-gray-900 border border-gray-700 rounded-lg p-8">
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="w-8 h-8 border-4 border-cyan-800 border-t-cyan-400 rounded-full animate-spin"></div>
+          <p className="text-gray-300">Loading domain intelligence...</p>
         </div>
       </div>
     );
@@ -131,43 +124,45 @@ export function DomainIntelligenceTable({
 
   if (!data || data.length === 0) {
     return (
-      <div className="domain-intel-table">
-        <div className="domain-intel-table__error">
-          <Globe size={48} />
-          <h3>No Domain Data</h3>
-          <p>No domain intelligence data available</p>
+      <div className="bg-gray-900 border border-gray-700 rounded-lg p-8">
+        <div className="flex flex-col items-center justify-center space-y-4 text-center">
+          <Globe size={48} className="text-gray-500" />
+          <h3 className="text-lg font-semibold text-white">No Domain Data</h3>
+          <p className="text-gray-400">No domain intelligence data available</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="domain-intel-table">
+    <div className="bg-gray-900 border border-gray-700 rounded-lg p-6 space-y-6">
       {/* Header */}
-      <div className="table-header">
-        <div className="table-header__info">
-          <h2>Domain Intelligence</h2>
-          <p>Reputation analysis for {data.length} domains</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-semibold text-white">Domain Intelligence</h2>
+          <p className="text-sm text-gray-400">Reputation analysis for {data.length} domains</p>
         </div>
 
-        <div className="table-controls">
+        <div className="flex flex-col sm:flex-row gap-3">
           {/* Search */}
-          <div className="search-box">
-            <Search size={16} />
+          <div className="relative">
+            <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Search domains..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 pr-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-gray-800 text-white placeholder-gray-400"
             />
           </div>
 
           {/* Threat Level Filter */}
-          <div className="filter-dropdown">
-            <Filter size={16} />
+          <div className="relative">
+            <Filter size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <select
               value={selectedThreatLevel}
               onChange={(e) => setSelectedThreatLevel(e.target.value)}
+              className="pl-10 pr-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent appearance-none bg-gray-800 text-white"
             >
               {threatLevels.map((level) => (
                 <option key={level.value} value={level.value}>
@@ -180,796 +175,220 @@ export function DomainIntelligenceTable({
       </div>
 
       {/* Statistics */}
-      <div className="table-stats">
-        <div className="stat-item">
-          <span className="stat-label">Total Domains:</span>
-          <span className="stat-value">{filteredAndSortedData.length}</span>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+          <div className="text-sm text-gray-400">Total Domains</div>
+          <div className="text-2xl font-bold text-white">{filteredAndSortedData.length}</div>
         </div>
-        <div className="stat-item">
-          <span className="stat-label">High Risk:</span>
-          <span className="stat-value stat-value--danger">
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+          <div className="text-sm text-gray-400">High Risk</div>
+          <div className="text-2xl font-bold text-red-400">
             {
               filteredAndSortedData.filter(
                 (d) => d.threat_level === "malicious"
               ).length
             }
-          </span>
+          </div>
         </div>
-        <div className="stat-item">
-          <span className="stat-label">Clean:</span>
-          <span className="stat-value stat-value--success">
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+          <div className="text-sm text-gray-400">Clean</div>
+          <div className="text-2xl font-bold text-green-400">
             {
               filteredAndSortedData.filter((d) => d.threat_level === "clean")
                 .length
             }
-          </span>
+          </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="table-container">
-        <table className="intel-table">
-          <thead>
-            <tr>
-              <th
-                className={`sortable ${sortField === "domain" ? "sorted" : ""}`}
-                onClick={() => handleSort("domain")}
-              >
-                Domain
-                {sortField === "domain" &&
-                  (sortDirection === "asc" ? (
-                    <ChevronUp size={16} />
-                  ) : (
-                    <ChevronDown size={16} />
-                  ))}
-              </th>
-              <th>Threat Level</th>
-              <th
-                className={`sortable ${
-                  sortField === "reputation_score" ? "sorted" : ""
-                }`}
-                onClick={() => handleSort("reputation_score")}
-              >
-                Reputation
-                {sortField === "reputation_score" &&
-                  (sortDirection === "asc" ? (
-                    <ChevronUp size={16} />
-                  ) : (
-                    <ChevronDown size={16} />
-                  ))}
-              </th>
-              <th
-                className={`sortable ${
-                  sortField === "email_count" ? "sorted" : ""
-                }`}
-                onClick={() => handleSort("email_count")}
-              >
-                Email Count
-                {sortField === "email_count" &&
-                  (sortDirection === "asc" ? (
-                    <ChevronUp size={16} />
-                  ) : (
-                    <ChevronDown size={16} />
-                  ))}
-              </th>
-              <th>Detection Engines</th>
-              <th
-                className={`sortable ${
-                  sortField === "last_seen" ? "sorted" : ""
-                }`}
-                onClick={() => handleSort("last_seen")}
-              >
-                Last Seen
-                {sortField === "last_seen" &&
-                  (sortDirection === "asc" ? (
-                    <ChevronUp size={16} />
-                  ) : (
-                    <ChevronDown size={16} />
-                  ))}
-              </th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredAndSortedData.map((domain, index) => {
-              console.log("DomainIntelligenceTable: rendering domain", domain);
-              return (
-                <tr key={index} className="table-row">
-                  <td className="domain-cell">
-                    <div className="domain-info">
-                      <Globe size={16} />
-                      <span className="domain-name">{domain.domain}</span>
-                      {domain.categories.length > 0 && (
-                        <div className="domain-categories">
-                          {domain.categories
-                            .slice(0, 2)
-                            .map((category, idx) => (
-                              <span key={idx} className="category-tag">
-                                {category}
-                              </span>
-                            ))}
-                          {domain.categories.length > 2 && (
-                            <span className="category-more">
-                              +{domain.categories.length - 2}
-                            </span>
+      <div className="border border-gray-700 rounded-lg overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-800 border-b border-gray-700">
+              <tr>
+                <th
+                  className={`px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700 ${
+                    sortField === "domain" ? "bg-gray-700" : ""
+                  }`}
+                  onClick={() => handleSort("domain")}
+                >
+                  <div className="flex items-center gap-1">
+                    Domain
+                    {sortField === "domain" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp size={14} />
+                      ) : (
+                        <ChevronDown size={14} />
+                      ))}
+                  </div>
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Threat Level
+                </th>
+                <th
+                  className={`px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700 ${
+                    sortField === "reputation_score" ? "bg-gray-700" : ""
+                  }`}
+                  onClick={() => handleSort("reputation_score")}
+                >
+                  <div className="flex items-center gap-1">
+                    Reputation
+                    {sortField === "reputation_score" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp size={14} />
+                      ) : (
+                        <ChevronDown size={14} />
+                      ))}
+                  </div>
+                </th>
+                <th
+                  className={`px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 ${
+                    sortField === "email_count" ? "bg-gray-100" : ""
+                  }`}
+                  onClick={() => handleSort("email_count")}
+                >
+                  <div className="flex items-center gap-1">
+                    Email Count
+                    {sortField === "email_count" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp size={14} />
+                      ) : (
+                        <ChevronDown size={14} />
+                      ))}
+                  </div>
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Detection Engines
+                </th>
+                <th
+                  className={`px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700 ${
+                    sortField === "last_seen" ? "bg-gray-700" : ""
+                  }`}
+                  onClick={() => handleSort("last_seen")}
+                >
+                  <div className="flex items-center gap-1">
+                    Last Seen
+                    {sortField === "last_seen" &&
+                      (sortDirection === "asc" ? (
+                        <ChevronUp size={14} />
+                      ) : (
+                        <ChevronDown size={14} />
+                      ))}
+                  </div>
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-gray-900 divide-y divide-gray-700">
+              {filteredAndSortedData.map((domain, index) => {
+                console.log("DomainIntelligenceTable: rendering domain", domain);
+                return (
+                  <tr key={index} className="hover:bg-gray-800/50">
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-3">
+                        <Globe size={16} className="text-gray-500" />
+                        <div>
+                          <div className="text-sm font-medium text-white">{domain.domain}</div>
+                          {domain.categories.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {domain.categories
+                                .slice(0, 2)
+                                .map((category, idx) => (
+                                  <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-cyan-900/50 text-cyan-300 border border-cyan-700">
+                                    {category}
+                                  </span>
+                                ))}
+                              {domain.categories.length > 2 && (
+                                <span className="text-xs text-gray-400">
+                                  +{domain.categories.length - 2}
+                                </span>
+                              )}
+                            </div>
                           )}
                         </div>
-                      )}
-                    </div>
-                  </td>
-
-                  <td>
-                    <div
-                      className="threat-level-badge"
-                      style={{
-                        backgroundColor: getThreatLevelColor(
-                          domain.threat_level
-                        ),
-                      }}
-                    >
-                      {domain.threat_level.charAt(0).toUpperCase() +
-                        domain.threat_level.slice(1)}
-                    </div>
-                  </td>
-
-                  <td>
-                    <div
-                      className={`reputation-score ${getReputationClass(
-                        domain.reputation_score
-                      )}`}
-                    >
-                      <div className="score-value">
-                        {domain.reputation_score}
                       </div>
-                      <div className="score-bar">
-                        <div
-                          className="score-fill"
-                          style={{ width: `${domain.reputation_score}%` }}
-                        />
+                    </td>
+
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <span
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
+                        style={{
+                          backgroundColor: `${getThreatLevelColor(domain.threat_level)}20`,
+                          color: getThreatLevelColor(domain.threat_level),
+                          borderColor: `${getThreatLevelColor(domain.threat_level)}40`,
+                        }}
+                      >
+                        {domain.threat_level.charAt(0).toUpperCase() +
+                          domain.threat_level.slice(1)}
+                      </span>
+                    </td>
+
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-white">
+                          {domain.reputation_score}
+                        </span>
+                        <div className="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${
+                              domain.reputation_score >= 80 ? 'bg-green-500' :
+                              domain.reputation_score >= 60 ? 'bg-yellow-500' :
+                              domain.reputation_score >= 40 ? 'bg-orange-500' : 'bg-red-500'
+                            }`}
+                            style={{ width: `${domain.reputation_score}%` }}
+                          />
+                        </div>
                       </div>
-                    </div>
-                  </td>
+                    </td>
 
-                  <td className="email-count">
-                    {domain.email_count.toLocaleString()}
-                  </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-white">
+                      {domain.email_count.toLocaleString()}
+                    </td>
 
-                  <td>
-                    <div className="engine-info">
-                      <span className="malicious-engines">
-                        {domain.malicious_engines.length}
-                      </span>
-                      <span className="total-engines">
-                        / {domain.total_engines}
-                      </span>
-                    </div>
-                  </td>
+                    <td className="px-4 py-4 whitespace-nowrap text-sm text-white">
+                      <span className="text-red-600 font-medium">{domain.malicious_engines.length}</span>
+                      <span className="text-gray-500"> / {domain.total_engines}</span>
+                    </td>
 
-                  <td className="last-seen">
-                    <div className="date-info">
-                      <Clock size={14} />
-                      {format(parseISO(domain.last_seen), "MMM dd, yyyy")}
-                    </div>
-                  </td>
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-sm text-gray-900">
+                        <Clock size={14} className="text-gray-400" />
+                        {format(parseISO(domain.last_seen), "MMM dd, yyyy")}
+                      </div>
+                    </td>
 
-                  <td>
-                    <div className="actions">
-                      <button className="action-btn" title="View Details">
-                        <Shield size={14} />
-                      </button>
-                      <button className="action-btn" title="External Analysis">
-                        <ExternalLink size={14} />
-                      </button>
-                      {domain.geographic_distribution.length > 0 && (
-                        <button className="action-btn" title="Geographic Data">
-                          <MapPin size={14} />
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="flex items-center gap-1">
+                        <button className="p-1 text-gray-400 hover:text-gray-600" title="View Details">
+                          <Shield size={14} />
                         </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                        <button className="p-1 text-gray-400 hover:text-gray-600" title="External Analysis">
+                          <ExternalLink size={14} />
+                        </button>
+                        {domain.geographic_distribution.length > 0 && (
+                          <button className="p-1 text-gray-400 hover:text-gray-600" title="Geographic Data">
+                            <MapPin size={14} />
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {filteredAndSortedData.length === 0 && (
-        <div className="no-results">
-          <Search size={32} />
-          <p>No domains match your current filters</p>
+        <div className="text-center py-12">
+          <Search size={32} className="mx-auto text-gray-500 mb-4" />
+          <p className="text-gray-400">No domains match your current filters</p>
         </div>
       )}
     </div>
   );
-}
-
-// Domain Intelligence Table Styles
-const styles = `
-.domain-intel-table {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-xl);
-}
-
-.domain-intel-table__loading,
-.domain-intel-table__error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-  gap: var(--spacing-lg);
-  text-align: center;
-}
-
-.domain-intel-table__error svg {
-  color: var(--color-info);
-}
-
-.domain-intel-table__error h3 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: var(--font-size-xl);
-}
-
-.domain-intel-table__error p {
-  margin: 0;
-  color: var(--text-muted);
-}
-
-.loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border-primary);
-  border-top: 4px solid var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-/* Header */
-.table-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-lg);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.table-header__info h2 {
-  margin: 0 0 var(--spacing-xs);
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-}
-
-.table-header__info p {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: var(--font-size-sm);
-}
-
-.table-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-/* Search Box */
-.search-box {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  min-width: 200px;
-}
-
-.search-box svg {
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.search-box input {
-  background: none;
-  border: none;
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  width: 100%;
-}
-
-.search-box input:focus {
-  outline: none;
-}
-
-.search-box input::placeholder {
-  color: var(--text-muted);
-}
-
-/* Filter Dropdown */
-.filter-dropdown {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-}
-
-.filter-dropdown svg {
-  color: var(--text-muted);
-  flex-shrink: 0;
-}
-
-.filter-dropdown select {
-  background: none;
-  border: none;
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-}
-
-.filter-dropdown select:focus {
-  outline: none;
-}
-
-/* Table Statistics */
-.table-stats {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xl);
-  margin-bottom: var(--spacing-lg);
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.stat-label {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-  font-weight: var(--font-weight-medium);
-}
-
-.stat-value {
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-  font-weight: var(--font-weight-semibold);
-}
-
-.stat-value--danger {
-  color: var(--color-danger);
-}
-
-.stat-value--success {
-  color: var(--color-success);
-}
-
-/* Table Container */
-.table-container {
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: 600px;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  position: relative;
-}
-
-.intel-table {
-  width: 100%;
-  border-collapse: collapse;
-  background: var(--bg-primary);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.intel-table thead {
-  background: var(--bg-secondary);
-}
-
-.intel-table th {
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--bg-secondary);
-  border-bottom: 2px solid var(--border-primary);
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
-  text-align: left;
-  white-space: nowrap;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.intel-table th.sortable {
-  cursor: pointer;
-  user-select: none;
-  transition: all var(--duration-fast) var(--ease-in-out);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.intel-table th.sortable:hover {
-  color: var(--text-primary);
-  background: var(--bg-tertiary);
-}
-
-.intel-table th.sorted {
-  color: var(--color-primary);
-}
-
-.intel-table td {
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: 1px solid var(--border-primary);
-  vertical-align: top;
-  background: var(--bg-primary);
-}
-
-.table-row:hover {
-  background: var(--bg-tertiary);
-  transition: background-color var(--duration-fast) var(--ease-in-out);
-}
-
-/* Domain Cell */
-.domain-info {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
-}
-
-.domain-name {
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-}
-
-.domain-categories {
-  display: flex;
-  gap: var(--spacing-xs);
-  flex-wrap: wrap;
-}
-
-.category-tag {
-  padding: 2px var(--spacing-xs);
-  background: var(--bg-accent);
-  color: var(--color-primary);
-  font-size: var(--font-size-xs);
-  border-radius: var(--radius-sm);
-}
-
-.category-more {
-  padding: 2px var(--spacing-xs);
-  background: var(--bg-tertiary);
-  color: var(--text-muted);
-  font-size: var(--font-size-xs);
-  border-radius: var(--radius-sm);
-}
-
-/* Threat Level Badge */
-.threat-level-badge {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  color: var(--text-inverse);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  border-radius: var(--radius-md);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Reputation Score */
-.reputation-score {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.score-value {
-  font-weight: var(--font-weight-semibold);
-  min-width: 30px;
-}
-
-.score-bar {
-  width: 60px;
-  height: 8px;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-
-.score-fill {
-  height: 100%;
-  transition: width var(--duration-normal) var(--ease-in-out);
-}
-
-.reputation--high .score-value {
-  color: var(--color-success);
-}
-
-.reputation--high .score-fill {
-  background: var(--color-success);
-}
-
-.reputation--medium .score-value {
-  color: var(--color-warning);
-}
-
-.reputation--medium .score-fill {
-  background: var(--color-warning);
-}
-
-.reputation--low .score-value {
-  color: var(--color-danger);
-}
-
-.reputation--low .score-fill {
-  background: var(--color-danger);
-}
-
-.reputation--critical .score-value {
-  color: #DC2626;
-}
-
-.reputation--critical .score-fill {
-  background: #DC2626;
-}
-
-/* Engine Info */
-.engine-info {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  font-size: var(--font-size-sm);
-}
-
-.malicious-engines {
-  color: var(--color-danger);
-  font-weight: var(--font-weight-semibold);
-}
-
-.total-engines {
-  color: var(--text-muted);
-}
-
-/* Date Info */
-.date-info {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-}
-
-/* Actions */
-.actions {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.action-btn {
-  padding: var(--spacing-xs);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-in-out);
-}
-
-.action-btn:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-/* No Results */
-.no-results {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--spacing-xl);
-  text-align: center;
-  color: var(--text-muted);
-}
-
-.no-results svg {
-  margin-bottom: var(--spacing-md);
-}
-
-/* Animations */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .domain-intel-table {
-    padding: var(--spacing-lg);
-  }
-
-  .table-header h2 {
-    font-size: var(--font-size-xl);
-  }
-
-  .search-box {
-    min-width: 180px;
-  }
-
-  .table-container {
-    max-height: 500px;
-  }
-}
-
-@media (max-width: 768px) {
-  .domain-intel-table {
-    padding: var(--spacing-md);
-  }
-
-  .table-header {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--spacing-md);
-    text-align: center;
-  }
-
-  .table-header__info h2 {
-    font-size: var(--font-size-lg);
-  }
-
-  .table-controls {
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: var(--spacing-sm);
-  }
-
-  .search-box {
-    min-width: 150px;
-    width: 100%;
-    max-width: 300px;
-  }
-
-  .filter-dropdown {
-    width: 100%;
-    max-width: 200px;
-    justify-content: center;
-  }
-
-  .table-stats {
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    align-items: stretch;
-    padding: var(--spacing-sm) var(--spacing-md);
-  }
-
-  .stat-item {
-    justify-content: center;
-  }
-
-  .intel-table th,
-  .intel-table td {
-    padding: var(--spacing-sm);
-    font-size: var(--font-size-xs);
-  }
-
-  .domain-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-xs);
-  }
-
-  .domain-categories {
-    flex-wrap: wrap;
-    gap: var(--spacing-xs);
-  }
-
-  .category-tag {
-    font-size: 10px;
-    padding: 1px var(--spacing-xs);
-  }
-
-  .threat-level-badge {
-    font-size: 10px;
-    padding: var(--spacing-xs);
-  }
-
-  .reputation-score {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-xs);
-  }
-
-  .score-bar {
-    width: 100%;
-    max-width: 80px;
-  }
-
-  .actions {
-    flex-direction: column;
-    gap: 2px;
-  }
-
-  .action-btn {
-    padding: 4px;
-  }
-
-  .table-container {
-    max-height: 400px;
-  }
-}
-
-@media (max-width: 480px) {
-  .domain-intel-table {
-    padding: var(--spacing-sm);
-  }
-
-  .table-header__info h2 {
-    font-size: var(--font-size-md);
-  }
-
-  .table-header__info p {
-    font-size: var(--font-size-xs);
-  }
-
-  .search-box {
-    min-width: auto;
-  }
-
-  .filter-dropdown {
-    max-width: none;
-  }
-
-  .intel-table {
-    font-size: var(--font-size-xs);
-  }
-
-  .intel-table th,
-  .intel-table td {
-    padding: var(--spacing-xs);
-  }
-
-  .domain-name {
-    word-break: break-all;
-  }
-
-  .engine-info,
-  .date-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 2px;
-  }
-
-  .score-value {
-    font-size: var(--font-size-xs);
-  }
-
-  .table-container {
-    max-height: 300px;
-  }
-}
-`;
-
-// Inject styles
-if (typeof document !== "undefined") {
-  const styleElement = document.getElementById("domain-intel-table-styles");
-  if (!styleElement) {
-    const style = document.createElement("style");
-    style.id = "domain-intel-table-styles";
-    style.textContent = styles;
-    document.head.appendChild(style);
-  }
 }

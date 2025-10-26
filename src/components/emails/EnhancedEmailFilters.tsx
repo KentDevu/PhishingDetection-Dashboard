@@ -132,33 +132,35 @@ export function EnhancedEmailFilters({
     Object.keys(currentFilters || {}).length > 0 || searchTerm;
 
   return (
-    <div className="enhanced-email-filters">
+    <div className="bg-gray-800 border border-gray-700 rounded-lg p-4 mb-6">
       {/* Quick Search Bar */}
-      <div className="filter-section filter-section--search">
-        <div className="search-input-group">
-          <div className="search-input-container">
-            <Search size={18} className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search emails by sender or subject..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleQuickSearch()}
-              className="search-input"
-              disabled={loading}
-            />
-            {searchTerm && (
-              <button
-                className="clear-search-btn"
-                onClick={() => setSearchTerm("")}
-                title="Clear search"
-              >
-                <X size={16} />
-              </button>
-            )}
+      <div className="mb-4">
+        <div className="flex flex-col md:flex-row gap-4 mb-4">
+          <div className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="text"
+                placeholder="Search emails by sender or subject..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleQuickSearch()}
+                className="w-full pl-10 pr-10 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-400 focus:outline-none transition-colors"
+                disabled={loading}
+              />
+              {searchTerm && (
+                <button
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                  onClick={() => setSearchTerm("")}
+                  title="Clear search"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
           </div>
           <button
-            className="btn btn--primary"
+            className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 text-white rounded-lg transition-colors disabled:cursor-not-allowed"
             onClick={handleQuickSearch}
             disabled={!searchTerm.trim() || loading}
           >
@@ -171,9 +173,13 @@ export function EnhancedEmailFilters({
           </button>
         </div>
 
-        <div className="filter-actions">
+        <div className="flex items-center gap-4">
           <button
-            className={`btn btn--outline ${showAdvanced ? "btn--active" : ""}`}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
+              showAdvanced
+                ? 'bg-cyan-900/50 border-cyan-400 text-cyan-400'
+                : 'border-gray-600 text-gray-400 hover:border-gray-500 hover:text-white'
+            }`}
             onClick={() => setShowAdvanced(!showAdvanced)}
           >
             <Filter size={16} />
@@ -182,7 +188,7 @@ export function EnhancedEmailFilters({
 
           {hasActiveFilters && (
             <button
-              className="btn btn--outline btn--danger"
+              className="flex items-center gap-2 px-3 py-2 bg-red-900/20 border border-red-700 text-red-400 rounded-lg hover:bg-red-900/30 transition-colors"
               onClick={clearAllFilters}
             >
               <X size={16} />
@@ -193,21 +199,15 @@ export function EnhancedEmailFilters({
       </div>
 
       {/* Results Summary */}
-      <div className="filter-results-summary">
-        <div className="results-info">
-          <span className="results-count">
-            {loading ? (
-              "Loading..."
-            ) : (
-              <>
-                Showing <strong>{filteredCount.toLocaleString()}</strong> of{" "}
-                <strong>{totalCount.toLocaleString()}</strong> emails
-              </>
-            )}
-          </span>
+      <div className="border-t border-gray-700 pt-4">
+        <div className="text-sm text-gray-400">
+          <span className="text-white font-medium">{filteredCount.toLocaleString()}</span>
+          <span className="mx-1">of</span>
+          <span className="text-white font-medium">{totalCount.toLocaleString()}</span>
+          <span className="ml-1">emails</span>
           {hasActiveFilters && !loading && (
-            <span className="filter-indicator">
-              <Filter size={12} />
+            <span className="ml-3 inline-flex items-center gap-1 px-2 py-1 bg-cyan-900/20 border border-cyan-700 text-cyan-400 text-xs font-medium rounded-full">
+              <Filter size={10} />
               Filtered
             </span>
           )}
@@ -216,21 +216,21 @@ export function EnhancedEmailFilters({
 
       {/* Advanced Filters */}
       {showAdvanced && (
-        <div className="filter-section filter-section--advanced">
-          <div className="advanced-filters-grid">
+        <div className="border-t border-gray-700 pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Sender/Domain Filters */}
-            <div className="filter-group">
-              <label className="filter-label">
-                <Mail size={16} />
-                Sender & Domain
-              </label>
-              <div className="filter-inputs">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Mail size={16} className="text-blue-400" />
+                <span className="text-sm font-medium text-white">Sender & Domain</span>
+              </div>
+              <div className="space-y-3">
                 <input
                   type="text"
                   placeholder="Sender email"
                   value={localFilters.sender || ""}
                   onChange={(e) => updateLocalFilter("sender", e.target.value)}
-                  className="filter-input"
+                  className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-400 focus:outline-none transition-colors"
                 />
                 <input
                   type="text"
@@ -239,38 +239,38 @@ export function EnhancedEmailFilters({
                   onChange={(e) =>
                     updateLocalFilter("sender_domain", e.target.value)
                   }
-                  className="filter-input"
+                  className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-400 focus:outline-none transition-colors"
                 />
               </div>
             </div>
 
             {/* Subject Filter */}
-            <div className="filter-group">
-              <label className="filter-label">
-                <AlertTriangle size={16} />
-                Subject
-              </label>
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle size={16} className="text-yellow-400" />
+                <span className="text-sm font-medium text-white">Subject</span>
+              </div>
               <input
                 type="text"
                 placeholder="Email subject keywords"
                 value={localFilters.subject || ""}
                 onChange={(e) => updateLocalFilter("subject", e.target.value)}
-                className="filter-input"
+                className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-400 focus:outline-none transition-colors"
               />
             </div>
 
             {/* Threat Level Filter */}
-            <div className="filter-group">
-              <label className="filter-label">
-                <Shield size={16} />
-                Threat Level
-              </label>
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Shield size={16} className="text-green-400" />
+                <span className="text-sm font-medium text-white">Threat Level</span>
+              </div>
               <select
                 value={localFilters.threat_level || ""}
                 onChange={(e) =>
                   updateLocalFilter("threat_level", e.target.value)
                 }
-                className="filter-select"
+                className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white focus:border-cyan-400 focus:outline-none transition-colors"
               >
                 <option value="">All Threat Levels</option>
                 {threatLevelOptions.map((option) => (
@@ -282,17 +282,17 @@ export function EnhancedEmailFilters({
             </div>
 
             {/* Confidence Level Filter */}
-            <div className="filter-group">
-              <label className="filter-label">
-                <User size={16} />
-                CTI Confidence
-              </label>
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <User size={16} className="text-purple-400" />
+                <span className="text-sm font-medium text-white">CTI Confidence</span>
+              </div>
               <select
                 value={localFilters.cti_confidence || ""}
                 onChange={(e) =>
                   updateLocalFilter("cti_confidence", e.target.value)
                 }
-                className="filter-select"
+                className="w-full px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white focus:border-cyan-400 focus:outline-none transition-colors"
               >
                 <option value="">All Confidence Levels</option>
                 {confidenceLevelOptions.map((option) => (
@@ -304,53 +304,55 @@ export function EnhancedEmailFilters({
             </div>
 
             {/* Date Range Filter */}
-            <div className="filter-group">
-              <label className="filter-label">
-                <Calendar size={16} />
-                Date Range
-              </label>
-              <div className="date-range-inputs">
-                <input
-                  type="date"
-                  value={localFilters.start_date || ""}
-                  onChange={(e) =>
-                    updateLocalFilter("start_date", e.target.value)
-                  }
-                  className="filter-input filter-input--date"
-                  title="Start date"
-                />
-                <span className="date-separator">to</span>
-                <input
-                  type="date"
-                  value={localFilters.end_date || ""}
-                  onChange={(e) =>
-                    updateLocalFilter("end_date", e.target.value)
-                  }
-                  className="filter-input filter-input--date"
-                  title="End date"
-                />
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Calendar size={16} className="text-cyan-400" />
+                <span className="text-sm font-medium text-white">Date Range</span>
               </div>
-              <div className="date-presets">
-                {dateRangeOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    className="date-preset-btn"
-                    onClick={() => handleDateRangeChange(option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={localFilters.start_date || ""}
+                    onChange={(e) =>
+                      updateLocalFilter("start_date", e.target.value)
+                    }
+                    className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white focus:border-cyan-400 focus:outline-none transition-colors"
+                    title="Start date"
+                  />
+                  <span className="flex items-center text-gray-400">to</span>
+                  <input
+                    type="date"
+                    value={localFilters.end_date || ""}
+                    onChange={(e) =>
+                      updateLocalFilter("end_date", e.target.value)
+                    }
+                    className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white focus:border-cyan-400 focus:outline-none transition-colors"
+                    title="End date"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {dateRangeOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      className="px-3 py-1 bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white text-xs rounded transition-colors"
+                      onClick={() => handleDateRangeChange(option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Attachment Filter */}
-            <div className="filter-group">
-              <label className="filter-label">
-                <Paperclip size={16} />
-                Attachments
-              </label>
-              <div className="radio-group">
-                <label className="radio-option">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Paperclip size={16} className="text-orange-400" />
+                <span className="text-sm font-medium text-white">Attachments</span>
+              </div>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-700/50 p-2 rounded-lg transition-colors">
                   <input
                     type="radio"
                     name="attachments"
@@ -358,35 +360,38 @@ export function EnhancedEmailFilters({
                     onChange={() =>
                       updateLocalFilter("has_attachments", undefined)
                     }
+                    className="w-4 h-4 text-cyan-400 bg-gray-900 border-gray-600 rounded focus:ring-cyan-400 focus:ring-2"
                   />
-                  All emails
+                  <span className="text-sm text-gray-300">All emails</span>
                 </label>
-                <label className="radio-option">
+                <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-700/50 p-2 rounded-lg transition-colors">
                   <input
                     type="radio"
                     name="attachments"
                     checked={localFilters.has_attachments === true}
                     onChange={() => updateLocalFilter("has_attachments", true)}
+                    className="w-4 h-4 text-cyan-400 bg-gray-900 border-gray-600 rounded focus:ring-cyan-400 focus:ring-2"
                   />
-                  With attachments
+                  <span className="text-sm text-gray-300">With attachments</span>
                 </label>
-                <label className="radio-option">
+                <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-700/50 p-2 rounded-lg transition-colors">
                   <input
                     type="radio"
                     name="attachments"
                     checked={localFilters.has_attachments === false}
                     onChange={() => updateLocalFilter("has_attachments", false)}
+                    className="w-4 h-4 text-cyan-400 bg-gray-900 border-gray-600 rounded focus:ring-cyan-400 focus:ring-2"
                   />
-                  Without attachments
+                  <span className="text-sm text-gray-300">Without attachments</span>
                 </label>
               </div>
             </div>
           </div>
 
           {/* Advanced Filter Actions */}
-          <div className="advanced-filter-actions">
+          <div className="flex items-center gap-4 pt-4 border-t border-gray-700">
             <button
-              className="btn btn--primary"
+              className="flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 disabled:bg-gray-600 text-white rounded-lg transition-colors disabled:cursor-not-allowed"
               onClick={handleAdvancedFilter}
               disabled={loading}
             >
@@ -394,7 +399,7 @@ export function EnhancedEmailFilters({
               Apply Filters
             </button>
             <button
-              className="btn btn--outline"
+              className="flex items-center gap-2 px-4 py-2 border border-gray-600 text-gray-400 hover:border-gray-500 hover:text-white rounded-lg transition-colors"
               onClick={() => setLocalFilters({})}
             >
               Reset
@@ -404,359 +409,4 @@ export function EnhancedEmailFilters({
       )}
     </div>
   );
-}
-
-// Enhanced Email Filters Styles
-const styles = `
-.enhanced-email-filters {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
-}
-
-/* Search Section */
-.filter-section--search {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-md);
-}
-
-.search-input-group {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  flex: 1;
-}
-
-.search-input-container {
-  position: relative;
-  flex: 1;
-  max-width: 400px;
-}
-
-.search-input {
-  width: 100%;
-  padding: var(--spacing-sm) var(--spacing-sm) var(--spacing-sm) 3rem;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  transition: all var(--duration-fast) var(--ease-in-out);
-}
-
-.search-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(19, 255, 160, 0.1);
-}
-
-.search-icon {
-  position: absolute;
-  left: var(--spacing-sm);
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  pointer-events: none;
-}
-
-.clear-search-btn {
-  position: absolute;
-  right: var(--spacing-sm);
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 2px;
-  border-radius: var(--radius-sm);
-  transition: all var(--duration-fast) var(--ease-in-out);
-}
-
-.clear-search-btn:hover {
-  color: var(--text-primary);
-  background: var(--bg-tertiary);
-}
-
-.filter-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-/* Results Summary */
-.filter-results-summary {
-  padding: var(--spacing-sm) 0;
-  border-bottom: 1px solid var(--border-primary);
-  margin-bottom: var(--spacing-lg);
-}
-
-.results-info {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  font-size: var(--font-size-sm);
-}
-
-.results-count {
-  color: var(--text-secondary);
-}
-
-.filter-indicator {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: 2px 6px;
-  background: var(--bg-accent);
-  color: var(--color-primary);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-}
-
-/* Advanced Filters */
-.filter-section--advanced {
-  border-top: 1px solid var(--border-primary);
-  padding-top: var(--spacing-lg);
-  margin-top: var(--spacing-lg);
-}
-
-.advanced-filters-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
-}
-
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.filter-label {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-}
-
-.filter-inputs {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.filter-input {
-  padding: var(--spacing-sm);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  transition: all var(--duration-fast) var(--ease-in-out);
-}
-
-.filter-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(19, 255, 160, 0.1);
-}
-
-.filter-input--date {
-  max-width: 150px;
-}
-
-.filter-select {
-  padding: var(--spacing-sm);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  cursor: pointer;
-}
-
-/* Date Range */
-.date-range-inputs {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.date-separator {
-  color: var(--text-muted);
-  font-size: var(--font-size-sm);
-}
-
-.date-presets {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
-  margin-top: var(--spacing-xs);
-}
-
-.date-preset-btn {
-  padding: 2px 6px;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  background: var(--bg-primary);
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-in-out);
-}
-
-.date-preset-btn:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-/* Radio Group */
-.radio-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
-.radio-option {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.radio-option input[type="radio"] {
-  margin: 0;
-}
-
-/* Actions */
-.advanced-filter-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding-top: var(--spacing-lg);
-  border-top: 1px solid var(--border-primary);
-}
-
-/* Button Styles */
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-in-out);
-  text-decoration: none;
-}
-
-.btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn--primary {
-  background: var(--color-primary);
-  color: var(--bg-primary);
-  border-color: var(--color-primary);
-}
-
-.btn--primary:hover:not(:disabled) {
-  background: #00CC80;
-  border-color: #00CC80;
-  transform: translateY(-1px);
-}
-
-.btn--outline {
-  background: transparent;
-  border-color: var(--border-primary);
-  color: var(--text-secondary);
-}
-
-.btn--outline:hover:not(:disabled) {
-  background: var(--bg-tertiary);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.btn--active {
-  background: var(--bg-accent);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.btn--danger {
-  border-color: var(--color-danger);
-  color: var(--color-danger);
-}
-
-.btn--danger:hover:not(:disabled) {
-  background: rgba(237, 51, 51, 0.1);
-}
-
-/* Animations */
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .filter-section--search {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--spacing-md);
-  }
-
-  .search-input-group {
-    flex-direction: column;
-  }
-
-  .filter-actions {
-    justify-content: center;
-  }
-
-  .advanced-filters-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-md);
-  }
-
-  .advanced-filter-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .date-range-inputs {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-`;
-
-// Inject styles
-if (typeof document !== "undefined") {
-  const styleElement = document.getElementById("enhanced-email-filters-styles");
-  if (!styleElement) {
-    const style = document.createElement("style");
-    style.id = "enhanced-email-filters-styles";
-    style.textContent = styles;
-    document.head.appendChild(style);
-  }
 }

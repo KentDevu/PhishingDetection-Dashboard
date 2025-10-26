@@ -283,32 +283,27 @@ export function EmailList({
     return date.toLocaleDateString();
   };
 
-  const getThreatColor = (threat: ThreatLevel) => {
+  const getThreatBadgeClasses = (threat: ThreatLevel) => {
     switch (threat) {
       case "critical":
-        return "var(--color-danger)";
       case "malicious":
-        return "var(--color-danger)";
+        return 'bg-red-900/20 text-red-400 border border-red-700';
       case "high":
-        return "#FF6B35";
+        return 'bg-orange-900/20 text-orange-400 border border-orange-700';
       case "suspicious":
-        return "var(--color-warning)";
+        return 'bg-yellow-900/20 text-yellow-400 border border-yellow-700';
       case "clean":
-        return "var(--color-success)";
+      default:
+        return 'bg-green-900/20 text-green-400 border border-green-700';
     }
   };
 
   return (
-    <div className="email-list">
-      <EmailFilters
-        onFiltersChange={setFilters}
-        totalCount={emails.length}
-        filteredCount={filteredEmails.length}
-      />
+    <div className="flex flex-col gap-6">
 
-      <div className="email-list__controls">
-        <div className="email-list__selection">
-          <button className="select-all-btn" onClick={handleSelectAll}>
+      <div className="flex items-center justify-between p-4 bg-gray-800 border border-gray-700 rounded-lg gap-6">
+        <div className="flex items-center gap-3">
+          <button className="flex items-center gap-2 px-3 py-2 bg-transparent border border-gray-600 rounded-lg text-gray-400 text-sm cursor-pointer hover:bg-gray-700 hover:border-cyan-400 hover:text-cyan-400 transition-colors" onClick={handleSelectAll}>
             {selectedEmails.size === sortedEmails.length &&
             sortedEmails.length > 0 ? (
               <CheckSquare size={18} />
@@ -323,23 +318,23 @@ export function EmailList({
           </button>
 
           {selectedEmails.size > 0 && (
-            <div className="bulk-actions">
+            <div className="flex items-center gap-2">
               <button
-                className="bulk-action-btn bulk-action-btn--primary"
+                className="flex items-center gap-2 px-3 py-2 bg-cyan-900/20 border border-cyan-700 text-cyan-400 rounded-lg hover:bg-cyan-900/30 transition-colors"
                 onClick={() => console.log("View selected emails")}
               >
                 <Eye size={16} />
                 View Selected
               </button>
               <button
-                className="bulk-action-btn bulk-action-btn--secondary"
+                className="flex items-center gap-2 px-3 py-2 bg-blue-900/20 border border-blue-700 text-blue-400 rounded-lg hover:bg-blue-900/30 transition-colors"
                 onClick={() => console.log("Export selected emails")}
               >
                 <Download size={16} />
                 Export
               </button>
               <button
-                className="bulk-action-btn bulk-action-btn--danger"
+                className="flex items-center gap-2 px-3 py-2 bg-red-900/20 border border-red-700 text-red-400 rounded-lg hover:bg-red-900/30 transition-colors"
                 onClick={handleBulkDelete}
               >
                 <Trash2 size={16} />
@@ -349,9 +344,9 @@ export function EmailList({
           )}
         </div>
 
-        <div className="email-list__view-controls">
-          <div className="sort-controls">
-            <span className="sort-label">Sort by:</span>
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-400">Sort by:</span>
             <select
               value={`${sortField}-${sortDirection}`}
               onChange={(e) => {
@@ -359,7 +354,7 @@ export function EmailList({
                 setSortField(field as SortField);
                 setSortDirection(direction as SortDirection);
               }}
-              className="sort-select"
+              className="px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white focus:border-cyan-400 focus:outline-none"
             >
               <option value="timestamp-desc">Newest first</option>
               <option value="timestamp-asc">Oldest first</option>
@@ -372,18 +367,22 @@ export function EmailList({
             </select>
           </div>
 
-          <div className="view-mode-toggle">
+          <div className="flex items-center bg-gray-900 border border-gray-600 rounded-lg p-1">
             <button
-              className={`view-mode-btn ${
-                viewMode === "card" ? "view-mode-btn--active" : ""
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                viewMode === "card"
+                  ? 'bg-cyan-900/50 border border-cyan-700 text-cyan-400'
+                  : 'text-gray-400 hover:text-white'
               }`}
               onClick={() => setViewMode("card")}
             >
               Card View
             </button>
             <button
-              className={`view-mode-btn ${
-                viewMode === "table" ? "view-mode-btn--active" : ""
+              className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                viewMode === "table"
+                  ? 'bg-cyan-900/50 border border-cyan-700 text-cyan-400'
+                  : 'text-gray-400 hover:text-white'
               }`}
               onClick={() => setViewMode("table")}
             >
@@ -394,10 +393,10 @@ export function EmailList({
       </div>
 
       {sortedEmails.length === 0 ? (
-        <div className="empty-state">
-          <Mail size={48} className="empty-state__icon" />
-          <h3 className="empty-state__title">No emails found</h3>
-          <p className="empty-state__description">
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <Mail size={48} className="text-gray-600 mb-4" />
+          <h3 className="text-xl font-semibold text-white mb-2">No emails found</h3>
+          <p className="text-gray-400 max-w-md">
             {filters.search ||
             filters.threatLevel.length > 0 ||
             filters.sender !== ""
@@ -406,9 +405,9 @@ export function EmailList({
           </p>
         </div>
       ) : (
-        <div className={`email-list__content email-list__content--${viewMode}`}>
+        <div className={viewMode === "card" ? "grid grid-cols-1 gap-4" : ""}>
           {viewMode === "card" ? (
-            <div className="email-cards-grid">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {sortedEmails.map((email) => (
                 <EmailCard
                   key={email.id}
@@ -421,10 +420,10 @@ export function EmailList({
               ))}
             </div>
           ) : (
-            <div className="email-table">
-              <div className="email-table__header">
-                <div className="email-table__header-cell email-table__header-cell--checkbox">
-                  <button onClick={handleSelectAll}>
+            <div className="bg-gray-800 border border-gray-700 rounded-lg overflow-hidden">
+              <div className="grid grid-cols-8 gap-4 p-4 bg-gray-900 border-b border-gray-700 font-medium text-gray-300 text-sm">
+                <div className="flex items-center">
+                  <button onClick={handleSelectAll} className="text-gray-400 hover:text-white">
                     {selectedEmails.size === sortedEmails.length &&
                     sortedEmails.length > 0 ? (
                       <CheckSquare size={16} />
@@ -434,48 +433,48 @@ export function EmailList({
                   </button>
                 </div>
                 <button
-                  className="email-table__header-cell email-table__header-cell--sortable"
+                  className="flex items-center gap-1 hover:text-cyan-400 transition-colors"
                   onClick={() => handleSort("threat_level")}
                 >
                   Threat
                   <ArrowUpDown size={14} />
                 </button>
                 <button
-                  className="email-table__header-cell email-table__header-cell--sortable"
+                  className="flex items-center gap-1 hover:text-cyan-400 transition-colors"
                   onClick={() => handleSort("sender")}
                 >
                   Sender
                   <ArrowUpDown size={14} />
                 </button>
                 <button
-                  className="email-table__header-cell email-table__header-cell--sortable"
+                  className="flex items-center gap-1 hover:text-cyan-400 transition-colors"
                   onClick={() => handleSort("subject")}
                 >
                   Subject
                   <ArrowUpDown size={14} />
                 </button>
                 <button
-                  className="email-table__header-cell email-table__header-cell--sortable"
+                  className="flex items-center gap-1 hover:text-cyan-400 transition-colors"
                   onClick={() => handleSort("phishing_score")}
                 >
                   Score
                   <ArrowUpDown size={14} />
                 </button>
-                <div className="email-table__header-cell">Auth</div>
+                <div className="flex items-center">Auth</div>
                 <button
-                  className="email-table__header-cell email-table__header-cell--sortable"
+                  className="flex items-center gap-1 hover:text-cyan-400 transition-colors"
                   onClick={() => handleSort("timestamp")}
                 >
                   Time
                   <ArrowUpDown size={14} />
                 </button>
-                <div className="email-table__header-cell">Actions</div>
+                <div className="flex items-center">Actions</div>
               </div>
-              <div className="email-table__body">
+              <div className="divide-y divide-gray-700">
                 {sortedEmails.map((email) => (
-                  <div key={email.id} className="email-table__row">
-                    <div className="email-table__cell email-table__cell--checkbox">
-                      <button onClick={() => handleSelectEmail(email.id)}>
+                  <div key={email.id} className="grid grid-cols-8 gap-4 p-4 hover:bg-gray-800/50 transition-colors">
+                    <div className="flex items-center">
+                      <button onClick={() => handleSelectEmail(email.id)} className="text-gray-400 hover:text-white">
                         {selectedEmails.has(email.id) ? (
                           <CheckSquare size={16} />
                         ) : (
@@ -483,111 +482,86 @@ export function EmailList({
                         )}
                       </button>
                     </div>
-                    <div className="email-table__cell">
-                      <span
-                        className={`threat-badge threat-badge--${
-                          email.threat_summary?.overall_risk || "clean"
-                        }`}
-                      >
+                    <div className="flex items-center">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full ${getThreatBadgeClasses(email.threat_summary?.overall_risk || "clean")}`}>
                         <AlertTriangle size={12} />
-                        {(
-                          email.threat_summary?.overall_risk || "clean"
-                        ).toUpperCase()}
+                        {(email.threat_summary?.overall_risk || "clean").toUpperCase()}
                       </span>
                     </div>
-                    <div className="email-table__cell email-table__cell--sender">
-                      <div className="sender-info">
-                        <User size={12} />
-                        <span className="sender-name">
+                    <div className="flex items-center gap-2">
+                      <User size={12} className="text-gray-400" />
+                      <div className="flex flex-col">
+                        <span className="text-white text-sm font-medium">
                           {email.sender_name || "Unknown"}
                         </span>
-                        <span className="sender-email">{email.sender}</span>
+                        <span className="text-gray-400 text-xs">{email.sender}</span>
                       </div>
                     </div>
-                    <div className="email-table__cell email-table__cell--subject">
-                      <div className="subject-content">
-                        <span className="subject-text">{email.subject}</span>
-                        <div className="email-indicators">
-                          {(email.attachments?.length || 0) > 0 && (
-                            <span
-                              className="indicator"
-                              title={`${email.attachments.length} attachments`}
-                            >
-                              📎 {email.attachments.length}
-                            </span>
-                          )}
-                          {(email.extracted_urls?.length || 0) > 0 && (
-                            <span
-                              className="indicator"
-                              title={`${email.extracted_urls.length} URLs`}
-                            >
-                              🔗 {email.extracted_urls.length}
-                            </span>
-                          )}
-                        </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-white text-sm font-medium line-clamp-2">
+                        {email.subject}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {(email.attachments?.length || 0) > 0 && (
+                          <span className="text-xs text-gray-400" title={`${email.attachments.length} attachments`}>
+                            📎 {email.attachments.length}
+                          </span>
+                        )}
+                        {(email.extracted_urls?.length || 0) > 0 && (
+                          <span className="text-xs text-gray-400" title={`${email.extracted_urls.length} URLs`}>
+                            🔗 {email.extracted_urls.length}
+                          </span>
+                        )}
                       </div>
                     </div>
-                    <div className="email-table__cell">
-                      <span
-                        className="score-value"
-                        style={{
-                          color: getThreatColor(
-                            email.threat_summary?.overall_risk || "clean"
-                          ),
-                        }}
-                      >
+                    <div className="flex items-center">
+                      <span className={`text-sm font-medium ${
+                        email.threat_summary?.overall_risk === 'malicious'
+                          ? 'text-red-400'
+                          : email.threat_summary?.overall_risk === 'suspicious'
+                          ? 'text-yellow-400'
+                          : 'text-green-400'
+                      }`}>
                         {((email.phishing_score_cti || 0) * 100).toFixed(1)}%
                       </span>
                     </div>
-                    <div className="email-table__cell">
-                      <div className="auth-indicators">
-                        <span
-                          className={`auth-badge ${
-                            (email.spf_result || "unknown") === "pass"
-                              ? "auth-badge--pass"
-                              : "auth-badge--fail"
-                          }`}
-                          title={`SPF: ${email.spf_result || "unknown"}`}
-                        >
-                          <Shield size={10} />
-                          SPF
-                        </span>
-                        <span
-                          className={`auth-badge ${
-                            (email.dkim_result || "unknown") === "pass"
-                              ? "auth-badge--pass"
-                              : "auth-badge--fail"
-                          }`}
-                          title={`DKIM: ${email.dkim_result || "unknown"}`}
-                        >
-                          <Shield size={10} />
-                          DKIM
-                        </span>
-                      </div>
+                    <div className="flex items-center gap-1">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full ${
+                        (email.spf_result || "unknown") === "pass"
+                          ? 'bg-green-900/20 text-green-400 border border-green-700'
+                          : 'bg-red-900/20 text-red-400 border border-red-700'
+                      }`} title={`SPF: ${email.spf_result || "unknown"}`}>
+                        <Shield size={10} />
+                        SPF
+                      </span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full ${
+                        (email.dkim_result || "unknown") === "pass"
+                          ? 'bg-green-900/20 text-green-400 border border-green-700'
+                          : 'bg-red-900/20 text-red-400 border border-red-700'
+                      }`} title={`DKIM: ${email.dkim_result || "unknown"}`}>
+                        <Shield size={10} />
+                        DKIM
+                      </span>
                     </div>
-                    <div className="email-table__cell">
-                      <div className="email-timestamp">
-                        <Clock size={12} />
-                        {formatRelativeTime(email.timestamp)}
-                      </div>
+                    <div className="flex items-center gap-1 text-gray-400 text-sm">
+                      <Clock size={12} />
+                      {formatRelativeTime(email.timestamp)}
                     </div>
-                    <div className="email-table__cell">
-                      <div className="table-actions">
-                        <button
-                          className="table-action-btn"
-                          onClick={() => onEmailView?.(email)}
-                          title="View email"
-                        >
-                          <Eye size={14} />
-                        </button>
-                        <button
-                          className="table-action-btn table-action-btn--danger"
-                          onClick={() => onEmailDelete?.(email.id)}
-                          title="Delete email"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="p-1 text-gray-400 hover:text-cyan-400 transition-colors"
+                        onClick={() => onEmailView?.(email)}
+                        title="View email"
+                      >
+                        <Eye size={14} />
+                      </button>
+                      <button
+                        className="p-1 text-gray-400 hover:text-red-400 transition-colors"
+                        onClick={() => onEmailDelete?.(email.id)}
+                        title="Delete email"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -598,685 +572,4 @@ export function EmailList({
       )}
     </div>
   );
-}
-
-// Email List Styles
-const styles = `
-.email-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-}
-
-.email-list__controls {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  gap: var(--spacing-lg);
-}
-
-.email-list__selection {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.select-all-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: none;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-in-out);
-}
-
-.select-all-btn:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.bulk-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.bulk-action-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-in-out);
-}
-
-.bulk-action-btn--primary {
-  background: var(--bg-accent);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.bulk-action-btn--primary:hover {
-  background: var(--color-primary);
-  color: var(--bg-primary);
-}
-
-.bulk-action-btn--secondary {
-  background: var(--bg-primary);
-  border-color: var(--border-primary);
-  color: var(--text-secondary);
-}
-
-.bulk-action-btn--secondary:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--text-secondary);
-  color: var(--text-primary);
-}
-
-.bulk-action-btn--danger {
-  background: rgba(237, 51, 51, 0.1);
-  border-color: var(--color-danger);
-  color: var(--color-danger);
-}
-
-.bulk-action-btn--danger:hover {
-  background: var(--color-danger);
-  color: white;
-}
-
-.email-list__view-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-lg);
-}
-
-.sort-controls {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.sort-label {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-.sort-select {
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  color: var(--text-primary);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-}
-
-.view-mode-toggle {
-  display: flex;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.view-mode-btn {
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-primary);
-  border: none;
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-in-out);
-}
-
-.view-mode-btn:not(:last-child) {
-  border-right: 1px solid var(--border-primary);
-}
-
-.view-mode-btn:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.view-mode-btn--active {
-  background: var(--bg-accent);
-  color: var(--color-primary);
-}
-
-/* Email Cards Grid */
-.email-cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
-  gap: var(--spacing-lg);
-  padding: 0 var(--spacing-md);
-}
-
-/* Responsive Design for Email Cards */
-@media (max-width: 1400px) {
-  .email-cards-grid {
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-    gap: var(--spacing-md);
-  }
-}
-
-@media (max-width: 1200px) {
-  .email-cards-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--spacing-md);
-    padding: 0 var(--spacing-sm);
-  }
-}
-
-@media (max-width: 900px) {
-  .email-cards-grid {
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-    gap: var(--spacing-sm);
-  }
-}
-
-@media (max-width: 768px) {
-  .email-cards-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
-    padding: 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .email-cards-grid {
-    gap: var(--spacing-xs);
-  }
-}
-
-/* Email Table */
-.email-table {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.email-table__header {
-  display: grid;
-  grid-template-columns: 40px 120px 200px 1fr 80px 100px 120px 80px;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.email-table__header-cell {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.email-table__header-cell--sortable {
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
-  transition: color var(--duration-fast) var(--ease-in-out);
-}
-
-.email-table__header-cell--sortable:hover {
-  color: var(--color-primary);
-}
-
-.email-table__header-cell--checkbox {
-  justify-content: center;
-}
-
-.email-table__body {
-  max-height: 800px;
-  overflow-y: auto;
-}
-
-.email-table__row {
-  display: grid;
-  grid-template-columns: 40px 120px 200px 1fr 80px 100px 120px 80px;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-bottom: 1px solid var(--border-primary);
-  transition: background-color var(--duration-fast) var(--ease-in-out);
-  align-items: center;
-}
-
-.email-table__row:hover {
-  background: var(--bg-tertiary);
-}
-
-.email-table__row:last-child {
-  border-bottom: none;
-}
-
-.email-table__cell {
-  display: flex;
-  align-items: center;
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-  min-width: 0;
-}
-
-.email-table__cell--checkbox {
-  justify-content: center;
-}
-
-.email-table__cell--checkbox button {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: color var(--duration-fast) var(--ease-in-out);
-}
-
-.email-table__cell--checkbox button:hover {
-  color: var(--color-primary);
-}
-
-.email-table__cell--sender {
-  min-width: 0;
-}
-
-.sender-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.sender-name {
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.sender-email {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.email-table__cell--subject {
-  min-width: 0;
-}
-
-.subject-content {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  min-width: 0;
-}
-
-.subject-text {
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.email-indicators {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.indicator {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  background: var(--bg-primary);
-  padding: 2px 4px;
-  border-radius: var(--radius-sm);
-}
-
-.threat-badge {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border: 1px solid currentColor;
-  background: currentColor;
-  opacity: 0.9;
-}
-
-.threat-badge--clean {
-  background: var(--color-success);
-  color: var(--text-primary);
-  border-color: var(--color-success);
-}
-
-.threat-badge--low {
-  background: var(--color-success);
-  color: var(--text-primary);
-  border-color: var(--color-success);
-}
-
-.threat-badge--medium {
-  background: var(--color-warning);
-  color: var(--text-primary);
-  border-color: var(--color-warning);
-}
-
-.threat-badge--suspicious {
-  background: var(--color-warning);
-  color: var(--text-primary);
-  border-color: var(--color-warning);
-}
-
-.threat-badge--high {
-  background: #FF6B35;
-  color: white;
-  border-color: #FF6B35;
-}
-
-.threat-badge--critical,
-.threat-badge--malicious {
-  background: var(--color-danger);
-  color: white;
-  border-color: var(--color-danger);
-}
-
-.score-value {
-  font-weight: var(--font-weight-bold);
-  font-size: var(--font-size-sm);
-}
-
-.auth-indicators {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.auth-badge {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 1px 4px;
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-}
-
-.auth-badge--pass {
-  background: rgba(34, 197, 94, 0.2);
-  color: var(--color-success);
-}
-
-.auth-badge--fail {
-  background: rgba(237, 51, 51, 0.2);
-  color: var(--color-danger);
-}
-
-.email-timestamp {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  color: var(--text-muted);
-  font-size: var(--font-size-xs);
-}
-
-.table-actions {
-  display: flex;
-  gap: var(--spacing-xs);
-}
-
-.table-action-btn {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-sm);
-  padding: var(--spacing-xs);
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-in-out);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.table-action-btn:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.table-action-btn--danger:hover {
-  background: rgba(237, 51, 51, 0.1);
-  border-color: var(--color-danger);
-  color: var(--color-danger);
-}
-
-/* Empty State */
-.empty-state {
-  text-align: center;
-  padding: var(--spacing-3xl);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-}
-
-.empty-state__icon {
-  color: var(--text-muted);
-  margin: 0 auto var(--spacing-lg);
-}
-
-.empty-state__title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-sm);
-}
-
-.empty-state__description {
-  color: var(--text-muted);
-  margin: 0;
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-  .email-list__controls {
-    padding: var(--spacing-sm) var(--spacing-md);
-    gap: var(--spacing-md);
-  }
-
-  .email-list__view-controls {
-    gap: var(--spacing-md);
-  }
-
-  .sort-controls {
-    gap: var(--spacing-xs);
-  }
-
-  .sort-label {
-    display: none;
-  }
-
-  .email-table__header,
-  .email-table__row {
-    grid-template-columns: 30px 100px 1fr 60px 80px 50px;
-  }
-
-  .email-table__cell:nth-child(6),
-  .email-table__cell:nth-child(7) {
-    display: none;
-  }
-
-  .email-table__header-cell:nth-child(6),
-  .email-table__header-cell:nth-child(7) {
-    display: none;
-  }
-}
-
-@media (max-width: 900px) {
-  .email-list__controls {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm);
-  }
-
-  .email-list__selection {
-    justify-content: center;
-  }
-
-  .email-list__view-controls {
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-
-  .bulk-actions {
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .sort-select {
-    font-size: var(--font-size-xs);
-    padding: var(--spacing-xs) var(--spacing-sm);
-  }
-
-  .view-mode-btn {
-    font-size: var(--font-size-xs);
-    padding: var(--spacing-xs) var(--spacing-sm);
-  }
-}
-
-@media (max-width: 768px) {
-  .email-list {
-    gap: var(--spacing-md);
-  }
-
-  .email-list__controls {
-    margin: 0 var(--spacing-sm);
-  }
-
-  .email-list__selection {
-    flex-direction: column;
-    gap: var(--spacing-xs);
-  }
-
-  .bulk-actions {
-    justify-content: center;
-  }
-
-  .email-list__view-controls {
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    align-items: center;
-  }
-
-  .sort-controls {
-    order: 2;
-  }
-
-  .view-mode-toggle {
-    order: 1;
-  }
-
-  .email-table__header,
-  .email-table__row {
-    grid-template-columns: 30px 1fr 60px 40px;
-    font-size: var(--font-size-xs);
-    padding: var(--spacing-sm);
-  }
-
-  .email-table__cell:nth-child(n+5) {
-    display: none;
-  }
-
-  .email-table__header-cell:nth-child(n+5) {
-    display: none;
-  }
-
-  .sender-info {
-    gap: 1px;
-  }
-
-  .subject-content {
-    gap: 2px;
-  }
-
-  .email-indicators {
-    gap: 2px;
-  }
-
-  .indicator {
-    font-size: 10px;
-    padding: 1px 3px;
-  }
-}
-
-@media (max-width: 480px) {
-  .email-list {
-    gap: var(--spacing-sm);
-  }
-
-  .email-list__controls {
-    margin: 0;
-    border-radius: var(--radius-md);
-  }
-
-  .select-all-btn {
-    font-size: var(--font-size-xs);
-    padding: var(--spacing-xs) var(--spacing-sm);
-  }
-
-  .bulk-action-btn {
-    font-size: var(--font-size-xs);
-    padding: var(--spacing-xs) var(--spacing-sm);
-  }
-
-  .email-table__header,
-  .email-table__row {
-    padding: var(--spacing-xs);
-    gap: var(--spacing-xs);
-  }
-
-  .empty-state {
-    padding: var(--spacing-xl);
-  }
-
-  .empty-state__title {
-    font-size: var(--font-size-md);
-  }
-
-  .empty-state__description {
-    font-size: var(--font-size-sm);
-  }
-}
-`;
-
-// Inject styles
-if (typeof document !== "undefined") {
-  const styleElement = document.getElementById("email-list-styles");
-  if (!styleElement) {
-    const style = document.createElement("style");
-    style.id = "email-list-styles";
-    style.textContent = styles;
-    document.head.appendChild(style);
-  }
 }

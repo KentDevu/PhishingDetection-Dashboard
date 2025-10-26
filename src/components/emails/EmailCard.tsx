@@ -43,17 +43,17 @@ export function EmailCard({
   const getThreatColor = (threat: ThreatLevel) => {
     switch (threat) {
       case "critical":
-        return "var(--color-danger)";
+        return "text-red-400";
       case "malicious":
-        return "var(--color-danger)";
+        return "text-red-400";
       case "high":
-        return "#FF6B35";
+        return "text-orange-400";
       case "suspicious":
-        return "var(--color-warning)";
+        return "text-yellow-400";
       case "clean":
-        return "var(--color-success)";
+        return "text-green-400";
       default:
-        return "var(--text-muted)";
+        return "text-gray-400";
     }
   };
 
@@ -62,7 +62,7 @@ export function EmailCard({
   };
 
   const getAuthStatusColor = (result: string) => {
-    return result === "pass" ? "var(--color-success)" : "var(--color-danger)";
+    return result === "pass" ? "text-green-400" : "text-red-400";
   };
 
   const handleCopyToClipboard = (text: string) => {
@@ -75,62 +75,69 @@ export function EmailCard({
   };
 
   return (
-    <div className={`email-card ${isSelected ? "email-card--selected" : ""}`}>
+    <div className={`bg-gray-800 border border-gray-700 rounded-lg transition-all duration-200 ease-in-out overflow-hidden hover:border-cyan-400 hover:shadow-lg hover:shadow-cyan-400/10 ${isSelected ? "border-cyan-400 bg-gray-900/50" : ""}`}>
       {/* Top Actions Bar */}
-      <div className="email-card__top-actions">
-        <div className="email-card__select">
+      <div className="flex items-center justify-between p-3 border-b border-gray-700 bg-gray-900/50">
+        <div className="flex items-center">
           <button
-            className="select-checkbox"
+            className="w-5 h-5 border border-gray-600 rounded flex items-center justify-center hover:border-cyan-400 transition-colors"
             onClick={() => onSelect?.(email.id)}
           >
-            <div
-              className={`checkbox ${isSelected ? "checkbox--checked" : ""}`}
-            >
-              {isSelected && <Check size={12} />}
+            <div className={`w-3 h-3 rounded-sm flex items-center justify-center ${isSelected ? "bg-cyan-400" : ""}`}>
+              {isSelected && <Check size={10} className="text-gray-900" />}
             </div>
           </button>
         </div>
 
-        <div className="top-action-buttons">
+        <div className="flex items-center gap-1">
           <button
-            className="action-btn"
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
             onClick={() => onView?.(email)}
             title="View Details"
           >
             <Eye size={16} />
           </button>
           <button
-            className="action-btn"
+            className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
             onClick={() => setIsExpanded(!isExpanded)}
             title={isExpanded ? "Collapse" : "Expand"}
           >
             {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
           </button>
-          <div className="dropdown">
+          <div className="relative">
             <button
-              className="action-btn"
+              className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-colors"
               onClick={() => setShowActions(!showActions)}
               title="More Actions"
             >
               <MoreVertical size={16} />
             </button>
             {showActions && (
-              <div className="dropdown-menu">
-                <button onClick={() => handleCopyToClipboard(email.sender)}>
+              <div className="absolute right-0 top-full mt-1 bg-gray-800 border border-gray-700 rounded-lg shadow-lg z-10 min-w-48">
+                <button
+                  className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
+                  onClick={() => handleCopyToClipboard(email.sender)}
+                >
                   <Copy size={14} />
                   Copy Sender
                 </button>
-                <button onClick={() => handleCopyToClipboard(email.subject)}>
+                <button
+                  className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
+                  onClick={() => handleCopyToClipboard(email.subject)}
+                >
                   <Copy size={14} />
                   Copy Subject
                 </button>
-                <button onClick={() => onView?.(email)}>
+                <button
+                  className="w-full text-left px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white flex items-center gap-2 transition-colors"
+                  onClick={() => onView?.(email)}
+                >
                   <ExternalLink size={14} />
                   View Full Email
                 </button>
-                <hr className="dropdown-divider" />
+                <hr className="border-gray-700 my-1" />
                 <button
-                  className="dropdown-item--danger"
+                  className="w-full text-left px-3 py-2 text-sm text-red-400 hover:bg-red-900/20 hover:text-red-300 flex items-center gap-2 transition-colors"
                   onClick={() => onDelete?.(email.id)}
                 >
                   <Trash2 size={14} />
@@ -143,97 +150,77 @@ export function EmailCard({
       </div>
 
       {/* Card Header */}
-      <div className="email-card__header">
-        <div className="email-card__main">
-          <div className="email-header">
-            <div className="sender-info">
-              <User size={14} />
-              <span className="sender-name">
-                {email.sender_name || "Unknown"}
-              </span>
-              <span className="sender-email">&lt;{email.sender}&gt;</span>
+      <div className="p-4">
+        <div className="flex justify-between items-start">
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 text-sm">
+                <User size={14} className="text-gray-400" />
+                <span className="text-white font-medium truncate max-w-32">
+                  {email.sender_name || "Unknown"}
+                </span>
+                <span className="text-gray-400 truncate max-w-48">&lt;{email.sender}&gt;</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-400">
+                <Clock size={14} />
+                <span>
+                  {formatDistanceToNow(new Date(email.timestamp), {
+                    addSuffix: true,
+                  })}
+                </span>
+                <span className={`font-medium ${getThreatColor(email.threat_summary?.overall_risk || "clean")}`}>
+                  • {(email.threat_summary?.overall_risk || "clean").toUpperCase()}
+                </span>
+              </div>
             </div>
-            <div className="email-timestamp">
-              <Clock size={14} />
-              <span>
-                {formatDistanceToNow(new Date(email.timestamp), {
-                  addSuffix: true,
-                })}
-              </span>
-              <span
-                className="threat-level-text"
-                style={{
-                  color: getThreatColor(
-                    email.threat_summary?.overall_risk || "clean"
-                  ),
-                }}
-              >
-                •{" "}
-                {(email.threat_summary?.overall_risk || "clean").toUpperCase()}
-              </span>
+
+            <div className="flex items-start gap-2 mb-2">
+              <Mail size={16} className="text-gray-400 mt-0.5 shrink-0" />
+              <h3 className="text-white font-medium leading-tight">{email.subject}</h3>
+            </div>
+
+            <div className="text-sm text-gray-400">
+              <span>To: {email.recipient}</span>
             </div>
           </div>
 
-          <div className="email-subject">
-            <Mail size={16} />
-            <h3>{email.subject}</h3>
-          </div>
-
-          <div className="email-recipient">
-            <span>To: {email.recipient}</span>
-          </div>
-        </div>
-
-        <div className="email-card__score">
-          <div className="phishing-score">
-            <span className="score-label">Risk Score</span>
-            <span
-              className="score-value"
-              style={{
-                color: getThreatColor(
-                  email.threat_summary?.overall_risk || "clean"
-                ),
-              }}
-            >
-              {formatScore(email.phishing_score_cti)}%
-            </span>
+          <div className="ml-4 shrink-0">
+            <div className="text-center">
+              <div className="text-xs text-gray-400 mb-1">Risk Score</div>
+              <div className={`text-lg font-bold ${getThreatColor(email.threat_summary?.overall_risk || "clean")}`}>
+                {formatScore(email.phishing_score_cti)}%
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="email-card__content">
+        <div className="border-t border-gray-700 p-4 space-y-6">
           {/* Authentication Status */}
-          <div className="auth-section">
-            <h4>Authentication Status</h4>
-            <div className="auth-grid">
-              <div className="auth-item">
-                <span className="auth-label">SPF</span>
-                <div
-                  className="auth-status"
-                  style={{ color: getAuthStatusColor(email.spf_result) }}
-                >
+          <div>
+            <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+              Authentication Status
+            </h4>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">SPF</div>
+                <div className={`flex items-center gap-1 text-sm font-medium ${getAuthStatusColor(email.spf_result)}`}>
                   {getAuthStatusIcon(email.spf_result)}
                   <span>{email.spf_result.toUpperCase()}</span>
                 </div>
               </div>
-              <div className="auth-item">
-                <span className="auth-label">DKIM</span>
-                <div
-                  className="auth-status"
-                  style={{ color: getAuthStatusColor(email.dkim_result) }}
-                >
+              <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">DKIM</div>
+                <div className={`flex items-center gap-1 text-sm font-medium ${getAuthStatusColor(email.dkim_result)}`}>
                   {getAuthStatusIcon(email.dkim_result)}
                   <span>{email.dkim_result.toUpperCase()}</span>
                 </div>
               </div>
-              <div className="auth-item">
-                <span className="auth-label">DMARC</span>
-                <div
-                  className="auth-status"
-                  style={{ color: getAuthStatusColor(email.dmarc_result) }}
-                >
+              <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">DMARC</div>
+                <div className={`flex items-center gap-1 text-sm font-medium ${getAuthStatusColor(email.dmarc_result)}`}>
                   {getAuthStatusIcon(email.dmarc_result)}
                   <span>{email.dmarc_result.toUpperCase()}</span>
                 </div>
@@ -242,80 +229,81 @@ export function EmailCard({
           </div>
 
           {/* Threat Analysis Summary */}
-          <div className="threat-section">
-            <h4>Threat Analysis</h4>
-            <div className="threat-stats">
-              <div className="threat-stat">
-                <span className="stat-label">Confidence</span>
-                <span className="stat-value">
-                  {(
-                    email.threat_summary?.confidence || "unknown"
-                  ).toUpperCase()}
-                </span>
+          <div>
+            <h4 className="text-sm font-semibold text-white mb-3">Threat Analysis</h4>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">Confidence</div>
+                <div className="text-sm font-medium text-white">
+                  {(email.threat_summary?.confidence || "unknown").toUpperCase()}
+                </div>
               </div>
-              <div className="threat-stat">
-                <span className="stat-label">Malicious Found</span>
-                <span className="stat-value">
+              <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">Malicious Found</div>
+                <div className="text-sm font-medium text-red-400">
                   {email.threat_summary?.malicious_found || 0}
-                </span>
+                </div>
               </div>
-              <div className="threat-stat">
-                <span className="stat-label">Suspicious Found</span>
-                <span className="stat-value">
+              <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">Suspicious Found</div>
+                <div className="text-sm font-medium text-yellow-400">
                   {email.threat_summary?.suspicious_found || 0}
-                </span>
+                </div>
               </div>
-              <div className="threat-stat">
-                <span className="stat-label">Avg Reputation</span>
-                <span className="stat-value">
+              <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">Avg Reputation</div>
+                <div className="text-sm font-medium text-cyan-400">
                   {(email.threat_summary?.average_reputation || 0).toFixed(1)}
-                </span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* URLs and Attachments */}
-          <div className="content-section">
-            <div className="urls-section">
-              <h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
                 <Link size={16} />
                 Extracted URLs ({email.extracted_urls.length})
               </h4>
               {email.extracted_urls.length > 0 ? (
-                <div className="urls-list">
+                <div className="space-y-2">
                   {email.extracted_urls.slice(0, 3).map((url, index) => (
-                    <div key={index} className="url-item">
-                      <Globe size={12} />
-                      <span className="url-text">{url}</span>
-                      <button onClick={() => handleCopyToClipboard(url)}>
+                    <div key={index} className="flex items-center gap-2 p-2 bg-gray-900/50 border border-gray-700 rounded-lg">
+                      <Globe size={12} className="text-gray-400 shrink-0" />
+                      <span className="text-sm text-gray-300 flex-1 truncate">{url}</span>
+                      <button
+                        onClick={() => handleCopyToClipboard(url)}
+                        className="text-gray-400 hover:text-cyan-400 transition-colors"
+                      >
                         <Copy size={12} />
                       </button>
                     </div>
                   ))}
                   {email.extracted_urls.length > 3 && (
-                    <div className="more-items">
+                    <div className="text-xs text-gray-400 text-center">
                       +{email.extracted_urls.length - 3} more URLs
                     </div>
                   )}
                 </div>
               ) : (
-                <div className="empty-state">No URLs found</div>
+                <div className="text-sm text-gray-500 text-center py-4">No URLs found</div>
               )}
             </div>
 
-            <div className="attachments-section">
-              <h4>
+            <div>
+              <h4 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
                 <Paperclip size={16} />
                 Attachments ({email.attachments.length})
               </h4>
               {email.attachments.length > 0 ? (
-                <div className="attachments-list">
+                <div className="space-y-2">
                   {email.attachments.map((attachment, index) => (
-                    <div key={index} className="attachment-item">
-                      <Paperclip size={12} />
-                      <span className="attachment-name">{attachment}</span>
+                    <div key={index} className="flex items-center gap-2 p-2 bg-gray-900/50 border border-gray-700 rounded-lg">
+                      <Paperclip size={12} className="text-gray-400 shrink-0" />
+                      <span className="text-sm text-gray-300 flex-1 truncate">{attachment}</span>
                       {email.attachment_hashes[index] && (
-                        <span className="attachment-hash">
+                        <span className="text-xs text-gray-500 font-mono">
                           {email.attachment_hashes[index].substring(0, 8)}...
                         </span>
                       )}
@@ -323,18 +311,18 @@ export function EmailCard({
                   ))}
                 </div>
               ) : (
-                <div className="empty-state">No attachments</div>
+                <div className="text-sm text-gray-500 text-center py-4">No attachments</div>
               )}
             </div>
           </div>
 
           {/* CTI Flags */}
           {email.cti_flags.length > 0 && (
-            <div className="flags-section">
-              <h4>Security Flags</h4>
-              <div className="flags-list">
+            <div>
+              <h4 className="text-sm font-semibold text-white mb-3">Security Flags</h4>
+              <div className="flex flex-wrap gap-2">
                 {email.cti_flags.map((flag, index) => (
-                  <span key={index} className="security-flag">
+                  <span key={index} className="inline-flex items-center gap-1 px-2 py-1 bg-red-900/20 border border-red-700 text-red-400 text-xs font-medium rounded-full">
                     <Flag size={12} />
                     {flag}
                   </span>
@@ -344,22 +332,22 @@ export function EmailCard({
           )}
 
           {/* Technical Details */}
-          <div className="technical-section">
-            <h4>Technical Details</h4>
-            <div className="technical-grid">
-              <div className="tech-item">
-                <span className="tech-label">Sender IP</span>
-                <span className="tech-value">{email.sender_ip}</span>
+          <div>
+            <h4 className="text-sm font-semibold text-white mb-3">Technical Details</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">Sender IP</div>
+                <div className="text-sm font-medium text-white font-mono">{email.sender_ip}</div>
               </div>
-              <div className="tech-item">
-                <span className="tech-label">Sender Domain</span>
-                <span className="tech-value">{email.sender_domain}</span>
+              <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">Sender Domain</div>
+                <div className="text-sm font-medium text-white font-mono">{email.sender_domain}</div>
               </div>
-              <div className="tech-item">
-                <span className="tech-label">Timestamp</span>
-                <span className="tech-value">
+              <div className="bg-gray-900/50 border border-gray-700 rounded-lg p-3">
+                <div className="text-xs text-gray-400 mb-1">Timestamp</div>
+                <div className="text-sm font-medium text-white">
                   {format(new Date(email.timestamp), "PPpp")}
-                </span>
+                </div>
               </div>
             </div>
           </div>
@@ -369,629 +357,4 @@ export function EmailCard({
   );
 }
 
-// Email Card Styles
-const styles = `
-.email-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  transition: all var(--duration-fast) var(--ease-in-out);
-  overflow: hidden;
-}
 
-.email-card:hover {
-  border-color: var(--color-primary);
-  box-shadow: 0 4px 12px rgba(19, 255, 160, 0.1);
-}
-
-.email-card--selected {
-  border-color: var(--color-primary);
-  background: var(--bg-accent);
-}
-
-.email-card__top-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-bottom: 1px solid var(--border-primary);
-  background: var(--bg-tertiary);
-}
-
-.top-action-buttons {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.email-card__header {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
-  align-items: flex-start;
-}
-
-.email-card__select {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-top: var(--spacing-xs);
-}
-
-.select-checkbox {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: var(--spacing-xs);
-}
-
-.checkbox {
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--border-primary);
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-primary);
-  transition: all var(--duration-fast) var(--ease-in-out);
-}
-
-.checkbox--checked {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--bg-primary);
-}
-
-.email-card__main {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  min-width: 0;
-  width: 100%;
-}
-
-.email-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-md);
-  flex-wrap: wrap;
-}
-
-.sender-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-  width: 100%;
-  line-height: 1.4;
-}
-
-.sender-name {
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 200px;
-}
-
-.sender-email {
-  color: var(--text-muted);
-  font-size: var(--font-size-sm);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 300px;
-}
-
-.email-timestamp {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  color: var(--text-muted);
-  font-size: var(--font-size-xs);
-  white-space: nowrap;
-  line-height: 1.4;
-}
-
-.threat-level-text {
-  font-weight: var(--font-weight-medium);
-  font-size: var(--font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  line-height: 1.4;
-}
-
-.email-subject {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
-  min-width: 0;
-  line-height: 1.4;
-}
-
-.email-subject h3 {
-  margin: 0;
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.4;
-  flex: 1;
-  min-width: 0;
-}
-
-.email-recipient {
-  color: var(--text-muted);
-  font-size: var(--font-size-sm);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.4;
-}
-
-.email-card__score {
-  display: flex;
-  align-items: center;
-}
-
-.phishing-score {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-xs);
-  text-align: center;
-}
-
-.score-label {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.score-value {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
-}
-
-.action-btn {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-sm);
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-in-out);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.action-btn:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.dropdown {
-  position: relative;
-}
-
-.dropdown-menu {
-  position: absolute;
-  top: 100%;
-  right: 0;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-xs);
-  min-width: 180px;
-  z-index: 1000;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  animation: slideDown var(--duration-fast) var(--ease-out);
-}
-
-.dropdown-menu button {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm);
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition: all var(--duration-fast) var(--ease-in-out);
-  text-align: left;
-}
-
-.dropdown-menu button:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.dropdown-item--danger {
-  color: var(--color-danger) !important;
-}
-
-.dropdown-item--danger:hover {
-  background: rgba(237, 51, 51, 0.1) !important;
-}
-
-.dropdown-divider {
-  border: none;
-  border-top: 1px solid var(--border-primary);
-  margin: var(--spacing-xs) 0;
-}
-
-/* Expanded Content */
-.email-card__content {
-  border-top: 1px solid var(--border-primary);
-  padding: var(--spacing-md);
-  background: var(--bg-primary);
-  animation: slideDown var(--duration-normal) var(--ease-out);
-}
-
-.email-card__content h4 {
-  margin: 0 0 var(--spacing-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-}
-
-.email-card__content > div:not(:last-child) {
-  margin-bottom: var(--spacing-md);
-  padding-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-/* Authentication Section */
-.auth-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: var(--spacing-md);
-}
-
-.auth-item {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-md);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
-  text-align: center;
-}
-
-.auth-label {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.auth-status {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-/* Threat Section */
-.threat-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: var(--spacing-md);
-}
-
-.threat-stat {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  text-align: center;
-}
-
-.stat-label {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.stat-value {
-  font-size: var(--font-size-md);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-}
-
-/* Content Section */
-.content-section {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-xl);
-}
-
-.urls-list,
-.attachments-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.url-item,
-.attachment-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-}
-
-.url-text,
-.attachment-name {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--text-secondary);
-}
-
-.attachment-hash {
-  color: var(--text-muted);
-  font-family: var(--font-mono);
-}
-
-.more-items {
-  padding: var(--spacing-sm);
-  text-align: center;
-  color: var(--text-muted);
-  font-size: var(--font-size-xs);
-  font-style: italic;
-}
-
-.empty-state {
-  padding: var(--spacing-md);
-  text-align: center;
-  color: var(--text-muted);
-  font-size: var(--font-size-sm);
-  font-style: italic;
-}
-
-/* Flags Section */
-.flags-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-xs);
-}
-
-.security-flag {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background: rgba(255, 193, 7, 0.1);
-  color: var(--color-warning);
-  border: 1px solid var(--color-warning);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-}
-
-/* Technical Section */
-.technical-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-md);
-}
-
-.tech-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-sm) var(--spacing-md);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-sm);
-}
-
-.tech-label {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-  font-weight: var(--font-weight-medium);
-}
-
-.tech-value {
-  font-size: var(--font-size-sm);
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-}
-
-/* Animations */
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .email-card__header {
-    grid-template-columns: auto 1fr;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm);
-  }
-
-  .email-card__score {
-    display: none;
-  }
-
-  .email-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-xs);
-  }
-
-  .content-section {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-lg);
-  }
-
-  .auth-grid {
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  }
-
-  .threat-stats {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  }
-
-  .technical-grid {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  }
-}
-
-@media (max-width: 768px) {
-  .email-card {
-    margin: 0;
-  }
-
-  .email-card__top-actions {
-    padding: var(--spacing-xs) var(--spacing-sm);
-  }
-
-  .top-action-buttons {
-    gap: var(--spacing-xs);
-  }
-
-  .email-card__header {
-    padding: var(--spacing-sm);
-  }
-
-  .email-card__content {
-    padding: var(--spacing-sm);
-  }
-
-  .email-subject h3 {
-    font-size: var(--font-size-sm);
-  }
-
-  .score-value {
-    font-size: var(--font-size-md);
-  }
-
-  .threat-level-text {
-    font-size: var(--font-size-xs);
-  }
-
-  .sender-name {
-    max-width: 150px;
-  }
-
-  .sender-email {
-    max-width: 200px;
-  }
-}
-
-@media (max-width: 480px) {
-  .email-card__top-actions {
-    padding: var(--spacing-xs);
-  }
-
-  .top-action-buttons {
-    gap: 2px;
-  }
-
-  .action-btn {
-    padding: var(--spacing-xs);
-    min-width: 32px;
-    min-height: 32px;
-  }
-
-  .email-card__header {
-    padding: var(--spacing-xs);
-  }
-
-  .email-card__content {
-    padding: var(--spacing-xs);
-  }
-
-  .email-header {
-    gap: 2px;
-  }
-
-  .sender-info {
-    font-size: var(--font-size-xs);
-  }
-
-  .email-subject {
-    gap: var(--spacing-xs);
-  }
-
-  .email-subject h3 {
-    font-size: var(--font-size-sm);
-    line-height: 1.3;
-  }
-
-  .email-recipient {
-    font-size: var(--font-size-xs);
-  }
-
-  .threat-level-text {
-    display: none;
-  }
-
-  .sender-name {
-    max-width: 120px;
-  }
-
-  .sender-email {
-    max-width: 150px;
-  }
-
-  .auth-grid {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
-  }
-
-  .threat-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .technical-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .content-section {
-    gap: var(--spacing-md);
-  }
-
-  .url-item,
-  .attachment-item {
-    padding: var(--spacing-xs);
-    font-size: var(--font-size-xs);
-  }
-}
-`;
-
-// Inject styles
-if (typeof document !== "undefined") {
-  const styleElement = document.getElementById("email-card-styles");
-  if (!styleElement) {
-    const style = document.createElement("style");
-    style.id = "email-card-styles";
-    style.textContent = styles;
-    document.head.appendChild(style);
-  }
-}

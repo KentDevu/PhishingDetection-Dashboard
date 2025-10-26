@@ -1,8 +1,9 @@
 // Recent Emails Table - Displays latest email threats with risk indicators
 
 import { formatDistanceToNow } from "date-fns";
-import { Mail, CheckCircle, XCircle } from "lucide-react";
-import type { Email, ThreatLevel } from "../../models/email";
+import { Mail, ShieldCheck, ShieldX, AlertTriangle, Clock } from "lucide-react";
+import { Badge } from "../ui/badge";
+import type { Email } from "../../models/email";
 
 interface RecentEmailsTableProps {
   emails?: Email[];
@@ -15,509 +16,255 @@ export function RecentEmailsTable({
   loading = false,
   limit = 10,
 }: RecentEmailsTableProps) {
-  // Generate demo data
-  const generateDemoEmails = (): Partial<Email>[] => {
-    return [
-      {
-        id: 1,
-        subject: "Urgent: Account Security Alert",
-        sender: "security@phishingsite.com",
-        sender_domain: "phishingsite.com",
-        timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 mins ago
-        phishing_score_cti: 0.85,
-        threat_summary: {
-          overall_risk: "high" as ThreatLevel,
-          confidence: "high",
-          total_analyzed: 3,
-          malicious_found: 2,
-          suspicious_found: 1,
-          average_reputation: 36,
-        },
-        spf_result: "fail",
-        dkim_result: "fail",
-        dmarc_result: "fail",
-      },
-      {
-        id: 2,
-        subject: "Weekly Security Newsletter",
-        sender: "newsletter@trusted-corp.com",
-        sender_domain: "trusted-corp.com",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-        phishing_score_cti: 0.05,
-        threat_summary: {
-          overall_risk: "clean" as ThreatLevel,
-          confidence: "high",
-          total_analyzed: 2,
-          malicious_found: 0,
-          suspicious_found: 0,
-          average_reputation: 98,
-        },
-        spf_result: "pass",
-        dkim_result: "pass",
-        dmarc_result: "pass",
-      },
-      {
-        id: 3,
-        subject: "Invoice #INV-2023-001",
-        sender: "billing@suspicious-domain.net",
-        sender_domain: "suspicious-domain.net",
-        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(), // 4 hours ago
-        phishing_score_cti: 0.67,
-        threat_summary: {
-          overall_risk: "medium" as ThreatLevel,
-          confidence: "medium",
-          total_analyzed: 3,
-          malicious_found: 1,
-          suspicious_found: 2,
-          average_reputation: 65,
-        },
-        spf_result: "pass",
-        dkim_result: "fail",
-        dmarc_result: "fail",
-      },
-    ];
-  };
+  const tableData = emails?.slice(0, limit) ?? [];
 
-  const tableData = emails?.slice(0, limit) || generateDemoEmails();
-
-  const getRiskBadgeClass = (risk: string) => {
-    switch (risk) {
+  const getRiskBadgeVariant = (risk: string): "default" | "secondary" | "destructive" | "outline" => {
+    switch (risk?.toLowerCase()) {
       case "critical":
-        return "risk-badge risk-badge--critical";
       case "high":
-        return "risk-badge risk-badge--high";
+      case "malicious":
+        return "destructive";
       case "medium":
-        return "risk-badge risk-badge--medium";
+      case "suspicious":
+        return "secondary";
       case "low":
-        return "risk-badge risk-badge--low";
+      case "clean":
+        return "default";
       default:
-        return "risk-badge risk-badge--clean";
+        return "outline";
     }
   };
 
-  const getAuthIcon = (result: string) => {
-    return result === "pass" ? (
-      <CheckCircle size={14} className="auth-icon auth-icon--pass" />
-    ) : (
-      <XCircle size={14} className="auth-icon auth-icon--fail" />
-    );
-  };
-
-  const getPhishingScoreColor = (score: number) => {
-    if (score >= 0.7) return "score-bar--high";
-    if (score >= 0.4) return "score-bar--medium";
-    return "score-bar--low";
+  const getRiskIcon = (risk: string) => {
+    switch (risk?.toLowerCase()) {
+      case "critical":
+      case "high":
+      case "malicious":
+        return <AlertTriangle className="w-3 h-3" />;
+      default:
+        return null;
+    }
   };
 
   if (loading) {
     return (
-      <div className="recent-emails recent-emails--loading">
-        <div className="recent-emails__skeleton">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="skeleton-row">
-              <div className="skeleton skeleton--subject"></div>
-              <div className="skeleton skeleton--sender"></div>
-              <div className="skeleton skeleton--badge"></div>
-              <div className="skeleton skeleton--time"></div>
+      <div className="w-full h-full bg-gray-900 rounded-lg border border-gray-700 shadow-sm">
+        <div className="p-6">
+          <div className="animate-pulse space-y-4">
+            {/* Header skeleton */}
+            <div className="grid grid-cols-6 gap-4 pb-4 border-b border-gray-700">
+              <div className="col-span-2 h-5 bg-gray-700 rounded"></div>
+              <div className="col-span-1 h-5 bg-gray-700 rounded"></div>
+              <div className="col-span-1 h-5 bg-gray-700 rounded"></div>
+              <div className="col-span-1 h-5 bg-gray-700 rounded"></div>
+              <div className="col-span-1 h-5 bg-gray-700 rounded"></div>
             </div>
-          ))}
+            {/* Row skeletons */}
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="grid grid-cols-6 gap-4 py-4 border-b border-gray-700 last:border-b-0">
+                <div className="col-span-2 space-y-2">
+                  <div className="h-4 bg-gray-700 rounded w-3/4"></div>
+                  <div className="h-3 bg-gray-800 rounded w-1/2"></div>
+                </div>
+                <div className="col-span-1 h-4 bg-gray-700 rounded w-2/3"></div>
+                <div className="col-span-1 h-6 bg-gray-700 rounded-full w-16"></div>
+                <div className="col-span-1 space-y-1">
+                  <div className="h-2 bg-gray-700 rounded w-full"></div>
+                  <div className="h-3 bg-gray-800 rounded w-8"></div>
+                </div>
+                <div className="col-span-1 flex gap-1">
+                  <div className="w-4 h-4 bg-gray-700 rounded"></div>
+                  <div className="w-4 h-4 bg-gray-700 rounded"></div>
+                  <div className="w-4 h-4 bg-gray-700 rounded"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (tableData.length === 0) {
+    return (
+      <div className="w-full h-full bg-gray-900 rounded-lg border border-gray-700 shadow-sm">
+        <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+          <Mail className="w-12 h-12 mb-4 text-gray-600" />
+          <h3 className="text-lg font-medium mb-2 text-gray-300">No emails found</h3>
+          <p className="text-sm text-center max-w-md text-gray-500">
+            There are no emails to display at the moment. New emails will appear here as they are processed.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="recent-emails">
-      <div className="recent-emails__table">
-        <div className="table-header">
-          <div className="table-header__cell table-header__cell--subject">
-            <Mail size={16} />
-            <span>Subject</span>
+    <div className="w-full h-full bg-gray-900 rounded-lg border border-gray-700 shadow-sm overflow-hidden">
+      <div className="flex flex-col h-full">
+        {/* Enhanced Header */}
+        <div className="grid grid-cols-6 gap-6 px-6 py-4 bg-linear-to-r from-gray-800 to-gray-900 border-b border-gray-700">
+          <div className="col-span-2 flex items-center gap-3">
+            <div className="p-2 bg-cyan-500/10 rounded-lg border border-cyan-500/20">
+              <Mail className="w-5 h-5 text-cyan-400" />
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-white">Subject</h3>
+              <p className="text-xs text-gray-400">Email content</p>
+            </div>
           </div>
-          <div className="table-header__cell table-header__cell--sender">
-            Sender
+          <div className="col-span-1 flex flex-col justify-center">
+            <h3 className="text-sm font-semibold text-white">Sender</h3>
+            <p className="text-xs text-gray-400">Domain</p>
           </div>
-          <div className="table-header__cell table-header__cell--risk">
-            Risk Level
+          <div className="col-span-1 flex flex-col justify-center">
+            <h3 className="text-sm font-semibold text-white">Risk Level</h3>
+            <p className="text-xs text-gray-400">Threat assessment</p>
           </div>
-          <div className="table-header__cell table-header__cell--score">
-            Phishing Score
+          <div className="col-span-1 flex flex-col justify-center">
+            <h3 className="text-sm font-semibold text-white">Phishing Score</h3>
+            <p className="text-xs text-gray-400">Confidence level</p>
           </div>
-          <div className="table-header__cell table-header__cell--auth">
-            Auth
-          </div>
-          <div className="table-header__cell table-header__cell--time">
-            Time
+          <div className="col-span-1 flex flex-col justify-center">
+            <h3 className="text-sm font-semibold text-white">Auth</h3>
+            <p className="text-xs text-gray-400">SPF/DKIM/DMARC</p>
           </div>
         </div>
 
-        <div className="table-body">
-          {tableData.map((email) => (
-            <div key={email.id} className="table-row">
-              <div className="table-cell table-cell--subject">
-                <div className="email-subject">
-                  <span className="email-subject__text" title={email.subject}>
-                    {email.subject}
-                  </span>
-                </div>
-              </div>
-
-              <div className="table-cell table-cell--sender">
-                <div className="email-sender">
-                  <span className="email-sender__domain">
-                    {email.sender_domain}
-                  </span>
-                </div>
-              </div>
-
-              <div className="table-cell table-cell--risk">
-                <span
-                  className={getRiskBadgeClass(
-                    email.threat_summary?.overall_risk || "clean"
-                  )}
-                >
-                  {email.threat_summary?.overall_risk || "clean"}
-                </span>
-              </div>
-
-              <div className="table-cell table-cell--score">
-                <div className="phishing-score">
-                  <div className="score-bar">
-                    <div
-                      className={`score-bar__fill ${getPhishingScoreColor(
-                        email.phishing_score_cti || 0
-                      )}`}
-                      style={{
-                        width: `${(email.phishing_score_cti || 0) * 100}%`,
-                      }}
-                    ></div>
+        {/* Enhanced Table Body */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="divide-y divide-gray-700">
+            {tableData.map((email) => (
+              <div
+                key={email.id}
+                className="grid grid-cols-6 gap-6 px-6 py-4 hover:bg-gray-800/50 transition-colors duration-150 cursor-pointer group"
+              >
+                {/* Subject Column */}
+                <div className="col-span-2 flex items-start gap-3">
+                  <div className="shrink-0 mt-0.5">
+                    <div className={`w-2 h-2 rounded-full ${
+                      (email.threat_summary?.overall_risk || "clean").toLowerCase() === "high" ||
+                      (email.threat_summary?.overall_risk || "clean").toLowerCase() === "critical"
+                        ? 'bg-red-500'
+                        : (email.threat_summary?.overall_risk || "clean").toLowerCase() === "medium"
+                        ? 'bg-yellow-500'
+                        : 'bg-green-500'
+                    }`} />
                   </div>
-                  <span className="score-text">
-                    {Math.round((email.phishing_score_cti || 0) * 100)}%
-                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium text-white group-hover:text-cyan-400 transition-colors">
+                      {email.subject || "No subject"}
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Clock className="w-3 h-3 text-gray-500" />
+                      <span className="text-xs text-gray-400">
+                        {formatDistanceToNow(new Date(email.timestamp || ""), {
+                          addSuffix: true,
+                        })}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-              </div>
 
-              <div className="table-cell table-cell--auth">
-                <div className="auth-indicators">
-                  <div
-                    className="auth-indicator"
-                    title={`SPF: ${email.spf_result}`}
+                {/* Sender Column */}
+                <div className="col-span-1 flex flex-col justify-center">
+                  <div className="text-sm font-medium text-white truncate" title={email.sender_domain}>
+                    {email.sender_domain || "Unknown"}
+                  </div>
+                  <div className="text-xs text-gray-400 truncate">
+                    {email.sender_domain ? `@${email.sender_domain.split('.').slice(-2).join('.')}` : ''}
+                  </div>
+                </div>
+
+                {/* Risk Level Column */}
+                <div className="col-span-1 flex items-center">
+                  <Badge
+                    variant={getRiskBadgeVariant(email.threat_summary?.overall_risk || "clean")}
+                    className="text-xs font-medium px-2 py-1 flex items-center gap-1"
                   >
-                    {getAuthIcon(email.spf_result || "fail")}
+                    {getRiskIcon(email.threat_summary?.overall_risk || "clean")}
+                    {email.threat_summary?.overall_risk || "clean"}
+                  </Badge>
+                </div>
+
+                {/* Phishing Score Column */}
+                <div className="col-span-1 flex flex-col justify-center">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 max-w-20">
+                      <div className="w-full bg-gray-700 rounded-full h-2 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${
+                            (email.phishing_score_cti || 0) * 100 >= 80 ? 'bg-linear-to-r from-red-500 to-red-600' :
+                            (email.phishing_score_cti || 0) * 100 >= 60 ? 'bg-linear-to-r from-orange-500 to-red-500' :
+                            (email.phishing_score_cti || 0) * 100 >= 40 ? 'bg-linear-to-r from-yellow-500 to-orange-500' :
+                            'bg-linear-to-r from-green-500 to-green-600'
+                          }`}
+                          style={{ width: `${Math.max((email.phishing_score_cti || 0) * 100, 5)}%` }}
+                        />
+                      </div>
+                    </div>
+                    <span className={`text-xs font-medium min-w-10 text-right ${
+                      (email.phishing_score_cti || 0) * 100 >= 80 ? 'text-red-400' :
+                      (email.phishing_score_cti || 0) * 100 >= 60 ? 'text-orange-400' :
+                      (email.phishing_score_cti || 0) * 100 >= 40 ? 'text-yellow-400' :
+                      'text-green-400'
+                    }`}>
+                      {Math.round((email.phishing_score_cti || 0) * 100)}%
+                    </span>
                   </div>
+                </div>
+
+                {/* Auth Column */}
+                <div className="col-span-1 flex items-center gap-1">
                   <div
-                    className="auth-indicator"
-                    title={`DKIM: ${email.dkim_result}`}
+                    className="flex items-center gap-1 p-1 rounded-md bg-gray-800/50 group-hover:bg-gray-700/50 transition-colors border border-gray-600"
+                    title={`SPF: ${email.spf_result || 'unknown'} | DKIM: ${email.dkim_result || 'unknown'} | DMARC: ${email.dmarc_result || 'unknown'}`}
                   >
-                    {getAuthIcon(email.dkim_result || "fail")}
-                  </div>
-                  <div
-                    className="auth-indicator"
-                    title={`DMARC: ${email.dmarc_result}`}
-                  >
-                    {getAuthIcon(email.dmarc_result || "fail")}
+                    {email.spf_result === "pass" ? (
+                      <ShieldCheck className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <ShieldX className="w-4 h-4 text-red-400" />
+                    )}
+                    {email.dkim_result === "pass" ? (
+                      <ShieldCheck className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <ShieldX className="w-4 h-4 text-red-400" />
+                    )}
+                    {email.dmarc_result === "pass" ? (
+                      <ShieldCheck className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <ShieldX className="w-4 h-4 text-red-400" />
+                    )}
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
 
-              <div className="table-cell table-cell--time">
-                <span className="time-ago">
-                  {formatDistanceToNow(new Date(email.timestamp || ""), {
-                    addSuffix: true,
-                  })}
-                </span>
+        {/* Footer with summary */}
+        {tableData.length > 0 && (
+          <div className="px-6 py-3 bg-gray-800/50 border-t border-gray-700">
+            <div className="flex items-center justify-between text-sm text-gray-300">
+              <span>Showing {tableData.length} of {emails?.length || 0} emails</span>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-xs">Safe</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <span className="text-xs">Suspicious</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                  <span className="text-xs">High Risk</span>
+                </div>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
-}
-
-// Recent Emails Table Styles
-const styles = `
-.recent-emails {
-  width: 100%;
-  height: 100%;
-}
-
-.recent-emails__table {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.table-header {
-  display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 0.8fr 1fr;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
-  border-bottom: 1px solid var(--border-primary);
-  background: var(--bg-primary);
-}
-
-.table-header__cell {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.table-body {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.table-row {
-  display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr 0.8fr 1fr;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
-  border-bottom: 1px solid var(--border-primary);
-  transition: background-color var(--duration-fast) var(--ease-in-out);
-  cursor: pointer;
-}
-
-.table-row:hover {
-  background: var(--bg-tertiary);
-}
-
-.table-row:last-child {
-  border-bottom: none;
-}
-
-.table-cell {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-}
-
-/* Subject Column */
-.email-subject {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  min-width: 0;
-}
-
-.email-subject__text {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* Sender Column */
-.email-sender__domain {
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-}
-
-/* Risk Badge */
-.risk-badge {
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.risk-badge--clean {
-  background: var(--bg-risk-clean);
-  color: var(--color-success);
-}
-
-.risk-badge--low {
-  background: var(--bg-risk-low);
-  color: var(--color-primary);
-}
-
-.risk-badge--medium {
-  background: var(--bg-risk-medium);
-  color: var(--color-warning);
-}
-
-.risk-badge--high {
-  background: var(--bg-risk-high);
-  color: var(--color-danger);
-}
-
-.risk-badge--critical {
-  background: var(--bg-risk-critical);
-  color: var(--color-danger);
-  animation: pulse 2s infinite;
-}
-
-/* Phishing Score */
-.phishing-score {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  width: 100%;
-}
-
-.score-bar {
-  flex: 1;
-  height: 6px;
-  background: var(--bg-primary);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-}
-
-.score-bar__fill {
-  height: 100%;
-  border-radius: inherit;
-  transition: width var(--duration-normal) var(--ease-out);
-}
-
-.score-bar--low {
-  background: var(--color-success);
-}
-
-.score-bar--medium {
-  background: var(--color-warning);
-}
-
-.score-bar--high {
-  background: var(--color-danger);
-}
-
-.score-text {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-secondary);
-  min-width: 35px;
-  text-align: right;
-}
-
-/* Authentication Indicators */
-.auth-indicators {
-  display: flex;
-  gap: 2px;
-}
-
-.auth-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.auth-icon--pass {
-  color: var(--color-success);
-}
-
-.auth-icon--fail {
-  color: var(--color-danger);
-}
-
-/* Time Column */
-.time-ago {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-
-/* Loading States */
-.recent-emails--loading {
-  padding: var(--spacing-md);
-}
-
-.recent-emails__skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.skeleton-row {
-  display: grid;
-  grid-template-columns: 2fr 1.5fr 1fr 1fr;
-  gap: var(--spacing-md);
-  align-items: center;
-}
-
-.skeleton--subject { height: 16px; }
-.skeleton--sender { height: 14px; width: 80%; }
-.skeleton--badge { height: 20px; width: 60px; }
-.skeleton--time { height: 12px; width: 70%; }
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .table-header,
-  .table-row {
-    grid-template-columns: 2fr 1.5fr 1fr 1fr;
-  }
-
-  .table-header__cell--auth,
-  .table-cell--auth {
-    display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .table-header,
-  .table-row {
-    grid-template-columns: 2fr 1fr 1fr;
-  }
-
-  .table-header__cell--score,
-  .table-cell--score {
-    display: none;
-  }
-
-  .table-header,
-  .table-row {
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm);
-  }
-}
-
-@media (max-width: 480px) {
-  .table-header,
-  .table-row {
-    grid-template-columns: 1fr;
-  }
-
-  .table-row {
-    grid-template-areas: 
-      "subject"
-      "meta";
-    gap: var(--spacing-xs);
-  }
-
-  .table-cell--subject {
-    grid-area: subject;
-  }
-
-  .table-cell--sender,
-  .table-cell--risk,
-  .table-cell--time {
-    display: none;
-  }
-
-  .table-header {
-    display: none;
-  }
-}
-`;
-
-// Inject styles
-if (typeof document !== "undefined") {
-  const styleElement = document.getElementById("recent-emails-styles");
-  if (!styleElement) {
-    const style = document.createElement("style");
-    style.id = "recent-emails-styles";
-    style.textContent = styles;
-    document.head.appendChild(style);
-  }
 }
