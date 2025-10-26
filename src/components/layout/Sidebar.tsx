@@ -82,19 +82,21 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className={`sidebar ${isCollapsed ? "sidebar--collapsed" : ""}`}>
+    <aside className={`fixed top-0 left-0 h-screen bg-gray-800 border-r border-gray-700 flex flex-col transition-all duration-300 ease-in-out z-40 ${
+      isCollapsed ? 'w-20' : 'w-70'
+    }`}>
       {/* Logo Section */}
-      <div className="sidebar__header">
-        <div className="sidebar__logo">
-          <Shield className="sidebar__logo-icon" size={24} />
+      <div className="flex items-center justify-between p-6 border-b border-gray-700 min-h-20">
+        <div className="flex items-center gap-2">
+          <Shield className="text-green-400 shrink-0" size={24} />
           {!isCollapsed && (
-            <span className="sidebar__logo-text">
-              Phishing<span className="text-gradient-primary">Guard</span>
+            <span className="text-lg font-bold text-white whitespace-nowrap">
+              Phishing<span className="text-green-400">Guard</span>
             </span>
           )}
         </div>
         <button
-          className="sidebar__toggle"
+          className="bg-transparent border border-gray-600 rounded-md text-gray-400 p-1 cursor-pointer transition-all duration-200 hover:bg-gray-700 hover:border-green-400 hover:text-green-400 shrink-0"
           onClick={toggleSidebar}
           aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
@@ -103,25 +105,31 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="sidebar__nav">
-        <ul className="sidebar__nav-list">
+      <nav className="flex-1 py-6 overflow-y-auto">
+        <ul className="list-none m-0 p-0">
           {sidebarItems.map((item) => (
-            <li key={item.id} className="sidebar__nav-item">
+            <li key={item.id} className="mb-1">
               <NavLink
                 to={item.path}
                 className={({ isActive }) =>
-                  `sidebar__nav-link ${
-                    isActive ? "sidebar__nav-link--active" : ""
+                  `flex items-center w-full px-6 py-3 bg-transparent border-none text-gray-300 no-underline transition-all duration-200 cursor-pointer rounded-none relative ${
+                    isActive
+                      ? 'bg-green-400/10 text-green-400 border-r-4 border-green-400'
+                      : 'hover:bg-gray-700 hover:text-white'
                   }`
                 }
                 title={isCollapsed ? item.label : undefined}
               >
-                <span className="sidebar__nav-icon">{item.icon}</span>
+                <span className="shrink-0 flex items-center justify-center">
+                  {item.icon}
+                </span>
                 {!isCollapsed && (
                   <>
-                    <span className="sidebar__nav-label">{item.label}</span>
+                    <span className="ml-3 text-sm font-medium flex-1 text-left">{item.label}</span>
                     {item.badge && (
-                      <span className="sidebar__nav-badge">{item.badge}</span>
+                      <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full min-w-5 text-center ml-auto">
+                        {item.badge}
+                      </span>
                     )}
                   </>
                 )}
@@ -133,209 +141,13 @@ export function Sidebar() {
 
       {/* Footer */}
       {!isCollapsed && (
-        <div className="sidebar__footer">
-          <div className="sidebar__status">
-            <div className="sidebar__status-indicator"></div>
-            <span className="sidebar__status-text">System Active</span>
+        <div className="p-6 border-t border-gray-700">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span className="text-sm text-gray-400">System Active</span>
           </div>
         </div>
       )}
     </aside>
   );
-}
-
-// Sidebar Styles
-const styles = `
-.sidebar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 280px;
-  height: 100vh;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border-primary);
-  display: flex;
-  flex-direction: column;
-  transition: width var(--duration-normal) var(--ease-in-out);
-  z-index: var(--z-sticky);
-}
-
-.sidebar--collapsed {
-  width: 80px;
-}
-
-.sidebar__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--border-primary);
-  min-height: 80px;
-}
-
-.sidebar__logo {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.sidebar__logo-icon {
-  color: var(--color-primary);
-  flex-shrink: 0;
-}
-
-.sidebar__logo-text {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  white-space: nowrap;
-}
-
-.sidebar__toggle {
-  background: none;
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  color: var(--text-muted);
-  padding: var(--spacing-xs);
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-in-out);
-  flex-shrink: 0;
-}
-
-.sidebar__toggle:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-}
-
-.sidebar__nav {
-  flex: 1;
-  padding: var(--spacing-lg) 0;
-  overflow-y: auto;
-}
-
-.sidebar__nav-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.sidebar__nav-item {
-  margin-bottom: var(--spacing-xs);
-}
-
-.sidebar__nav-link {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  padding: var(--spacing-md) var(--spacing-lg);
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  text-decoration: none;
-  transition: all var(--duration-fast) var(--ease-in-out);
-  cursor: pointer;
-  border-radius: 0;
-  position: relative;
-}
-
-.sidebar__nav-link:hover {
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.sidebar__nav-link--active {
-  background: var(--bg-accent);
-  color: var(--color-primary);
-  border-right: 3px solid var(--color-primary);
-}
-
-.sidebar__nav-link--active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: var(--color-primary);
-}
-
-.sidebar__nav-icon {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sidebar__nav-label {
-  margin-left: var(--spacing-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  flex: 1;
-  text-align: left;
-}
-
-.sidebar__nav-badge {
-  background: var(--color-danger);
-  color: var(--text-primary);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-bold);
-  padding: 2px 6px;
-  border-radius: var(--radius-full);
-  min-width: 20px;
-  text-align: center;
-  margin-left: auto;
-}
-
-.sidebar__footer {
-  padding: var(--spacing-lg);
-  border-top: 1px solid var(--border-primary);
-}
-
-.sidebar__status {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
-.sidebar__status-indicator {
-  width: 8px;
-  height: 8px;
-  background: var(--color-primary);
-  border-radius: var(--radius-full);
-  animation: pulse 2s infinite;
-}
-
-.sidebar__status-text {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .sidebar {
-    transform: translateX(-100%);
-    transition: transform var(--duration-normal) var(--ease-in-out);
-  }
-  
-  .sidebar--mobile-open {
-    transform: translateX(0);
-  }
-}
-`;
-
-// Inject styles
-if (typeof document !== "undefined") {
-  const styleElement = document.getElementById("sidebar-styles");
-  if (!styleElement) {
-    const style = document.createElement("style");
-    style.id = "sidebar-styles";
-    style.textContent = styles;
-    document.head.appendChild(style);
-  }
 }

@@ -74,49 +74,53 @@ export default function Settings() {
   };
 
   return (
-    <div className="settings-page">
-      <div className="settings-container">
+    <div className="min-h-screen bg-gray-900">
+      <div className="flex min-h-screen">
         {/* Settings Navigation */}
-        <nav className="settings-nav">
-          <div className="settings-nav__header">
-            <SettingsIcon size={24} />
-            <h1>Settings</h1>
+        <nav className="w-80 bg-gray-800 border-r border-gray-700 p-8 overflow-y-auto shrink-0">
+          <div className="flex items-center gap-4 mb-8 pb-6 border-b border-gray-700">
+            <SettingsIcon size={24} className="text-green-400" />
+            <h1 className="text-2xl font-bold text-white m-0">Settings</h1>
           </div>
 
-          <div className="settings-nav__tabs">
+          <div className="flex flex-col gap-2">
             {availableTabs.map((tab) => (
               <button
                 key={tab.id}
-                className={`settings-tab ${
-                  activeTab === tab.id ? "active" : ""
+                className={`flex items-center gap-3 p-4 rounded-lg text-left transition-colors ${
+                  activeTab === tab.id
+                    ? "bg-green-400/10 border border-green-400/20 text-green-400"
+                    : "text-gray-300 hover:bg-gray-700"
                 }`}
                 onClick={() => setActiveTab(tab.id)}
               >
-                <div className="tab-icon">{tab.icon}</div>
-                <div className="tab-content">
-                  <div className="tab-label">{tab.label}</div>
-                  <div className="tab-description">{tab.description}</div>
+                <div className="shrink-0">{tab.icon}</div>
+                <div className="flex-1">
+                  <div className="font-medium text-sm">{tab.label}</div>
+                  <div className="text-xs text-gray-500 mt-1">{tab.description}</div>
                 </div>
-                <ChevronRight size={16} className="tab-arrow" />
+                <ChevronRight size={16} className="shrink-0 text-gray-500" />
               </button>
             ))}
           </div>
 
           {!isAdmin && (
-            <div className="admin-notice">
-              <Shield size={20} />
-              <div>
-                <h3>Limited Access</h3>
-                <p>
-                  Contact your administrator for access to advanced settings.
-                </p>
+            <div className="mt-8 p-4 bg-yellow-900/20 border border-yellow-500/20 rounded-lg">
+              <div className="flex items-start gap-3">
+                <Shield size={20} className="text-yellow-400 shrink-0 mt-0.5" />
+                <div>
+                  <h3 className="text-sm font-medium text-yellow-400 mb-1">Limited Access</h3>
+                  <p className="text-xs text-gray-400">
+                    Contact your administrator for access to advanced settings.
+                  </p>
+                </div>
               </div>
             </div>
           )}
         </nav>
 
         {/* Settings Content */}
-        <main className="settings-main">{renderTabContent()}</main>
+        <main className="flex-1 p-8">{renderTabContent()}</main>
       </div>
     </div>
   );
@@ -125,391 +129,37 @@ export default function Settings() {
 // Placeholder Components (to be implemented later)
 function IntegrationsPlaceholder() {
   return (
-    <div className="placeholder-panel">
-      <div className="placeholder-content">
-        <Plug size={48} />
-        <h2>Integrations</h2>
-        <p>Configure third-party integrations and API connections.</p>
-        <div className="placeholder-features">
-          <div className="feature-item">
-            <div className="feature-icon">📧</div>
-            <div>
-              <h4>Email Providers</h4>
-              <p>Connect to Gmail, Outlook, and other email services</p>
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="text-center max-w-md">
+        <Plug size={48} className="text-gray-600 mx-auto mb-4" />
+        <h2 className="text-xl font-semibold text-white mb-2">Integrations</h2>
+        <p className="text-gray-400 mb-6">Configure third-party integrations and API connections.</p>
+        <div className="space-y-4 mb-6">
+          <div className="flex items-start gap-3 p-3 bg-gray-800 rounded-lg">
+            <div className="text-2xl">📧</div>
+            <div className="text-left">
+              <h4 className="text-sm font-medium text-white">Email Providers</h4>
+              <p className="text-xs text-gray-400">Connect to Gmail, Outlook, and other email services</p>
             </div>
           </div>
-          <div className="feature-item">
-            <div className="feature-icon">🛡️</div>
-            <div>
-              <h4>Security Tools</h4>
-              <p>Integrate with SIEM and threat intelligence platforms</p>
+          <div className="flex items-start gap-3 p-3 bg-gray-800 rounded-lg">
+            <div className="text-2xl">🛡️</div>
+            <div className="text-left">
+              <h4 className="text-sm font-medium text-white">Security Tools</h4>
+              <p className="text-xs text-gray-400">Integrate with SIEM and threat intelligence platforms</p>
             </div>
           </div>
-          <div className="feature-item">
-            <div className="feature-icon">📊</div>
-            <div>
-              <h4>Analytics</h4>
-              <p>Export data to business intelligence tools</p>
+          <div className="flex items-start gap-3 p-3 bg-gray-800 rounded-lg">
+            <div className="text-2xl">📊</div>
+            <div className="text-left">
+              <h4 className="text-sm font-medium text-white">Analytics</h4>
+              <p className="text-xs text-gray-400">Export data to business intelligence tools</p>
             </div>
           </div>
         </div>
-        <div className="coming-soon">Coming Soon</div>
+        <div className="text-sm text-gray-500 font-medium">Coming Soon</div>
       </div>
     </div>
   );
 }
 
-// Settings Page Styles
-const styles = `
-.settings-page {
-  min-height: 100vh;
-  background: var(--bg-primary);
-}
-
-.settings-container {
-  display: flex;
-  min-height: 100vh;
-}
-
-/* Settings Navigation */
-.settings-nav {
-  width: 320px;
-  background: var(--bg-secondary);
-  border-right: 1px solid var(--border-primary);
-  padding: var(--spacing-xl);
-  overflow-y: auto;
-  flex-shrink: 0;
-}
-
-.settings-nav__header {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-xl);
-  padding-bottom: var(--spacing-lg);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.settings-nav__header svg {
-  color: var(--color-primary);
-}
-
-.settings-nav__header h1 {
-  margin: 0;
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-}
-
-.settings-nav__tabs {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-/* Settings Tabs */
-.settings-tab {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  width: 100%;
-  padding: var(--spacing-lg);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  text-align: left;
-  cursor: pointer;
-  transition: all var(--duration-fast) var(--ease-in-out);
-  position: relative;
-}
-
-.settings-tab:hover {
-  background: var(--bg-tertiary);
-  border-color: var(--border-secondary);
-}
-
-.settings-tab.active {
-  background: rgba(19, 255, 160, 0.1);
-  border-color: var(--color-primary);
-}
-
-.tab-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
-  transition: all var(--duration-fast) var(--ease-in-out);
-  flex-shrink: 0;
-}
-
-.settings-tab.active .tab-icon {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--bg-primary);
-}
-
-.tab-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.tab-label {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  margin-bottom: var(--spacing-xs);
-}
-
-.tab-description {
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-
-.tab-arrow {
-  color: var(--text-muted);
-  transition: all var(--duration-fast) var(--ease-in-out);
-  flex-shrink: 0;
-}
-
-.settings-tab:hover .tab-arrow {
-  color: var(--text-secondary);
-  transform: translateX(2px);
-}
-
-.settings-tab.active .tab-arrow {
-  color: var(--color-primary);
-  transform: translateX(4px);
-}
-
-/* Admin Notice */
-.admin-notice {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-xl);
-  padding: var(--spacing-lg);
-  background: rgba(255, 193, 7, 0.1);
-  border: 1px solid rgba(255, 193, 7, 0.3);
-  border-radius: var(--radius-lg);
-}
-
-.admin-notice svg {
-  color: #ffc107;
-  flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.admin-notice h3 {
-  margin: 0 0 var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-}
-
-.admin-notice p {
-  margin: 0;
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-
-/* Settings Main Content */
-.settings-main {
-  flex: 1;
-  overflow-y: auto;
-  background: var(--bg-primary);
-}
-
-/* Access Denied */
-.access-denied {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  text-align: center;
-  padding: var(--spacing-xl);
-}
-
-.access-denied svg {
-  color: var(--color-warning);
-  margin-bottom: var(--spacing-lg);
-}
-
-.access-denied h2 {
-  margin: 0 0 var(--spacing-md);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-}
-
-.access-denied p {
-  margin: 0;
-  font-size: var(--font-size-md);
-  color: var(--text-muted);
-  max-width: 400px;
-  line-height: 1.5;
-}
-
-/* Placeholder Panels */
-.placeholder-panel {
-  padding: var(--spacing-xl);
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.placeholder-content {
-  text-align: center;
-  padding: var(--spacing-2xl);
-}
-
-.placeholder-content svg {
-  color: var(--text-muted);
-  margin-bottom: var(--spacing-lg);
-}
-
-.placeholder-content h2 {
-  margin: 0 0 var(--spacing-md);
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-}
-
-.placeholder-content > p {
-  margin: 0 0 var(--spacing-2xl);
-  font-size: var(--font-size-md);
-  color: var(--text-muted);
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
-  line-height: 1.5;
-}
-
-.placeholder-features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-2xl);
-}
-
-.feature-item {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-md);
-  text-align: left;
-  padding: var(--spacing-lg);
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-}
-
-.feature-icon {
-  font-size: 24px;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-md);
-  flex-shrink: 0;
-}
-
-.feature-item h4 {
-  margin: 0 0 var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-}
-
-.feature-item p {
-  margin: 0;
-  font-size: var(--font-size-xs);
-  color: var(--text-muted);
-  line-height: 1.4;
-}
-
-.coming-soon {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--spacing-sm) var(--spacing-lg);
-  background: rgba(19, 255, 160, 0.1);
-  color: var(--color-primary);
-  border: 1px solid var(--color-primary);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .settings-container {
-    flex-direction: column;
-  }
-
-  .settings-nav {
-    width: 100%;
-    padding: var(--spacing-lg);
-    border-right: none;
-    border-bottom: 1px solid var(--border-primary);
-  }
-
-  .settings-nav__tabs {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: var(--spacing-sm);
-  }
-
-  .settings-tab {
-    padding: var(--spacing-md);
-  }
-
-  .tab-content {
-    display: none;
-  }
-
-  .settings-tab.active .tab-content {
-    display: block;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    background: var(--bg-primary);
-    border: 1px solid var(--border-primary);
-    border-radius: var(--radius-md);
-    padding: var(--spacing-sm);
-    z-index: 10;
-  }
-}
-
-@media (max-width: 768px) {
-  .settings-nav__tabs {
-    grid-template-columns: 1fr;
-  }
-
-  .placeholder-features {
-    grid-template-columns: 1fr;
-  }
-
-  .feature-item {
-    padding: var(--spacing-md);
-  }
-}
-`;
-
-// Inject styles
-if (typeof document !== "undefined") {
-  const styleElement = document.getElementById("settings-page-styles");
-  if (!styleElement) {
-    const style = document.createElement("style");
-    style.id = "settings-page-styles";
-    style.textContent = styles;
-    document.head.appendChild(style);
-  }
-}

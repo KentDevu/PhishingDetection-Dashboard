@@ -3,26 +3,32 @@
 import type { ReactNode } from "react";
 import { SidebarProvider, useSidebar, Sidebar } from "./Sidebar.tsx";
 import { Header } from "./Header.tsx";
+import { useLocation } from "react-router-dom";
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 function DashboardLayoutContent({ children }: DashboardLayoutProps) {
-  const { isCollapsed } = useSidebar();
+const { isCollapsed } = useSidebar();
+const location = useLocation();
+const path = location.pathname;
+const title = path.split('/')[1] ?? '';
+
+const toUpperCaseFirstLetter = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
   return (
-    <div className="dashboard-layout">
+    <div className="flex min-h-screen bg-gray-900">
       <Sidebar />
       <div
-        className="main-content"
-        style={{
-          marginLeft: isCollapsed ? '80px' : '280px',
-          transition: 'margin-left var(--duration-normal) var(--ease-in-out)'
-        }}
+        className={`flex-1 flex flex-col transition-all duration-300 ease-in-out ${
+          isCollapsed ? 'ml-20' : 'ml-70'
+        } md:${isCollapsed ? 'ml-20' : 'ml-70'}`}
       >
-        <Header />
-        <main className="content-area">{children}</main>
+        <Header title={toUpperCaseFirstLetter(title)} />
+        <main className="flex-1 p-8 overflow-y-auto">{children}</main>
       </div>
     </div>
   );
@@ -34,43 +40,4 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <DashboardLayoutContent>{children}</DashboardLayoutContent>
     </SidebarProvider>
   );
-}
-
-// CSS-in-JS styles using CSS custom properties
-const styles = `
-.dashboard-layout {
-  display: flex;
-  min-height: 100vh;
-  background-color: var(--bg-primary);
-}
-
-.main-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-}
-
-.content-area {
-  flex: 1;
-  padding: var(--spacing-xl);
-  overflow-y: auto;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .main-content {
-    margin-left: 0 !important;
-  }
-}
-`;
-
-// Inject styles
-if (typeof document !== "undefined") {
-  const styleElement = document.getElementById("dashboard-layout-styles");
-  if (!styleElement) {
-    const style = document.createElement("style");
-    style.id = "dashboard-layout-styles";
-    style.textContent = styles;
-    document.head.appendChild(style);
-  }
 }

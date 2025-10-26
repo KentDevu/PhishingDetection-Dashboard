@@ -66,10 +66,10 @@ export function ThreatIntelligenceChart({
 
   if (loading) {
     return (
-      <div className="threat-intel-chart">
-        <div className="threat-intel-chart__loading">
-          <div className="loading-spinner"></div>
-          <p>Loading threat intelligence data...</p>
+      <div className="bg-gray-900 border border-gray-700 rounded-lg p-8">
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <div className="w-8 h-8 border-4 border-cyan-800 border-t-cyan-400 rounded-full animate-spin"></div>
+          <p className="text-gray-300">Loading threat intelligence data...</p>
         </div>
       </div>
     );
@@ -77,389 +77,118 @@ export function ThreatIntelligenceChart({
 
   if (!data) {
     return (
-      <div className="threat-intel-chart">
-        <div className="threat-intel-chart__error">
-          <AlertTriangle size={48} />
-          <h3>No Data Available</h3>
-          <p>Unable to load threat intelligence data</p>
+      <div className="bg-gray-900 border border-gray-700 rounded-lg p-8">
+        <div className="flex flex-col items-center justify-center space-y-4 text-center">
+          <AlertTriangle size={48} className="text-red-400" />
+          <h3 className="text-lg font-semibold text-white">No Data Available</h3>
+          <p className="text-gray-400">Unable to load threat intelligence data</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="threat-intel-chart">
+    <div className="bg-gray-900 border border-gray-700 rounded-lg p-6">
       {/* Charts Section */}
-      <div className="threat-intel-charts">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Threat Distribution Bar Chart */}
-        <div className="chart-container">
-          <div className="chart-header">
-            <h3>Threat Distribution</h3>
-            <p>Email classification breakdown</p>
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-white">Threat Distribution</h3>
+            <p className="text-sm text-gray-400">Email classification breakdown</p>
           </div>
-          <ResponsiveContainer
-            width="100%"
-            height="100%"
-            minWidth={300}
-            minHeight={300}
-          >
-            <BarChart
-              data={chartData}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="var(--border-primary)"
-              />
-              <XAxis
-                dataKey="name"
-                tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
-                axisLine={{ stroke: "var(--border-primary)" }}
-              />
-              <YAxis
-                tick={{ fill: "var(--text-secondary)", fontSize: 12 }}
-                axisLine={{ stroke: "var(--border-primary)" }}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "var(--bg-secondary)",
-                  border: "1px solid var(--border-primary)",
-                  borderRadius: "var(--radius-md)",
-                  color: "var(--text-primary)",
-                }}
-                formatter={(value, name) => [
-                  `${value} emails (${
-                    chartData.find((d) => d.name === name)?.percentage
-                  }%)`,
-                  "Count",
-                ]}
-              />
-              <Legend />
-              <Bar
-                dataKey="count"
-                fill="var(--color-primary)"
-                radius={[4, 4, 0, 0]}
-              />
-            </BarChart>
-          </ResponsiveContainer>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="#E5E7EB"
+                />
+                <XAxis
+                  dataKey="name"
+                  tick={{ fill: "#9CA3AF", fontSize: 12 }}
+                  axisLine={{ stroke: "#374151" }}
+                />
+                <YAxis
+                  tick={{ fill: "#9CA3AF", fontSize: 12 }}
+                  axisLine={{ stroke: "#374151" }}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1F2937",
+                    border: "1px solid #374151",
+                    borderRadius: "6px",
+                    color: "#F9FAFB",
+                  }}
+                  formatter={(value, name) => [
+                    `${value} emails (${
+                      chartData.find((d) => d.name === name)?.percentage
+                    }%)`,
+                    "Count",
+                  ]}
+                />
+                <Legend />
+                <Bar
+                  dataKey="count"
+                  fill="#3B82F6"
+                  radius={[4, 4, 0, 0]}
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Threat Distribution Pie Chart */}
-        <div className="chart-container">
-          <div className="chart-header">
-            <h3>Threat Composition</h3>
-            <p>Proportional threat analysis</p>
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-white">Threat Composition</h3>
+            <p className="text-sm text-gray-400">Proportional threat analysis</p>
           </div>
-          <ResponsiveContainer
-            width="100%"
-            height="100%"
-            minWidth={250}
-            minHeight={250}
-          >
-            <PieChart>
-              <Pie
-                data={pieData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={(entry: any) =>
-                  `${entry.name} (${(
-                    (Number(entry.value) / data.total_emails) *
-                    100
-                  ).toFixed(1)}%)`
-                }
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-              >
-                {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "var(--bg-secondary)",
-                  border: "1px solid var(--border-primary)",
-                  borderRadius: "var(--radius-md)",
-                  color: "var(--text-primary)",
-                }}
-                formatter={(value) => [
-                  `${value} emails (${(
-                    (Number(value) / data.total_emails) *
-                    100
-                  ).toFixed(1)}%)`,
-                  "Count",
-                ]}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={(entry: any) =>
+                    `${entry.name} (${(
+                      (Number(entry.value) / data.total_emails) *
+                      100
+                    ).toFixed(1)}%)`
+                  }
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "#1F2937",
+                    border: "1px solid #374151",
+                    borderRadius: "6px",
+                    color: "#F9FAFB",
+                  }}
+                  formatter={(value) => [
+                    `${value} emails (${(
+                      (Number(value) / data.total_emails) *
+                      100
+                    ).toFixed(1)}%)`,
+                    "Count",
+                  ]}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
         </div>
       </div>
     </div>
-  );
-}
-
-// Threat Intelligence Chart Styles
-const styles = `
-.threat-intel-chart {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-xl);
-}
-
-.threat-intel-chart__loading,
-.threat-intel-chart__error {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 300px;
-  gap: var(--spacing-lg);
-  text-align: center;
-}
-
-.threat-intel-chart__error svg {
-  color: var(--color-danger);
-}
-
-.threat-intel-chart__error h3 {
-  margin: 0;
-  color: var(--text-primary);
-  font-size: var(--font-size-xl);
-}
-
-.threat-intel-chart__error p {
-  margin: 0;
-  color: var(--text-muted);
-}
-
-.loading-spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid var(--border-primary);
-  border-top: 4px solid var(--color-primary);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-}
-
-/* KPI Cards */
-.threat-intel-kpis {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
-}
-
-.kpi-card {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-lg);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  transition: all var(--duration-fast) var(--ease-in-out);
-}
-
-.kpi-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.kpi-card__icon {
-  flex-shrink: 0;
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-md);
-  color: var(--text-inverse);
-}
-
-.kpi-card--success .kpi-card__icon {
-  background: var(--color-success);
-}
-
-.kpi-card--warning .kpi-card__icon {
-  background: var(--color-warning);
-}
-
-.kpi-card--info .kpi-card__icon {
-  background: var(--color-info);
-}
-
-.kpi-card--primary .kpi-card__icon {
-  background: var(--color-primary);
-}
-
-.kpi-card__content {
-  flex: 1;
-}
-
-.kpi-card__value {
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  line-height: var(--line-height-tight);
-  margin-bottom: var(--spacing-xs);
-}
-
-.kpi-card__label {
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-  font-weight: var(--font-weight-medium);
-  margin-bottom: var(--spacing-sm);
-}
-
-.kpi-card__trend {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-}
-
-.kpi-card__trend--up {
-  color: var(--color-success);
-}
-
-.kpi-card__trend--down {
-  color: var(--color-danger);
-}
-
-.trend-indicator {
-  font-size: var(--font-size-md);
-}
-
-/* Charts Section */
-.threat-intel-charts {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: var(--spacing-xl);
-}
-
-.chart-container {
-  background: var(--bg-primary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-lg);
-  padding: var(--spacing-lg);
-  overflow: hidden;
-  min-height: 400px;
-  max-height: 500px;
-  display: flex;
-  flex-direction: column;
-}
-
-.chart-header {
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--border-primary);
-}
-
-.chart-header h3 {
-  margin: 0 0 var(--spacing-xs);
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-}
-
-.chart-header p {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-}
-
-/* Animations */
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Responsive Design */
-@media (max-width: 1024px) {
-  .threat-intel-charts {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-lg);
-  }
-
-  .chart-container {
-    padding: var(--spacing-md);
-    min-height: 350px;
-    max-height: 450px;
-  }
-}
-
-@media (max-width: 768px) {
-  .threat-intel-chart {
-    padding: var(--spacing-lg);
-  }
-
-  .threat-intel-charts {
-    gap: var(--spacing-md);
-  }
-
-  .chart-container {
-    padding: var(--spacing-sm);
-    min-height: 300px;
-    max-height: 400px;
-  }
-
-  .chart-header h3 {
-    font-size: var(--font-size-md);
-  }
-
-  .chart-header p {
-    font-size: var(--font-size-xs);
-  }
-}
-
-@media (max-width: 480px) {
-  .threat-intel-chart {
-    padding: var(--spacing-md);
-  }
-
-  .threat-intel-kpis {
-    grid-template-columns: 1fr;
-    gap: var(--spacing-sm);
-  }
-
-  .kpi-card {
-    padding: var(--spacing-sm);
-    flex-direction: column;
-    text-align: center;
-    gap: var(--spacing-sm);
-  }
-
-  .kpi-card__icon {
-    width: 36px;
-    height: 36px;
-  }
-
-  .kpi-card__value {
-    font-size: var(--font-size-lg);
-  }
-
-  .kpi-card__label {
-    font-size: var(--font-size-xs);
-  }
-
-  .chart-container {
-    min-height: 250px;
-    max-height: 350px;
-    padding: var(--spacing-xs);
-  }
-}
-`;
-
-// Inject styles
-if (typeof document !== "undefined") {
-  const styleElement = document.getElementById("threat-intel-chart-styles");
-  if (!styleElement) {
-    const style = document.createElement("style");
-    style.id = "threat-intel-chart-styles";
-    style.textContent = styles;
-    document.head.appendChild(style);
-  }
+  )
 }

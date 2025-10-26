@@ -10,7 +10,6 @@ import {
 } from "../../components/dashboard";
 import { useEmails } from "../../hooks/useEmails";
 import { useNotifications } from "../../contexts/NotificationContext";
-import "./Dashboard.css";
 
 export function Dashboard() {
   const { data: emails, loading, error, refetch } = useEmails();
@@ -183,23 +182,26 @@ export function Dashboard() {
   }, [error, addNotification, refetch]);
 
   return (
-    <div className="dashboard">
-      <div className="dashboard__grid">
+    <div className="p-0">
+      <div className="flex flex-col gap-8">
         {/* Show loading state across all sections */}
         {loading && (
-          <div className="dashboard__loading">
-            <div className="loading-spinner"></div>
-            <p>Loading threat analysis data...</p>
+          <div className="flex flex-col items-center justify-center min-h-[400px] gap-6 bg-gray-800 border border-gray-700 rounded-lg m-8">
+            <div className="w-12 h-12 border-4 border-gray-600 border-t-green-400 rounded-full animate-spin"></div>
+            <p className="text-gray-400 text-base text-center">Loading threat analysis data...</p>
           </div>
         )}
 
         {/* Show error state if API fails */}
         {error && !loading && (
-          <div className="dashboard__error">
-            <AlertTriangle size={24} />
-            <h3>Unable to Load Threat Data</h3>
-            <p>{error.error}</p>
-            <button className="btn btn--primary" onClick={() => refetch()}>
+          <div className="flex flex-col items-center justify-center min-h-[300px] gap-6 text-center bg-gray-800 border border-red-500 rounded-lg p-8 m-8">
+            <AlertTriangle size={24} className="text-red-500" />
+            <h3 className="m-0 text-lg font-semibold text-white">Unable to Load Threat Data</h3>
+            <p className="m-0 text-gray-400 text-sm max-w-[400px]">{error.error}</p>
+            <button 
+              className="inline-flex items-center gap-2 px-6 py-2 bg-green-400 text-black border-none rounded-md text-sm font-medium cursor-pointer transition-all duration-150 ease-in-out hover:bg-green-300 hover:-translate-y-0.5"
+              onClick={() => refetch()}
+            >
               Retry Connection
             </button>
           </div>
@@ -209,11 +211,11 @@ export function Dashboard() {
         {!loading && !error && (
           <>
             {/* KPI Cards Row */}
-            <div className="dashboard__section">
+            <div className="mb-8">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="dashboard__section-title">Threat Overview</h2>
+                <h2 className="text-2xl font-bold text-white">Threat Overview</h2>
               </div>
-              <div className="dashboard__kpi-grid">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <KPICard
                   title="Total Emails"
                   value={totalEmails.toLocaleString()}
@@ -235,24 +237,23 @@ export function Dashboard() {
             </div>
 
             {/* Charts Row */}
-            <div className="dashboard__section">
-              <div className="dashboard__charts-grid">
+            <div className="mb-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 {/* Threat Trend Chart */}
-                <div className="chart-card">
-                  <h3 className="chart-card__title">Threat Trends</h3>
-                  <div className="chart-card__content">
+                <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Threat Trends</h3>
+                  <div className="h-80">
                     <ThreatTrendChart
                       data={threatTrendData}
                       loading={loading}
-                      timeRange="7d"
                     />
                   </div>
                 </div>
 
                 {/* Risk Distribution Chart */}
-                <div className="chart-card">
-                  <h3 className="chart-card__title">Risk Distribution</h3>
-                  <div className="chart-card__content">
+                <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+                  <h3 className="text-lg font-semibold text-white mb-4">Risk Distribution</h3>
+                  <div className="h-80">
                     <RiskDistributionChart
                       data={riskDistributionData}
                       loading={loading}
@@ -263,16 +264,16 @@ export function Dashboard() {
             </div>
 
             {/* Recent Activity Table */}
-            <div className="dashboard__section">
-              <h2 className="dashboard__section-title">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-white mb-6">
                 Recent Email Activity
               </h2>
-              <div className="table-card">
-                <div className="table-card__header">
-                  <h3>Latest Threats</h3>
-                  <button className="btn btn--outline btn--sm">View All</button>
+              <div className="bg-gray-800 border border-gray-700 rounded-lg">
+                <div className="flex justify-between items-center p-6 border-b border-gray-700">
+                  <h3 className="text-lg font-semibold text-white">Latest Threats</h3>
+                  <button className="px-4 py-2 border border-gray-600 text-gray-300 rounded-md text-sm hover:bg-gray-700 transition-colors">View All</button>
                 </div>
-                <div className="table-card__content">
+                <div className="p-6">
                   <RecentEmailsTable
                     emails={emails || []}
                     loading={loading}

@@ -39,281 +39,94 @@ export function KPICard({
     }
   };
 
-  const getTrendColor = (type: TrendType) => {
+  const getTrendClasses = (type: TrendType) => {
     switch (type) {
       case "positive":
-        return "kpi-card__trend--positive";
+        return "bg-green-500/10 text-green-400";
       case "negative":
-        return "kpi-card__trend--negative";
+        return "bg-red-500/10 text-red-400";
       default:
-        return "kpi-card__trend--neutral";
+        return "bg-gray-500/10 text-gray-400";
+    }
+  };
+
+  const getVariantClasses = (variant: string) => {
+    switch (variant) {
+      case "success":
+        return "border-l-4 border-l-green-400";
+      case "warning":
+        return "border-l-4 border-l-yellow-400";
+      case "danger":
+        return "border-l-4 border-l-red-400";
+      case "info":
+        return "border-l-4 border-l-cyan-400";
+      default:
+        return "";
+    }
+  };
+
+  const getAccentClasses = (variant: string) => {
+    switch (variant) {
+      case "success":
+        return "bg-gradient-to-r from-green-400 to-green-500";
+      case "warning":
+        return "bg-gradient-to-r from-yellow-400 to-yellow-500";
+      case "danger":
+        return "bg-gradient-to-r from-red-400 to-red-500";
+      case "info":
+        return "bg-gradient-to-r from-cyan-400 to-purple-500";
+      default:
+        return "bg-gradient-to-r from-cyan-400 to-green-400";
     }
   };
 
   if (loading) {
     return (
-      <div className={`kpi-card kpi-card--${variant} kpi-card--loading`}>
-        <div className="kpi-card__skeleton">
-          <div className="skeleton skeleton--title"></div>
-          <div className="skeleton skeleton--value"></div>
-          <div className="skeleton skeleton--subtitle"></div>
+      <div className={`bg-gray-800 border border-gray-700 rounded-xl p-6 relative overflow-hidden transition-all duration-200 ease-in-out animate-pulse ${getVariantClasses(variant)} md:p-4`}>
+        <div className="space-y-3">
+          <div className="h-3.5 bg-gray-700 rounded w-3/5"></div>
+          <div className="h-8 bg-gray-700 rounded w-2/5 md:h-6"></div>
+          <div className="h-3 bg-gray-700 rounded w-4/5"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`kpi-card kpi-card--${variant}`}>
-      {icon && <div className="kpi-card__icon">{icon}</div>}
+    <div className={`bg-gray-800 border border-gray-700 rounded-xl p-6 relative overflow-hidden transition-all duration-200 ease-in-out hover:border-cyan-400 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-cyan-400/10 ${getVariantClasses(variant)} md:p-4`}>
+      {icon && (
+        <div className="absolute top-6 right-6 text-gray-400 opacity-60 md:top-4 md:right-4">
+          {icon}
+        </div>
+      )}
 
-      <div className="kpi-card__content">
-        <h3 className="kpi-card__title">{title}</h3>
+      <div className="relative z-10">
+        <h3 className="text-sm font-medium text-gray-400 uppercase tracking-wider leading-tight mb-2">
+          {title}
+        </h3>
 
-        <div className="kpi-card__value-container">
-          <span className="kpi-card__value">{value}</span>
+        <div className="flex items-center gap-2 mb-1 flex-wrap md:flex-col md:items-start md:gap-1">
+          <span className="text-3xl font-bold text-white leading-tight animate-[slideUp_0.8s_ease-out] md:text-2xl">
+            {value}
+          </span>
           {trend && (
-            <div
-              className={`kpi-card__trend ${getTrendColor(
-                trend.type || "neutral"
-              )}`}
-            >
+            <div className={`flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium leading-none ${getTrendClasses(trend.type || "neutral")}`}>
               {getTrendIcon(trend.direction)}
-              <span className="kpi-card__trend-value">{trend.value}</span>
+              <span>{trend.value}</span>
             </div>
           )}
         </div>
 
-        {subtitle && <p className="kpi-card__subtitle">{subtitle}</p>}
+        {subtitle && (
+          <p className="text-sm text-gray-400 leading-normal m-0">
+            {subtitle}
+          </p>
+        )}
       </div>
 
-      <div className={`kpi-card__accent kpi-card__accent--${variant}`}></div>
+      <div className={`absolute bottom-0 left-0 right-0 h-0.5 opacity-0 transition-opacity duration-200 ease-in-out hover:opacity-100 ${getAccentClasses(variant)}`}></div>
     </div>
   );
 }
 
-// KPI Card Styles
-const styles = `
-.kpi-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-primary);
-  border-radius: var(--radius-xl);
-  padding: var(--spacing-lg);
-  position: relative;
-  overflow: hidden;
-  transition: all var(--duration-fast) var(--ease-in-out);
-  animation: slideUp var(--duration-normal) var(--ease-out);
-}
 
-.kpi-card:hover {
-  border-color: var(--color-primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-}
-
-.kpi-card--loading {
-  pointer-events: none;
-}
-
-.kpi-card--success {
-  border-left: 4px solid var(--color-success);
-}
-
-.kpi-card--warning {
-  border-left: 4px solid var(--color-warning);
-}
-
-.kpi-card--danger {
-  border-left: 4px solid var(--color-danger);
-}
-
-.kpi-card--info {
-  border-left: 4px solid var(--color-info);
-}
-
-.kpi-card__icon {
-  position: absolute;
-  top: var(--spacing-lg);
-  right: var(--spacing-lg);
-  color: var(--text-muted);
-  opacity: 0.6;
-}
-
-.kpi-card__content {
-  position: relative;
-  z-index: 1;
-}
-
-.kpi-card__title {
-  margin: 0 0 var(--spacing-sm) 0;
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  line-height: var(--line-height-tight);
-}
-
-.kpi-card__value-container {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin-bottom: var(--spacing-xs);
-  flex-wrap: wrap;
-}
-
-.kpi-card__value {
-  font-size: var(--font-size-3xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
-  line-height: var(--line-height-tight);
-  animation: countUp 0.8s var(--ease-out);
-}
-
-.kpi-card__trend {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  line-height: 1;
-}
-
-.kpi-card__trend--positive {
-  background: rgba(13, 187, 100, 0.1);
-  color: var(--color-success);
-}
-
-.kpi-card__trend--negative {
-  background: rgba(237, 51, 51, 0.1);
-  color: var(--color-danger);
-}
-
-.kpi-card__trend--neutral {
-  background: rgba(107, 114, 128, 0.1);
-  color: var(--text-muted);
-}
-
-.kpi-card__trend-value {
-  font-size: inherit;
-}
-
-.kpi-card__subtitle {
-  margin: 0;
-  font-size: var(--font-size-sm);
-  color: var(--text-muted);
-  line-height: var(--line-height-normal);
-}
-
-.kpi-card__accent {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  opacity: 0;
-  transition: opacity var(--duration-fast) var(--ease-in-out);
-}
-
-.kpi-card:hover .kpi-card__accent {
-  opacity: 1;
-}
-
-.kpi-card__accent--success {
-  background: var(--gradient-primary);
-}
-
-.kpi-card__accent--warning {
-  background: var(--gradient-warning);
-}
-
-.kpi-card__accent--danger {
-  background: var(--gradient-danger);
-}
-
-.kpi-card__accent--info {
-  background: linear-gradient(135deg, var(--color-info) 0%, #6D28D9 100%);
-}
-
-.kpi-card__accent--default {
-  background: var(--gradient-primary);
-}
-
-/* Loading States */
-.kpi-card__skeleton {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-.skeleton {
-  background: var(--bg-primary);
-  border-radius: var(--radius-sm);
-  opacity: 0.7;
-}
-
-.skeleton--title {
-  height: 14px;
-  width: 60%;
-  margin-bottom: var(--spacing-sm);
-}
-
-.skeleton--value {
-  height: 32px;
-  width: 40%;
-  margin-bottom: var(--spacing-xs);
-}
-
-.skeleton--subtitle {
-  height: 12px;
-  width: 80%;
-}
-
-/* Animations */
-@keyframes countUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 0.7;
-  }
-  50% {
-    opacity: 0.4;
-  }
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .kpi-card {
-    padding: var(--spacing-md);
-  }
-
-  .kpi-card__value {
-    font-size: var(--font-size-2xl);
-  }
-
-  .kpi-card__value-container {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-xs);
-  }
-}
-`;
-
-// Inject styles
-if (typeof document !== "undefined") {
-  const styleElement = document.getElementById("kpi-card-styles");
-  if (!styleElement) {
-    const style = document.createElement("style");
-    style.id = "kpi-card-styles";
-    style.textContent = styles;
-    document.head.appendChild(style);
-  }
-}

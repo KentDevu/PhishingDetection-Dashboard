@@ -10,7 +10,6 @@ import { useBulkDelete } from "../../hooks/useBulkDelete";
 import { useDeleteEmail } from "../../hooks/useDeleteEmail";
 import { useNotifications } from "../../contexts/NotificationContext";
 import type { Email } from "../../models/email";
-import "./Emails.css";
 
 export function Emails() {
   const {
@@ -132,10 +131,10 @@ export function Emails() {
 
   if (loading) {
     return (
-      <div className="emails-page">
-        <div className="emails-loading">
-          <div className="loading-spinner"></div>
-          <p>Loading emails...</p>
+      <div className="min-h-screen">
+        <div className="flex flex-col items-center justify-center min-h-[400px] gap-6">
+          <div className="w-12 h-12 border-4 border-gray-600 border-t-green-400 rounded-full animate-spin"></div>
+          <p className="text-gray-400 text-base">Loading emails...</p>
         </div>
       </div>
     );
@@ -143,12 +142,15 @@ export function Emails() {
 
   if (error) {
     return (
-      <div className="emails-page">
-        <div className="emails-error">
-          <Mail size={48} />
-          <h2>Failed to Load Emails</h2>
-          <p>{error.error}</p>
-          <button className="btn btn--primary" onClick={() => refetch()}>
+      <div className="min-h-screen">
+        <div className="flex flex-col items-center justify-center min-h-[300px] gap-6 text-center">
+          <Mail size={48} className="text-red-500" />
+          <h2 className="text-xl font-semibold text-white">Failed to Load Emails</h2>
+          <p className="text-gray-400">{error.error}</p>
+          <button 
+            className="px-6 py-2 bg-green-400 text-black border-none rounded-md text-sm font-medium cursor-pointer hover:bg-green-300 transition-colors"
+            onClick={() => refetch()}
+          >
             Retry
           </button>
         </div>
@@ -159,34 +161,40 @@ export function Emails() {
   // Empty state - no emails in database
   if (!loading && (!emails || emails.length === 0)) {
     return (
-      <div className="emails-page">
-        <div className="emails-header">
-          <div className="emails-header__title">
-            <Mail className="emails-header__icon" size={28} />
+      <div className="min-h-screen">
+        <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-700">
+          <div className="flex items-center gap-4">
+            <Mail className="text-green-400 shrink-0" size={28} />
             <div>
-              <h1>Email Security Dashboard</h1>
-              <p>
+              <h1 className="m-0 mb-1 text-3xl font-bold text-white">Email Security Dashboard</h1>
+              <p className="m-0 text-gray-400 text-sm">
                 View and manage emails analyzed by your n8n automation workflow
               </p>
             </div>
           </div>
-          <div className="emails-header__actions">
-            <button className="btn btn--primary" onClick={() => refetch()}>
+          <div className="flex items-center gap-4 shrink-0">
+            <button 
+              className="px-6 py-2 bg-green-400 text-black border-none rounded-md text-sm font-medium cursor-pointer hover:bg-green-300 transition-colors"
+              onClick={() => refetch()}
+            >
               <RefreshCw size={18} />
               Refresh
             </button>
           </div>
         </div>
 
-        <div className="emails-empty">
-          <Mail size={64} strokeWidth={1.5} />
-          <h2>No Emails Found</h2>
-          <p>
+        <div className="flex flex-col items-center justify-center min-h-[400px] gap-6 text-center">
+          <Mail size={64} strokeWidth={1.5} className="text-gray-600" />
+          <h2 className="text-xl font-semibold text-white">No Emails Found</h2>
+          <p className="text-gray-400 max-w-md">
             Your n8n automation hasn't processed any emails yet, or no emails
             match your current filters.
           </p>
-          <div className="empty-actions">
-            <button className="btn btn--primary" onClick={() => refetch()}>
+          <div className="flex gap-4">
+            <button 
+              className="px-6 py-2 bg-green-400 text-black border-none rounded-md text-sm font-medium cursor-pointer hover:bg-green-300 transition-colors"
+              onClick={() => refetch()}
+            >
               <RefreshCw size={18} />
               Check for New Emails
             </button>
@@ -197,110 +205,68 @@ export function Emails() {
   }
 
   return (
-    <div className="emails-page">
-      <div className="emails-header">
-        <div className="emails-header__title">
-          <Mail className="emails-header__icon" size={28} />
+    <div className="min-h-screen">
+      <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-700">
+        <div className="flex items-center gap-4">
+          <Mail className="text-green-400 shrink-0" size={28} />
           <div>
-            <h1>Email Security Dashboard</h1>
-            <p>
+            <h1 className="m-0 mb-1 text-3xl font-bold text-white">Email Security Dashboard</h1>
+            <p className="m-0 text-gray-400 text-sm">
               View and manage emails analyzed by your n8n automation workflow
             </p>
           </div>
         </div>
 
-        <div className="emails-header__actions">
-          <button className="btn btn--primary" onClick={() => refetch()}>
+        <div className="flex items-center gap-4 shrink-0">
+          <button 
+            className="px-6 py-2 bg-green-400 text-black border-none rounded-md text-sm font-medium cursor-pointer hover:bg-green-300 transition-colors"
+            onClick={() => refetch()}
+          >
             <RefreshCw size={18} />
             Refresh
           </button>
         </div>
       </div>
 
-      <div className="emails-stats">
-        <div className="stat-card">
-          <div className="stat-card__value">{stats.total}</div>
-          <div className="stat-card__label">Total Emails</div>
-          <div className="stat-card__trend">
-            <span className="trend-indicator trend-indicator--neutral">●</span>
-            <span>All analyzed</span>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
+          <div className="text-3xl font-bold text-white mb-2">{stats.total}</div>
+          <div className="text-sm font-medium text-gray-400 mb-2">Total Emails</div>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-500">●</span>
+            <span className="text-xs text-gray-500">All analyzed</span>
           </div>
         </div>
 
-        <div className="stat-card stat-card--danger">
-          <div className="stat-card__value">{stats.malicious}</div>
-          <div className="stat-card__label">Malicious Threats</div>
-          <div className="stat-card__trend">
-            <span className="trend-indicator trend-indicator--up">▲</span>
-            <span>Immediate action required</span>
+        <div className="bg-red-900/20 border border-red-500 rounded-lg p-6">
+          <div className="text-3xl font-bold text-white mb-2">{stats.malicious}</div>
+          <div className="text-sm font-medium text-gray-400 mb-2">Malicious Threats</div>
+          <div className="flex items-center gap-2">
+            <span className="text-red-400">▲</span>
+            <span className="text-xs text-gray-500">Immediate action required</span>
           </div>
         </div>
 
-        <div className="stat-card stat-card--warning">
-          <div className="stat-card__value">{stats.suspicious}</div>
-          <div className="stat-card__label">Suspicious</div>
-          <div className="stat-card__trend">
-            <span className="trend-indicator trend-indicator--up">▲</span>
-            <span>Under investigation</span>
+        <div className="bg-yellow-900/20 border border-yellow-500 rounded-lg p-6">
+          <div className="text-3xl font-bold text-white mb-2">{stats.suspicious}</div>
+          <div className="text-sm font-medium text-gray-400 mb-2">Suspicious</div>
+          <div className="flex items-center gap-2">
+            <span className="text-yellow-400">▲</span>
+            <span className="text-xs text-gray-500">Under investigation</span>
           </div>
         </div>
 
-        <div className="stat-card stat-card--success">
-          <div className="stat-card__value">{stats.clean}</div>
-          <div className="stat-card__label">Clean</div>
-          <div className="stat-card__trend">
-            <span className="trend-indicator trend-indicator--down">▼</span>
-            <span>Safe emails</span>
+        <div className="bg-green-900/20 border border-green-500 rounded-lg p-6 md:col-span-3">
+          <div className="text-3xl font-bold text-white mb-2">{stats.clean}</div>
+          <div className="text-sm font-medium text-gray-400 mb-2">Clean</div>
+          <div className="flex items-center gap-2">
+            <span className="text-green-400">▼</span>
+            <span className="text-xs text-gray-500">Safe emails</span>
           </div>
         </div>
       </div>
 
-      <div className="emails-actions-bar">
-        <div className="quick-actions">
-          <button
-            className="quick-action-btn"
-            onClick={() => refetch()}
-            disabled={loading}
-          >
-            <RefreshCw size={16} />
-            Refresh Data
-          </button>
-        </div>
 
-        <div className="email-metrics">
-          <div className="metric">
-            <span className="metric-label">Avg. Risk Score:</span>
-            <span className="metric-value">
-              {emails && emails.length > 0
-                ? (
-                    (emails.reduce(
-                      (sum, email) => sum + email.phishing_score_cti,
-                      0
-                    ) /
-                      emails.length) *
-                    100
-                  ).toFixed(1)
-                : 0}
-              %
-            </span>
-          </div>
-          <div className="metric">
-            <span className="metric-label">Auth Pass Rate:</span>
-            <span className="metric-value">
-              {emails && emails.length > 0
-                ? Math.round(
-                    (emails.filter(
-                      (e) => e.spf_result === "pass" && e.dkim_result === "pass"
-                    ).length /
-                      emails.length) *
-                      100
-                  )
-                : 0}
-              %
-            </span>
-          </div>
-        </div>
-      </div>
 
       <EnhancedEmailFilters
         onFiltersChange={filterEmails}
