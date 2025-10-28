@@ -187,8 +187,6 @@ export type EmailIds = EmailId[];
 export type ThreatLevel =
   | "clean"
   | "suspicious"
-  | "high"
   | "malicious"
-  | "critical";
 export type ConfidenceLevel = "low" | "medium" | "high";
 export type AuthResult = "pass" | "fail" | "neutral" | "softfail" | "none";

@@ -104,6 +104,10 @@ export function RecentEmailsTable({
       <div className="flex flex-col h-full">
         {/* Enhanced Header */}
         <div className="grid grid-cols-6 gap-6 px-6 py-4 bg-linear-to-r from-gray-800 to-gray-900 border-b border-gray-700">
+          <div className="col-span-1 flex flex-col justify-center">
+            <h3 className="text-sm font-semibold text-white">Sender</h3>
+            <p className="text-xs text-gray-400">Domain</p>
+          </div>
           <div className="col-span-2 flex items-center gap-3">
             <div className="p-2 bg-cyan-500/10 rounded-lg border border-cyan-500/20">
               <Mail className="w-5 h-5 text-cyan-400" />
@@ -112,10 +116,6 @@ export function RecentEmailsTable({
               <h3 className="text-sm font-semibold text-white">Subject</h3>
               <p className="text-xs text-gray-400">Email content</p>
             </div>
-          </div>
-          <div className="col-span-1 flex flex-col justify-center">
-            <h3 className="text-sm font-semibold text-white">Sender</h3>
-            <p className="text-xs text-gray-400">Domain</p>
           </div>
           <div className="col-span-1 flex flex-col justify-center">
             <h3 className="text-sm font-semibold text-white">Risk Level</h3>
@@ -139,6 +139,15 @@ export function RecentEmailsTable({
                 key={email.id}
                 className="grid grid-cols-6 gap-6 px-6 py-4 hover:bg-gray-800/50 transition-colors duration-150 cursor-pointer group"
               >
+                {/* Sender Column */}
+                <div className="col-span-1 flex flex-col justify-center">
+                  <div className="text-sm font-medium text-white truncate" title={email.sender_domain}>
+                    {email.sender_domain || "Unknown"}
+                  </div>
+                  <div className="text-xs text-gray-400 truncate">
+                    {email.sender_domain ? `@${email.sender_domain.split('.').slice(-2).join('.')}` : ''}
+                  </div>
+                </div>
                 {/* Subject Column */}
                 <div className="col-span-2 flex items-start gap-3">
                   <div className="shrink-0 mt-0.5">
@@ -166,15 +175,7 @@ export function RecentEmailsTable({
                   </div>
                 </div>
 
-                {/* Sender Column */}
-                <div className="col-span-1 flex flex-col justify-center">
-                  <div className="text-sm font-medium text-white truncate" title={email.sender_domain}>
-                    {email.sender_domain || "Unknown"}
-                  </div>
-                  <div className="text-xs text-gray-400 truncate">
-                    {email.sender_domain ? `@${email.sender_domain.split('.').slice(-2).join('.')}` : ''}
-                  </div>
-                </div>
+
 
                 {/* Risk Level Column */}
                 <div className="col-span-1 flex items-center">

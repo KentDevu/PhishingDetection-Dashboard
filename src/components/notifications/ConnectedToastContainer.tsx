@@ -11,7 +11,7 @@ export function ConnectedToastContainer() {
     .filter((notification) => {
       if (notification.persistent) return true;
 
-      const age = Date.now() - notification.timestamp.getTime();
+      const age = notification.timestamp ? Date.now() - notification.timestamp.getTime() : 0;
       return age < 30000; // Show for 30 seconds max
     })
     .slice(0, 5); // Maximum 5 toasts at once

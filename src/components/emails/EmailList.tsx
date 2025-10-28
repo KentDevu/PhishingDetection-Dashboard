@@ -1,6 +1,6 @@
 // Email List Component - Display and manage multiple emails
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, memo } from "react";
 import {
   ArrowUpDown,
   Eye,
@@ -56,7 +56,7 @@ const THREAT_ORDER = {
   clean: 1,
 };
 
-export function EmailList({
+export function EmailListComponent({
   emails,
   onEmailView,
   onEmailDelete,
@@ -285,11 +285,8 @@ export function EmailList({
 
   const getThreatBadgeClasses = (threat: ThreatLevel) => {
     switch (threat) {
-      case "critical":
       case "malicious":
         return 'bg-red-900/20 text-red-400 border border-red-700';
-      case "high":
-        return 'bg-orange-900/20 text-orange-400 border border-orange-700';
       case "suspicious":
         return 'bg-yellow-900/20 text-yellow-400 border border-yellow-700';
       case "clean":
@@ -573,3 +570,5 @@ export function EmailList({
     </div>
   );
 }
+
+export const EmailList = memo(EmailListComponent);

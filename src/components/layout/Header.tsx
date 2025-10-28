@@ -2,19 +2,22 @@
 
 import { useState } from "react";
 import { Search, User, Menu } from "lucide-react";
-import { NotificationPanel } from "../notifications/NotificationPanel";
 
 export interface HeaderProps {
   title: string;
+  onToggleSidebar?: () => void;
 }
 
-export function Header({ title }: HeaderProps) {
+export function Header({ title, onToggleSidebar }: HeaderProps) {
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
-    <header className="flex items-center gap-6 p-6 xl:p-8 bg-gray-800 border-b border-gray-700 min-h-20">
+    <header className="flex items-center gap-6 px-6 xl:px-8 bg-gray-800 border-b border-gray-700 min-h-20">
       {/* Mobile Menu Toggle */}
-      <button className="hidden md:flex bg-transparent border border-gray-600 rounded-md text-gray-400 p-2 cursor-pointer transition-all duration-200 hover:bg-gray-700 hover:border-green-400 hover:text-green-400">
+      <button 
+        className="hidden md:flex bg-transparent border border-gray-600 rounded-md text-gray-400 p-2 cursor-pointer transition-all duration-200 hover:bg-gray-700 hover:border-green-400 hover:text-green-400"
+        onClick={onToggleSidebar}
+      >
         <Menu size={20} />
       </button>
 
@@ -41,7 +44,6 @@ export function Header({ title }: HeaderProps) {
       {/* Actions */}
       <div className="flex items-center gap-3">
         {/* Notifications */}
-        <NotificationPanel />
 
         {/* User Profile */}
         <div className="relative">

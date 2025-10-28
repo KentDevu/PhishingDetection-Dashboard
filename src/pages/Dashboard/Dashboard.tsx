@@ -1,6 +1,6 @@
 // Dashboard Page - Main overview page for email threat analysis
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Mail, AlertTriangle } from "lucide-react";
 import {
   KPICard,
@@ -8,12 +8,46 @@ import {
   ThreatTrendChart,
   RecentEmailsTable,
 } from "../../components/dashboard";
-import { useEmails } from "../../hooks/useEmails";
-import { useNotifications } from "../../contexts/NotificationContext";
+import { useApi } from "../../contexts/ApiContext";
+import { type Email } from "../../models/email";
+
+// Define the actual API response structure
+interface EmailsApiResponse {
+  emails: Email[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
+}
 
 export function Dashboard() {
-  const { data: emails, loading, error, refetch } = useEmails();
-  const { addNotification } = useNotifications();
+  const { dataFetch } = useApi();
+  const [emailsData, setEmailsData] = useState<EmailsApiResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchEmails = async () => {
+      try {
+        setLoading(true);
+        // Fetch all emails for dashboard calculations (set high limit)
+        const response = await dataFetch<EmailsApiResponse>('/emails/all?limit=1000', 'GET');
+        console.log("Dashboard fetched emails:", response);
+        setEmailsData(response);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to fetch emails');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEmails();
+  }, [dataFetch]);
+
+  // Extract emails from response
+  const emails = emailsData?.emails || [];
 
   console.log("Dashboard: emails received", emails);
 
@@ -35,25 +69,25 @@ export function Dashboard() {
   };
 
   // Calculate KPI values from emails
-  const totalEmails = emails?.length || 0;
+  const totalEmails = emailsData?.pagination?.total || emails.length;
   const highRiskEmails =
-    emails?.filter(
-      (email) =>
+    emails.filter(
+      (email: any) =>
         mapRiskLevel(email.threat_summary?.overall_risk || "low") ===
         "malicious"
     ).length || 0;
 
   const avgPhishingScore =
-    emails && emails.length > 0
+    emails.length > 0
       ? Math.round(
-          (emails.reduce((sum, email) => sum + email.phishing_score_cti, 0) /
+          (emails.reduce((sum: number, email: any) => sum + email.phishing_score_cti, 0) /
             emails.length) *
             100
-        )
+        ) / 100
       : 0;
 
   const activeThreats =
-    emails?.filter((email) => email.threat_summary.malicious_found > 0)
+    emails.filter((email: any) => email.threat_summary.malicious_found > 0)
       .length || 0;
 
   console.log(
@@ -69,15 +103,15 @@ export function Dashboard() {
 
   // Compute risk distribution data for chart
   const riskDistributionData = useMemo(() => {
-    if (!emails?.length) return [];
+    if (!emails.length) return [];
 
-    const distribution = emails.reduce((acc, email) => {
+    const distribution = emails.reduce((acc: Record<string, number>, email: any) => {
       const risk = email.threat_summary
         ? mapRiskLevel(email.threat_summary.overall_risk)
         : "clean";
       acc[risk] = (acc[risk] || 0) + 1;
       return acc;
-    }, {} as Record<string, number>);
+    }, {});
 
     return [
       {
@@ -103,7 +137,7 @@ export function Dashboard() {
 
   // Compute threat trends for the last 7 days
   const threatTrendData = useMemo(() => {
-    if (!emails?.length) return [];
+    if (!emails.length) return [];
 
     const now = new Date();
     const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -117,19 +151,19 @@ export function Dashboard() {
       const nextDay = new Date(date);
       nextDay.setDate(nextDay.getDate() + 1);
 
-      const dayEmails = emails.filter((email) => {
+      const dayEmails = emails.filter((email: any) => {
         const emailDate = new Date(email.timestamp);
         return emailDate >= date && emailDate < nextDay;
       });
 
       const clean = dayEmails.filter(
-        (e) => mapRiskLevel(e.threat_summary.overall_risk) === "clean"
+        (e: any) => mapRiskLevel(e.threat_summary.overall_risk) === "clean"
       ).length;
       const suspicious = dayEmails.filter(
-        (e) => mapRiskLevel(e.threat_summary.overall_risk) === "suspicious"
+        (e: any) => mapRiskLevel(e.threat_summary.overall_risk) === "suspicious"
       ).length;
       const malicious = dayEmails.filter(
-        (e) => mapRiskLevel(e.threat_summary.overall_risk) === "malicious"
+        (e: any) => mapRiskLevel(e.threat_summary.overall_risk) === "malicious"
       ).length;
 
       return {
@@ -146,41 +180,6 @@ export function Dashboard() {
   }, [emails]);
 
   // Auto-trigger threat notifications for high-risk emails
-  useEffect(() => {
-    if (emails && emails.length > 0) {
-      const criticalEmails = emails.filter(
-        (email) =>
-          mapRiskLevel(email.threat_summary.overall_risk) === "malicious"
-      );
-
-      // Only show notifications for the first critical email to avoid spam
-      if (criticalEmails.length > 0 && criticalEmails.length <= 2) {
-        criticalEmails.slice(0, 1).forEach((email) => {
-          addNotification({
-            type: "error",
-            message: `High-risk email from ${
-              email.sender
-            } detected with ${Math.round(
-              email.phishing_score_cti * 100
-            )}% phishing score.`,
-          });
-        });
-      }
-    }
-  }, [emails, addNotification]);
-
-  // Handle API errors with user feedback
-  useEffect(() => {
-    if (error) {
-      addNotification({
-        type: "error",
-        message:
-          error.error ||
-          "Unable to connect to the threat analysis API. Email data may not be current.",
-      });
-    }
-  }, [error, addNotification, refetch]);
-
   return (
     <div className="p-0">
       <div className="flex flex-col gap-8">
@@ -197,12 +196,12 @@ export function Dashboard() {
           <div className="flex flex-col items-center justify-center min-h-[300px] gap-6 text-center bg-gray-800 border border-red-500 rounded-lg p-8 m-8">
             <AlertTriangle size={24} className="text-red-500" />
             <h3 className="m-0 text-lg font-semibold text-white">Unable to Load Threat Data</h3>
-            <p className="m-0 text-gray-400 text-sm max-w-[400px]">{error.error}</p>
+            <p className="m-0 text-gray-400 text-sm max-w-[400px]">{error}</p>
             <button 
               className="inline-flex items-center gap-2 px-6 py-2 bg-green-400 text-black border-none rounded-md text-sm font-medium cursor-pointer transition-all duration-150 ease-in-out hover:bg-green-300 hover:-translate-y-0.5"
-              onClick={() => refetch()}
+              onClick={() => window.location.reload()}
             >
-              Retry Connection
+              Retry
             </button>
           </div>
         )}

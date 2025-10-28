@@ -129,24 +129,22 @@ export function RiskDistributionChart({
         </ResponsiveContainer>
 
         {/* Center Statistics Card */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none z-10">
-          <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-md min-w-36 max-w-44">
-            <div className="text-xl font-bold text-gray-900 leading-tight mb-1">{total}</div>
-            <div className="text-xs text-gray-500 uppercase tracking-wider mb-3 font-medium">Total Emails</div>
-            <div className="flex flex-col gap-2">
-              {chartData.map((item, index) => (
-                <div key={index} className="flex items-center gap-2 p-2 rounded bg-gray-50 hover:bg-gray-100 transition-colors">
-                  <div
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ backgroundColor: item.color }}
-                  ></div>
-                  <div className="flex justify-between items-center flex-1 min-w-0">
-                    <span className="text-xs text-gray-600 font-medium whitespace-nowrap overflow-hidden text-ellipsis">{item.name}</span>
-                    <span className="text-xs font-bold text-gray-900 ml-2 shrink-0">{item.value}</span>
-                  </div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white border border-gray-200 rounded-xl p-4 shadow-md min-w-36 max-w-44 max-h-64 overflow-y-auto">
+          <div className="text-xl font-bold text-gray-900 leading-tight mb-1">{total}</div>
+          <div className="text-xs text-gray-500 uppercase tracking-wider mb-3 font-medium">Total Emails</div>
+          <div className="flex flex-col gap-2">
+            {chartData.map((item, index) => (
+              <div key={index} className="flex items-center gap-2 p-2 rounded bg-gray-50 hover:bg-gray-100 transition-colors">
+                <div
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: item.color }}
+                ></div>
+                <div className="flex justify-between items-center flex-1 min-w-0">
+                  <span className="text-xs text-gray-600 font-medium whitespace-nowrap overflow-hidden text-ellipsis">{item.name}</span>
+                  <span className="text-xs font-bold text-gray-900 ml-2 shrink-0">{item.value}</span>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

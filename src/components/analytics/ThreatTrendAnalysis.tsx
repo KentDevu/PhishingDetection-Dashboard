@@ -1,6 +1,6 @@
 // Threat Trend Analysis Chart Component
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   LineChart,
   Line,
@@ -21,6 +21,7 @@ interface ThreatTrendAnalysisProps {
   data: ThreatTrend[] | null;
   loading?: boolean;
   onPeriodChange?: (period: string) => void;
+  selectedPeriod?: string;
 }
 
 const TIME_PERIODS = [
@@ -34,26 +35,74 @@ export function ThreatTrendAnalysis({
   data,
   loading,
   onPeriodChange,
+  selectedPeriod = "30d",
 }: ThreatTrendAnalysisProps) {
-  const [selectedPeriod, setSelectedPeriod] = useState("30d");
   const [chartType, setChartType] = useState<"line" | "area">("area");
+
+  console.log("ThreatTrendAnalysis render:", { selectedPeriod, dataLength: data?.length, loading });
+
+  useEffect(() => {
+    console.log("ThreatTrendAnalysis selectedPeriod changed:", selectedPeriod);
+  }, [selectedPeriod]);
 
   const chartData = useMemo(() => {
     if (!data) return [];
 
-    return data.map((trend) => ({
+    console.log("ThreatTrendAnalysis chartData calculating for period:", selectedPeriod, "data length:", data.length);
+
+    // Apply period filtering here so the chart updates immediately when the
+    // parent changes the selected period. Data from parent is expected to be
+    // full (unfiltered) trend rows.
+    let filtered = data;
+
+    if (selectedPeriod) {
+      let daysToGoBack = 30;
+      switch (selectedPeriod) {
+        case "7d":
+          daysToGoBack = 7;
+          break;
+        case "30d":
+          daysToGoBack = 30;
+          break;
+        case "90d":
+          daysToGoBack = 90;
+          break;
+        case "1y":
+          daysToGoBack = 365;
+          break;
+      }
+
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - daysToGoBack);
+
+      console.log("Filtering with cutoff:", cutoff, "days back:", daysToGoBack);
+
+      filtered = data.filter((trend) => {
+        // trend.date expected to be ISO date like YYYY-MM-DD
+        const d = parseISO(trend.date);
+        const keep = d >= cutoff;
+        if (!keep) {
+          console.log("Filtering out:", trend.date, d);
+        }
+        return keep;
+      });
+
+      console.log("Filtered data length:", filtered.length);
+    }
+
+    return filtered.map((trend) => ({
       ...trend,
       date: format(parseISO(trend.date), "MMM dd"),
       detection_rate: (
-        (trend.threats_detected / trend.emails_processed) *
+        (trend.threats_detected / Math.max(trend.emails_processed, 1)) *
         100
       ).toFixed(1),
       blocked_rate: (
-        (trend.blocked_emails / trend.emails_processed) *
+        (trend.blocked_emails / Math.max(trend.emails_processed, 1)) *
         100
       ).toFixed(1),
     }));
-  }, [data]);
+  }, [data, selectedPeriod]);
 
   const summaryStats = useMemo(() => {
     if (!data || data.length === 0) return null;
@@ -98,10 +147,10 @@ export function ThreatTrendAnalysis({
       threatChange,
       emailChange,
     };
-  }, [data]);
+  }, [data, selectedPeriod]);
 
   const handlePeriodChange = (period: string) => {
-    setSelectedPeriod(period);
+    console.log("ThreatTrendAnalysis handlePeriodChange:", period);
     onPeriodChange?.(period);
   };
 

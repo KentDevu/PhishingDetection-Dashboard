@@ -5,15 +5,13 @@ import {
   Settings as SettingsIcon,
   Shield,
   Server,
-  Plug,
   Bell,
   ChevronRight,
 } from "lucide-react";
 import { SecuritySettingsPanel } from "../components/settings/SecuritySettingsPanel.tsx";
-import { SystemConfigurationPanel } from "../components/settings/SystemConfigurationPanel";
 import { NotificationSettings } from "../components/notifications/NotificationSettings";
 
-type SettingsTab = "notifications" | "security" | "system" | "integrations";
+type SettingsTab = "notifications" | "security" | "system";
 
 interface TabConfig {
   id: SettingsTab;
@@ -47,12 +45,6 @@ export default function Settings() {
       icon: <Server size={20} />,
       description: "Core system and performance settings",
     },
-    {
-      id: "integrations",
-      label: "Integrations",
-      icon: <Plug size={20} />,
-      description: "Third-party services and API connections",
-    },
   ];
 
   // Show all tabs since no authentication is required
@@ -64,10 +56,6 @@ export default function Settings() {
         return <NotificationSettings />;
       case "security":
         return <SecuritySettingsPanel />;
-      case "system":
-        return <SystemConfigurationPanel />;
-      case "integrations":
-        return <IntegrationsPlaceholder />;
       default:
         return <NotificationSettings />;
     }
@@ -126,40 +114,5 @@ export default function Settings() {
   );
 }
 
-// Placeholder Components (to be implemented later)
-function IntegrationsPlaceholder() {
-  return (
-    <div className="flex items-center justify-center min-h-[400px]">
-      <div className="text-center max-w-md">
-        <Plug size={48} className="text-gray-600 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-white mb-2">Integrations</h2>
-        <p className="text-gray-400 mb-6">Configure third-party integrations and API connections.</p>
-        <div className="space-y-4 mb-6">
-          <div className="flex items-start gap-3 p-3 bg-gray-800 rounded-lg">
-            <div className="text-2xl">📧</div>
-            <div className="text-left">
-              <h4 className="text-sm font-medium text-white">Email Providers</h4>
-              <p className="text-xs text-gray-400">Connect to Gmail, Outlook, and other email services</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3 p-3 bg-gray-800 rounded-lg">
-            <div className="text-2xl">🛡️</div>
-            <div className="text-left">
-              <h4 className="text-sm font-medium text-white">Security Tools</h4>
-              <p className="text-xs text-gray-400">Integrate with SIEM and threat intelligence platforms</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3 p-3 bg-gray-800 rounded-lg">
-            <div className="text-2xl">📊</div>
-            <div className="text-left">
-              <h4 className="text-sm font-medium text-white">Analytics</h4>
-              <p className="text-xs text-gray-400">Export data to business intelligence tools</p>
-            </div>
-          </div>
-        </div>
-        <div className="text-sm text-gray-500 font-medium">Coming Soon</div>
-      </div>
-    </div>
-  );
-}
+
 

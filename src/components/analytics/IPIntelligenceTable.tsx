@@ -1,4 +1,4 @@
-// Domain Intelligence Table Component
+// IP Intelligence Table Component
 
 import { useState, useMemo } from "react";
 import {
@@ -8,32 +8,32 @@ import {
   Filter,
   ChevronUp,
   ChevronDown,
-  Globe,
   MapPin,
+  Globe,
   Clock,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
-import type { DomainIntelligence } from "../../models/analytics";
+import type { IPIntelligence } from "../../models/analytics";
 
-interface DomainIntelligenceTableProps {
-  data: DomainIntelligence[] | null;
+interface IPIntelligenceTableProps {
+  data: IPIntelligence[] | null;
   loading?: boolean;
 }
 
-type SortField = "domain" | "reputation_score" | "email_count" | "last_seen";
+type SortField = "ip" | "reputation_score" | "email_count" | "last_seen";
 type SortDirection = "asc" | "desc";
 
-export function DomainIntelligenceTable({
+export function IPIntelligenceTable({
   data,
   loading,
-}: DomainIntelligenceTableProps) {
-  console.log("DomainIntelligenceTable: data received", data);
+}: IPIntelligenceTableProps) {
+  console.log("IPIntelligenceTable: data received", data);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedThreatLevel, setSelectedThreatLevel] = useState<string>("all");
   const [sortField, setSortField] = useState<SortField>("reputation_score");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(10); // Domains per page
+  const [pageSize] = useState(10); // IPs per page
 
   const threatLevels = [
     { value: "all", label: "All Levels", color: "#6B7280" },
@@ -50,18 +50,20 @@ export function DomainIntelligenceTable({
     // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter(
-        (domain) =>
-          domain.domain.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          domain.categories.some((category) =>
+        (ip) =>
+          ip.ip.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          ip.categories.some((category) =>
             category.toLowerCase().includes(searchTerm.toLowerCase())
-          )
+          ) ||
+          (ip.isp && ip.isp.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (ip.asn && ip.asn.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
     // Apply threat level filter
     if (selectedThreatLevel !== "all") {
       filtered = filtered.filter(
-        (domain) => domain.threat_level === selectedThreatLevel
+        (ip) => ip.threat_level === selectedThreatLevel
       );
     }
 
@@ -71,9 +73,9 @@ export function DomainIntelligenceTable({
       let bValue: string | number;
 
       switch (sortField) {
-        case "domain":
-          aValue = a.domain.toLowerCase();
-          bValue = b.domain.toLowerCase();
+        case "ip":
+          aValue = a.ip.toLowerCase();
+          bValue = b.ip.toLowerCase();
           break;
         case "reputation_score":
           aValue = a.reputation_score;
@@ -132,7 +134,7 @@ export function DomainIntelligenceTable({
       <div className="bg-gray-900 border border-gray-700 rounded-lg p-8">
         <div className="flex flex-col items-center justify-center space-y-4">
           <div className="w-8 h-8 border-4 border-cyan-800 border-t-cyan-400 rounded-full animate-spin"></div>
-          <p className="text-gray-300">Loading domain intelligence...</p>
+          <p className="text-gray-300">Loading IP intelligence...</p>
         </div>
       </div>
     );
@@ -142,9 +144,9 @@ export function DomainIntelligenceTable({
     return (
       <div className="bg-gray-900 border border-gray-700 rounded-lg p-8">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
-          <Globe size={48} className="text-gray-500" />
-          <h3 className="text-lg font-semibold text-white">No Domain Data</h3>
-          <p className="text-gray-400">No domain intelligence data available</p>
+          <MapPin size={48} className="text-gray-500" />
+          <h3 className="text-lg font-semibold text-white">No IP Data</h3>
+          <p className="text-gray-400">No IP intelligence data available</p>
         </div>
       </div>
     );
@@ -155,8 +157,8 @@ export function DomainIntelligenceTable({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h2 className="text-xl font-semibold text-white">Domain Intelligence</h2>
-          <p className="text-sm text-gray-400">Reputation analysis for {data.length} domains</p>
+          <h2 className="text-xl font-semibold text-white">IP Intelligence</h2>
+          <p className="text-sm text-gray-400">Reputation analysis for {data.length} IP addresses</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
@@ -165,7 +167,7 @@ export function DomainIntelligenceTable({
             <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search domains..."
+              placeholder="Search IPs..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 border border-gray-600 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-gray-800 text-white placeholder-gray-400"
@@ -193,7 +195,7 @@ export function DomainIntelligenceTable({
       {/* Statistics */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-          <div className="text-sm text-gray-400">Total Domains</div>
+          <div className="text-sm text-gray-400">Total IPs</div>
           <div className="text-2xl font-bold text-white">{filteredAndSortedData.length}</div>
         </div>
         <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
@@ -201,7 +203,7 @@ export function DomainIntelligenceTable({
           <div className="text-2xl font-bold text-red-400">
             {
               filteredAndSortedData.filter(
-                (d) => d.threat_level === "malicious"
+                (ip) => ip.threat_level === "malicious"
               ).length
             }
           </div>
@@ -210,7 +212,7 @@ export function DomainIntelligenceTable({
           <div className="text-sm text-gray-400">Clean</div>
           <div className="text-2xl font-bold text-green-400">
             {
-              filteredAndSortedData.filter((d) => d.threat_level === "clean")
+              filteredAndSortedData.filter((ip) => ip.threat_level === "clean")
                 .length
             }
           </div>
@@ -225,13 +227,13 @@ export function DomainIntelligenceTable({
               <tr>
                 <th
                   className={`px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700 ${
-                    sortField === "domain" ? "bg-gray-700" : ""
+                    sortField === "ip" ? "bg-gray-700" : ""
                   }`}
-                  onClick={() => handleSort("domain")}
+                  onClick={() => handleSort("ip")}
                 >
                   <div className="flex items-center gap-1">
-                    Domain
-                    {sortField === "domain" &&
+                    IP Address
+                    {sortField === "ip" &&
                       (sortDirection === "asc" ? (
                         <ChevronUp size={14} />
                       ) : (
@@ -277,6 +279,9 @@ export function DomainIntelligenceTable({
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Detection Engines
                 </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                  ISP/ASN
+                </th>
                 <th
                   className={`px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700 ${
                     sortField === "last_seen" ? "bg-gray-700" : ""
@@ -299,8 +304,8 @@ export function DomainIntelligenceTable({
               </tr>
             </thead>
             <tbody className="bg-gray-900 divide-y divide-gray-700">
-              {paginatedData.map((domain, index) => {
-                console.log("DomainIntelligenceTable: rendering domain", domain);
+              {paginatedData.map((ip, index) => {
+                console.log("IPIntelligenceTable: rendering IP", ip);
                 return (
                   <tr key={index} className="hover:bg-gray-800/50">
                     <td className="px-4 py-4 whitespace-nowrap">
@@ -309,25 +314,17 @@ export function DomainIntelligenceTable({
                         <div>
                           <button
                             className="text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors text-left"
-                            onClick={() => window.open(`https://www.virustotal.com/gui/domain/${domain.domain}`, '_blank')}
-                            title={`View ${domain.domain} on VirusTotal`}
+                            onClick={() => window.open(`https://www.virustotal.com/gui/ip-address/${ip.ip}`, '_blank')}
+                            title={`View ${ip.ip} on VirusTotal`}
                           >
-                            {domain.domain}
+                            {ip.ip}
                           </button>
-                          {domain.categories.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {domain.categories
-                                .slice(0, 2)
-                                .map((category, idx) => (
-                                  <span key={idx} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-cyan-900/50 text-cyan-300 border border-cyan-700">
-                                    {category}
-                                  </span>
-                                ))}
-                              {domain.categories.length > 2 && (
-                                <span className="text-xs text-gray-400">
-                                  +{domain.categories.length - 2}
-                                </span>
-                              )}
+                          {ip.geographic_distribution.length > 0 && (
+                            <div className="flex items-center gap-1 mt-1">
+                              <MapPin size={12} className="text-gray-500" />
+                              <span className="text-xs text-gray-400">
+                                {ip.geographic_distribution[0].country}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -338,47 +335,54 @@ export function DomainIntelligenceTable({
                       <span
                         className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border"
                         style={{
-                          backgroundColor: `${getThreatLevelColor(domain.threat_level)}20`,
-                          color: getThreatLevelColor(domain.threat_level),
-                          borderColor: `${getThreatLevelColor(domain.threat_level)}40`,
+                          backgroundColor: `${getThreatLevelColor(ip.threat_level)}20`,
+                          color: getThreatLevelColor(ip.threat_level),
+                          borderColor: `${getThreatLevelColor(ip.threat_level)}40`,
                         }}
                       >
-                        {domain.threat_level.charAt(0).toUpperCase() +
-                          domain.threat_level.slice(1)}
+                        {ip.threat_level.charAt(0).toUpperCase() +
+                          ip.threat_level.slice(1)}
                       </span>
                     </td>
 
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium text-white">
-                          {domain.reputation_score}
+                          {ip.reputation_score}
                         </span>
                         <div className="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
                           <div
                             className={`h-full rounded-full ${
-                              domain.reputation_score >= 80 ? 'bg-green-500' :
-                              domain.reputation_score >= 60 ? 'bg-yellow-500' :
-                              domain.reputation_score >= 40 ? 'bg-orange-500' : 'bg-red-500'
+                              ip.reputation_score >= 80 ? 'bg-green-500' :
+                              ip.reputation_score >= 60 ? 'bg-yellow-500' :
+                              ip.reputation_score >= 40 ? 'bg-orange-500' : 'bg-red-500'
                             }`}
-                            style={{ width: `${domain.reputation_score}%` }}
+                            style={{ width: `${ip.reputation_score}%` }}
                           />
                         </div>
                       </div>
                     </td>
 
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-white">
-                      {domain.email_count.toLocaleString()}
+                      {ip.email_count.toLocaleString()}
                     </td>
 
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-white">
-                      <span className="text-red-600 font-medium">{domain.malicious_engines.length}</span>
-                      <span className="text-gray-500"> / {domain.total_engines}</span>
+                      <span className="text-red-600 font-medium">{ip.malicious_engines.length}</span>
+                      <span className="text-gray-500"> / {ip.total_engines}</span>
+                    </td>
+
+                    <td className="px-4 py-4 whitespace-nowrap">
+                      <div className="text-sm text-gray-300">
+                        {ip.isp && <div>{ip.isp}</div>}
+                        {ip.asn && <div className="text-xs text-gray-500">ASN: {ip.asn}</div>}
+                      </div>
                     </td>
 
                     <td className="px-4 py-4 whitespace-nowrap">
                       <div className="flex items-center gap-2 text-sm text-gray-900">
                         <Clock size={14} className="text-gray-400" />
-                        {format(parseISO(domain.last_seen), "MMM dd, yyyy")}
+                        {format(parseISO(ip.last_seen), "MMM dd, yyyy")}
                       </div>
                     </td>
 
@@ -390,7 +394,7 @@ export function DomainIntelligenceTable({
                         <button className="p-1 text-gray-400 hover:text-gray-600" title="External Analysis">
                           <ExternalLink size={14} />
                         </button>
-                        {domain.geographic_distribution.length > 0 && (
+                        {ip.geographic_distribution.length > 0 && (
                           <button className="p-1 text-gray-400 hover:text-gray-600" title="Geographic Data">
                             <MapPin size={14} />
                           </button>
@@ -409,7 +413,7 @@ export function DomainIntelligenceTable({
       {filteredAndSortedData.length > pageSize && (
         <div className="flex items-center justify-between mt-6">
           <div className="text-sm text-gray-400">
-            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredAndSortedData.length)} of {filteredAndSortedData.length} domains
+            Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredAndSortedData.length)} of {filteredAndSortedData.length} IPs
           </div>
           <div className="flex items-center gap-2">
             <button
@@ -436,7 +440,7 @@ export function DomainIntelligenceTable({
       {filteredAndSortedData.length === 0 && (
         <div className="text-center py-12">
           <Search size={32} className="mx-auto text-gray-500 mb-4" />
-          <p className="text-gray-400">No domains match your current filters</p>
+          <p className="text-gray-400">No IPs match your current filters</p>
         </div>
       )}
     </div>

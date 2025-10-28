@@ -37,6 +37,24 @@ export interface DomainIntelligence {
   }[];
 }
 
+export interface IPIntelligence {
+  ip: string;
+  reputation_score: number;
+  threat_level: "clean" | "suspicious" | "malicious";
+  first_seen: string;
+  last_seen: string;
+  email_count: number;
+  malicious_engines: string[];
+  total_engines: number;
+  categories: string[];
+  geographic_distribution: {
+    country: string;
+    count: number;
+  }[];
+  asn?: string;
+  isp?: string;
+}
+
 export interface ThreatActorProfile {
   actor_id: string;
   name: string;

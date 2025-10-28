@@ -13,7 +13,7 @@ import {
   Paperclip,
   RefreshCw,
 } from "lucide-react";
-import type { EmailFilterParams } from "../../services/emailService";
+import type { EmailFilterParams } from "../../types/email";
 import type { ThreatLevel, ConfidenceLevel } from "../../models/email";
 
 interface EnhancedEmailFiltersProps {
@@ -51,9 +51,7 @@ export function EnhancedEmailFilters({
     label: string;
     color: string;
   }[] = [
-    { value: "critical", label: "Critical", color: "var(--color-danger)" },
     { value: "malicious", label: "Malicious", color: "#FF6B35" },
-    { value: "high", label: "High", color: "#FF8C42" },
     { value: "suspicious", label: "Suspicious", color: "var(--color-warning)" },
     { value: "clean", label: "Clean", color: "var(--color-success)" },
   ];
@@ -217,7 +215,7 @@ export function EnhancedEmailFilters({
       {/* Advanced Filters */}
       {showAdvanced && (
         <div className="border-t border-gray-700 pt-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Sender/Domain Filters */}
             <div>
               <div className="flex items-center gap-2 mb-3">
@@ -303,6 +301,43 @@ export function EnhancedEmailFilters({
               </select>
             </div>
 
+            {/* Phishing Score Range Filter */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Shield size={16} className="text-red-400" />
+                <span className="text-sm font-medium text-white">Phishing Score Range</span>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  placeholder="Min score"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={localFilters.score_min || ""}
+                  onChange={(e) =>
+                    updateLocalFilter("score_min", e.target.value ? parseFloat(e.target.value) : undefined)
+                  }
+                  className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-400 focus:outline-none transition-colors"
+                  title="Minimum phishing score (0.0 - 1.0)"
+                />
+                <span className="flex items-center text-gray-400">to</span>
+                <input
+                  type="number"
+                  placeholder="Max score"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={localFilters.score_max || ""}
+                  onChange={(e) =>
+                    updateLocalFilter("score_max", e.target.value ? parseFloat(e.target.value) : undefined)
+                  }
+                  className="flex-1 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-cyan-400 focus:outline-none transition-colors"
+                  title="Maximum phishing score (0.0 - 1.0)"
+                />
+              </div>
+            </div>
+
             {/* Date Range Filter */}
             <div>
               <div className="flex items-center gap-2 mb-3">
@@ -383,6 +418,48 @@ export function EnhancedEmailFilters({
                     className="w-4 h-4 text-cyan-400 bg-gray-900 border-gray-600 rounded focus:ring-cyan-400 focus:ring-2"
                   />
                   <span className="text-sm text-gray-300">Without attachments</span>
+                </label>
+              </div>
+            </div>
+
+            {/* URLs Filter */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <AlertTriangle size={16} className="text-blue-400" />
+                <span className="text-sm font-medium text-white">URLs</span>
+              </div>
+              <div className="space-y-2">
+                <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-700/50 p-2 rounded-lg transition-colors">
+                  <input
+                    type="radio"
+                    name="urls"
+                    checked={localFilters.has_urls === undefined}
+                    onChange={() =>
+                      updateLocalFilter("has_urls", undefined)
+                    }
+                    className="w-4 h-4 text-cyan-400 bg-gray-900 border-gray-600 rounded focus:ring-cyan-400 focus:ring-2"
+                  />
+                  <span className="text-sm text-gray-300">All emails</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-700/50 p-2 rounded-lg transition-colors">
+                  <input
+                    type="radio"
+                    name="urls"
+                    checked={localFilters.has_urls === true}
+                    onChange={() => updateLocalFilter("has_urls", true)}
+                    className="w-4 h-4 text-cyan-400 bg-gray-900 border-gray-600 rounded focus:ring-cyan-400 focus:ring-2"
+                  />
+                  <span className="text-sm text-gray-300">With URLs</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer hover:bg-gray-700/50 p-2 rounded-lg transition-colors">
+                  <input
+                    type="radio"
+                    name="urls"
+                    checked={localFilters.has_urls === false}
+                    onChange={() => updateLocalFilter("has_urls", false)}
+                    className="w-4 h-4 text-cyan-400 bg-gray-900 border-gray-600 rounded focus:ring-cyan-400 focus:ring-2"
+                  />
+                  <span className="text-sm text-gray-300">Without URLs</span>
                 </label>
               </div>
             </div>

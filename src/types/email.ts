@@ -110,11 +110,18 @@ export interface EmailSearchQuery {
   sort_order?: "asc" | "desc";
 }
 
-export interface EmailSearchResult {
-  emails: Email[];
-  total_count: number;
-  has_more: boolean;
-  search_time_ms: number;
+export interface EmailFilterParams {
+  sender?: string;
+  sender_domain?: string;
+  subject?: string;
+  threat_level?: ThreatLevel;
+  cti_confidence?: "low" | "medium" | "high";
+  start_date?: string;
+  end_date?: string;
+  has_attachments?: boolean;
+  has_urls?: boolean;
+  score_min?: number;
+  score_max?: number;
 }
 
 export interface EmailStats {

@@ -10,7 +10,7 @@ interface DashboardLayoutProps {
 }
 
 function DashboardLayoutContent({ children }: DashboardLayoutProps) {
-const { isCollapsed } = useSidebar();
+const { isCollapsed, toggleSidebar } = useSidebar();
 const location = useLocation();
 const path = location.pathname;
 const title = path.split('/')[1] ?? '';
@@ -27,7 +27,7 @@ const toUpperCaseFirstLetter = (str: string) => {
           isCollapsed ? 'ml-20' : 'ml-70'
         } md:${isCollapsed ? 'ml-20' : 'ml-70'}`}
       >
-        <Header title={toUpperCaseFirstLetter(title)} />
+        <Header title={toUpperCaseFirstLetter(title)} onToggleSidebar={toggleSidebar} />
         <main className="flex-1 p-8 overflow-y-auto">{children}</main>
       </div>
     </div>

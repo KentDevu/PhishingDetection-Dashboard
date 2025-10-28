@@ -9,8 +9,6 @@ import {
   BarChart3,
   Settings,
   Shield,
-  ChevronLeft,
-  ChevronRight,
 } from "lucide-react";
 
 interface SidebarItem {
@@ -52,7 +50,7 @@ export const SidebarProvider: React.FC<{ children: ReactNode }> = ({ children })
 };
 
 export function Sidebar() {
-  const { isCollapsed, toggleSidebar } = useSidebar();
+  const { isCollapsed } = useSidebar();
 
   const sidebarItems: SidebarItem[] = [
     {
@@ -95,13 +93,6 @@ export function Sidebar() {
             </span>
           )}
         </div>
-        <button
-          className="bg-transparent border border-gray-600 rounded-md text-gray-400 p-1 cursor-pointer transition-all duration-200 hover:bg-gray-700 hover:border-green-400 hover:text-green-400 shrink-0"
-          onClick={toggleSidebar}
-          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {isCollapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-        </button>
       </div>
 
       {/* Navigation */}
