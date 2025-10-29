@@ -6,6 +6,7 @@ import { DomainIntelligenceTable } from "../../components/analytics/DomainIntell
 import { ThreatIntelligenceChart } from "../../components/analytics/ThreatIntelligenceChart";
 import { ThreatTrendAnalysis } from "../../components/analytics/ThreatTrendAnalysis";
 import { IPIntelligenceTable } from "../../components/analytics/IPIntelligenceTable";
+import { EmailIntelligenceTable } from "../../components/analytics/EmailIntelligenceTable";
 import { useApi } from "../../contexts/ApiContext";
 import type { Email } from "../../models/email";
 import type { ThreatMetrics, ThreatTrend, DomainIntelligence, IPIntelligence } from "../../models/analytics";
@@ -365,13 +366,14 @@ export function Analytics() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen w-full overflow-x-hidden box-border">
+      <div className="w-full max-w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-700">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-6 border-b border-gray-700 mb-6 lg:mb-8">
         <div className="flex items-center gap-4">
           <BarChart3 className="text-green-400 shrink-0" size={28} />
           <div>
-            <h1 className="m-0 mb-1 text-3xl font-bold text-white">Analytics Dashboard</h1>
+            <h1 className="m-0 mb-1 text-2xl lg:text-3xl font-bold text-white">Analytics Dashboard</h1>
             <p className="m-0 text-gray-400 text-sm">
               Comprehensive threat intelligence and security analytics
             </p>
@@ -380,7 +382,7 @@ export function Analytics() {
 
         <div className="flex items-center gap-4 shrink-0">
           <button
-            className="px-6 py-2 bg-green-400 text-black border-none rounded-md text-sm font-medium cursor-pointer hover:bg-green-300 transition-colors"
+            className="px-4 lg:px-6 py-2 bg-green-400 text-black border-none rounded-md text-sm font-medium cursor-pointer hover:bg-green-300 transition-colors"
             onClick={refetch}
           >
             <RefreshCw size={18} />
@@ -390,9 +392,9 @@ export function Analytics() {
       </div>
 
       {/* Analytics Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div className="bg-gray-800 border border-gray-700 rounded-lg p-6">
-          <div className="text-3xl font-bold text-white mb-2">{threatMetrics.total_emails}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 lg:mb-8">
+        <div className="bg-gray-800 border border-gray-700 rounded-lg p-3 sm:p-4 lg:p-6">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2">{threatMetrics.total_emails}</div>
           <div className="text-sm font-medium text-gray-400 mb-2">Total Emails</div>
           <div className="flex items-center gap-2">
             <span className="text-gray-500">●</span>
@@ -400,8 +402,8 @@ export function Analytics() {
           </div>
         </div>
 
-        <div className="bg-red-900/20 border border-red-500 rounded-lg p-6">
-          <div className="text-3xl font-bold text-white mb-2">{threatMetrics.malicious_count}</div>
+        <div className="bg-red-900/20 border border-red-500 rounded-lg p-3 sm:p-4 lg:p-6">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2">{threatMetrics.malicious_count}</div>
           <div className="text-sm font-medium text-gray-400 mb-2">Malicious</div>
           <div className="flex items-center gap-2">
             <span className="text-red-400">●</span>
@@ -409,8 +411,8 @@ export function Analytics() {
           </div>
         </div>
 
-        <div className="bg-yellow-900/20 border border-yellow-500 rounded-lg p-6">
-          <div className="text-3xl font-bold text-white mb-2">{threatMetrics.suspicious_count}</div>
+        <div className="bg-yellow-900/20 border border-yellow-500 rounded-lg p-3 sm:p-4 lg:p-6">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2">{threatMetrics.suspicious_count}</div>
           <div className="text-sm font-medium text-gray-400 mb-2">Suspicious</div>
           <div className="flex items-center gap-2">
             <span className="text-yellow-400">●</span>
@@ -418,8 +420,8 @@ export function Analytics() {
           </div>
         </div>
 
-        <div className="bg-green-900/20 border border-green-500 rounded-lg p-6">
-          <div className="text-3xl font-bold text-white mb-2">{threatMetrics.clean_count}</div>
+        <div className="bg-green-900/20 border border-green-500 rounded-lg p-3 sm:p-4 lg:p-6">
+          <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-white mb-2">{threatMetrics.clean_count}</div>
           <div className="text-sm font-medium text-gray-400 mb-2">Clean</div>
           <div className="flex items-center gap-2">
             <span className="text-green-400">●</span>
@@ -429,33 +431,49 @@ export function Analytics() {
       </div>
 
       {/* Analytics Components */}
-      <div className="space-y-8">
+      <div className="space-y-4 sm:space-y-6 lg:space-y-8">
         {/* Threat Intelligence Chart */}
-        <ThreatIntelligenceChart
-          data={threatMetrics}
-          loading={loading}
-        />
+        <div className="w-full">
+          <ThreatIntelligenceChart
+            data={threatMetrics}
+            loading={loading}
+          />
+        </div>
 
         {/* Threat Trend Analysis */}
-        <ThreatTrendAnalysis
-          data={threatTrends}
-          loading={loading}
-          onPeriodChange={setSelectedPeriod}
-          selectedPeriod={selectedPeriod}
-        />
+        <div className="w-full">
+          <ThreatTrendAnalysis
+            data={threatTrends}
+            loading={loading}
+            onPeriodChange={setSelectedPeriod}
+            selectedPeriod={selectedPeriod}
+          />
+        </div>
+        {/* Email Intelligence Table */}
+        <div className="w-full">
+          <EmailIntelligenceTable
+            loading={loading}
+          />
+        </div>
 
         {/* Domain Intelligence Table */}
-        <DomainIntelligenceTable
-          data={domainIntelligence}
-          loading={loading}
-        />
+        <div className="w-full">
+          <DomainIntelligenceTable
+            data={domainIntelligence}
+            loading={loading}
+          />
+        </div>
 
         {/* IP Intelligence Table */}
-        <IPIntelligenceTable
-          data={ipIntelligence}
-          loading={loading}
-        />
+        <div className="w-full">
+          <IPIntelligenceTable
+            data={ipIntelligence}
+            loading={loading}
+          />
+        </div>
+
       </div>
     </div>
-  );
+  </div>
+);
 }

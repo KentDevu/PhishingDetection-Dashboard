@@ -218,9 +218,9 @@ export function DomainIntelligenceTable({
       </div>
 
       {/* Table */}
-      <div className="border border-gray-700 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+      <div className="border border-gray-700 rounded-lg overflow-hidden w-full">
+        <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+          <table className="w-full min-w-[700px] max-w-none">
             <thead className="bg-gray-800 border-b border-gray-700">
               <tr>
                 <th
@@ -303,12 +303,12 @@ export function DomainIntelligenceTable({
                 console.log("DomainIntelligenceTable: rendering domain", domain);
                 return (
                   <tr key={index} className="hover:bg-gray-800/50">
-                    <td className="px-4 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 min-w-[250px]">
                       <div className="flex items-center gap-3">
-                        <Globe size={16} className="text-gray-500" />
-                        <div>
+                        <Globe size={16} className="text-gray-500 shrink-0" />
+                        <div className="min-w-0 flex-1">
                           <button
-                            className="text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors text-left"
+                            className="text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors text-left block truncate max-w-[300px]"
                             onClick={() => window.open(`https://www.virustotal.com/gui/domain/${domain.domain}`, '_blank')}
                             title={`View ${domain.domain} on VirusTotal`}
                           >

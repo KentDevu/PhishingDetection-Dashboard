@@ -55,6 +55,22 @@ export interface IPIntelligence {
   isp?: string;
 }
 
+export interface EmailIntelligence {
+  email: string;
+  sender_name?: string;
+  domain: string;
+  reputation_score: number;
+  threat_level: "clean" | "suspicious" | "malicious";
+  threat_reasons?: string[];
+  first_seen: string;
+  last_seen: string;
+  email_count: number;
+  malicious_engines: string[] | number;
+  total_engines: number;
+  categories: string[];
+  is_blocked: boolean;
+}
+
 export interface ThreatActorProfile {
   actor_id: string;
   name: string;

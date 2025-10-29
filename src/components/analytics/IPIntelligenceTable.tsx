@@ -220,9 +220,9 @@ export function IPIntelligenceTable({
       </div>
 
       {/* Table */}
-      <div className="border border-gray-700 rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
+      <div className="border border-gray-700 rounded-lg overflow-hidden w-full">
+        <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+          <table className="w-full min-w-[500px] max-w-none">
             <thead className="bg-gray-800 border-b border-gray-700">
               <tr>
                 <th
@@ -279,9 +279,6 @@ export function IPIntelligenceTable({
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                   Detection Engines
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                  ISP/ASN
-                </th>
                 <th
                   className={`px-4 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-700 ${
                     sortField === "last_seen" ? "bg-gray-700" : ""
@@ -308,12 +305,12 @@ export function IPIntelligenceTable({
                 console.log("IPIntelligenceTable: rendering IP", ip);
                 return (
                   <tr key={index} className="hover:bg-gray-800/50">
-                    <td className="px-4 py-4 whitespace-nowrap">
+                    <td className="px-4 py-4 max-w-0">
                       <div className="flex items-center gap-3">
-                        <Globe size={16} className="text-gray-500" />
-                        <div>
+                        <Globe size={16} className="text-gray-500 shrink-0" />
+                        <div className="min-w-0 flex-1">
                           <button
-                            className="text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors text-left"
+                            className="text-sm font-medium text-cyan-400 hover:text-cyan-300 transition-colors text-left block truncate max-w-[150px]"
                             onClick={() => window.open(`https://www.virustotal.com/gui/ip-address/${ip.ip}`, '_blank')}
                             title={`View ${ip.ip} on VirusTotal`}
                           >
@@ -370,13 +367,6 @@ export function IPIntelligenceTable({
                     <td className="px-4 py-4 whitespace-nowrap text-sm text-white">
                       <span className="text-red-600 font-medium">{ip.malicious_engines.length}</span>
                       <span className="text-gray-500"> / {ip.total_engines}</span>
-                    </td>
-
-                    <td className="px-4 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-300">
-                        {ip.isp && <div>{ip.isp}</div>}
-                        {ip.asn && <div className="text-xs text-gray-500">ASN: {ip.asn}</div>}
-                      </div>
                     </td>
 
                     <td className="px-4 py-4 whitespace-nowrap">
