@@ -306,7 +306,7 @@ export function Emails() {
     if (!confirmed) return;
 
     try {
-      await dataFetch('/emails/bulk-delete', 'DELETE', { ids: emailIds });
+      await dataFetch('/emails/bulk', 'DELETE', { ids: emailIds });
       await refetch();
     } catch (error) {
       console.error("Failed to delete emails:", error);
